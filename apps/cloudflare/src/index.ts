@@ -112,8 +112,12 @@ async function proxyFunction(request: Request, slug: string, method = request.me
   const contentType = request.headers.get('content-type');
   if (contentType) headers.set('content-type', contentType);
 
+  const sourceUrl = new URL(request.url);
+  const upstreamUrl = new URL(`${SUPABASE_URL}/functions/v1/${slug}`);
+  sourceUrl.searchParams.forEach((value, key) => upstreamUrl.searchParams.append(key, value));
+
   const body = method === 'GET' || method === 'HEAD' ? undefined : await request.arrayBuffer();
-  const upstream = await fetch(`${SUPABASE_URL}/functions/v1/${slug}`, { method, headers, body });
+  const upstream = await fetch(upstreamUrl.toString(), { method, headers, body });
   const responseHeaders = new Headers(upstream.headers);
   responseHeaders.set('cache-control', 'no-store');
   responseHeaders.delete('set-cookie');
@@ -219,6 +223,7 @@ async function handleApi(request: Request) {
   if (url.pathname === '/api/store' && (request.method === 'GET' || request.method === 'POST')) return proxyFunction(request, 'store-manage');
   if (url.pathname === '/api/admin/dashboard' && request.method === 'GET') return proxyFunction(request, 'admin-dashboard');
   if (url.pathname === '/api/telegram/connect' && request.method === 'POST') return proxyFunction(request, 'telegram-connect');
+  if (url.pathname === '/api/telegram/manage' && (request.method === 'GET' || request.method === 'POST')) return proxyFunction(request, 'telegram-manage');
 
   return null;
 }
