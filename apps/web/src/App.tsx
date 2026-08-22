@@ -35,7 +35,7 @@ export default function App() {
     setBot(null);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
+      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:4000' : '');
       const workspaceId = import.meta.env.VITE_DEFAULT_WORKSPACE_ID ?? 'local-workspace';
       const response = await fetch(`${apiUrl}/api/telegram/connect`, {
         method: 'POST',
@@ -50,7 +50,9 @@ export default function App() {
       }
 
       setBot(data.bot);
-      setMessage('ربات با موفقیت توسط Telegram تأیید و متصل شد.');
+      setMessage(data.demoMode
+        ? 'ربات توسط Telegram تأیید شد. نسخه فعلی آزمایشی است و ذخیره دائمی هنوز فعال نیست.'
+        : 'ربات با موفقیت توسط Telegram تأیید و متصل شد.');
       setToken('');
     } catch {
       setMessage('ارتباط با API برقرار نشد. سرویس بک‌اند را بررسی کنید.');
@@ -115,7 +117,7 @@ export default function App() {
           <div>
             <span className="pill">Telegram MVP</span>
             <h2>مرحله ۱: اتصال ربات</h2>
-            <p>توکن با Telegram API بررسی می‌شود و فقط در صورت تأیید، به‌صورت رمزنگاری‌شده در دیتابیس ذخیره خواهد شد.</p>
+            <p>توکن با Telegram API بررسی می‌شود و فقط در صورت تأیید پذیرفته خواهد شد.</p>
             {message && <p className={bot ? 'status success' : 'status error'}>{message}</p>}
             {bot && (
               <div className="bot-result">
