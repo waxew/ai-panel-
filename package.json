@@ -8,6 +8,16 @@
     "dev:api": "pnpm --filter @ai-panel/api dev",
     "dev:worker": "pnpm --filter @ai-panel/worker dev",
     "build": "pnpm -r build",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:studio": "prisma studio"
+  },
+  "devDependencies": {
+    "dotenv": "latest",
+    "prisma": "^7.0.0",
+    "tsx": "latest",
+    "typescript": "latest"
   }
 }

@@ -8,6 +8,7 @@
 body { margin: 0; min-width: 320px; min-height: 100vh; background: #0c0f14; }
 button, input { font: inherit; }
 button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .55; }
 .shell { min-height: 100vh; display: grid; grid-template-columns: 250px 1fr; }
 .sidebar { border-left: 1px solid #232833; padding: 26px 18px; background: #10141b; }
 .brand { direction: ltr; font-weight: 800; letter-spacing: 2px; margin-bottom: 34px; }
@@ -36,6 +37,11 @@ header button, .token-box button { background: #fff; color: #0c0f14; border: 0; 
 .token-box { display: grid; gap: 10px; }
 .token-box label { font-size: 13px; color: #aab2c1; }
 .token-box input { background: #0c1016; color: #fff; border: 1px solid #2b3340; border-radius: 10px; padding: 12px 13px; direction: ltr; }
+.status { margin: 14px 0 0; padding: 10px 12px; border-radius: 10px; }
+.status.success { border: 1px solid #285b3a; background: #102519; color: #b8f0c8; }
+.status.error { border: 1px solid #653235; background: #2a1517; color: #ffc2c5; }
+.bot-result { margin-top: 12px; display: grid; gap: 5px; border: 1px solid #2d3745; border-radius: 12px; padding: 13px; background: #0e131a; }
+.bot-result span { color: #9da7b8; font-size: 13px; direction: ltr; text-align: right; }
 @media (max-width: 900px) {
   .shell { grid-template-columns: 1fr; }
   .sidebar { display: none; }
