@@ -1,0 +1,13 @@
+{
+  "name": "ai-panel",
+  "private": true,
+  "packageManager": "pnpm@latest",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "dev:web": "pnpm --filter @ai-panel/web dev",
+    "dev:api": "pnpm --filter @ai-panel/api dev",
+    "dev:worker": "pnpm --filter @ai-panel/worker dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck"
+  }
+}

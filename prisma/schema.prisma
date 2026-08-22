@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum BotStatus {
+  PENDING
+  ACTIVE
+  INVALID
+  DISABLED
+}
+
+enum ScheduledJobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model User {
+  id          String      @id @default(cuid())
+  email       String      @unique
+  displayName String?
+  role        UserRole    @default(CUSTOMER)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  workspaces  WorkspaceMember[]
+}
+
+model Workspace {
+  id            String             @id @default(cuid())
+  name          String
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  members       WorkspaceMember[]
+  telegramBots  TelegramBot[]
+  scheduledJobs ScheduledJob[]
+}
+
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        UserRole  @default(CUSTOMER)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+}
+
+model TelegramBot {
+  id              String           @id @default(cuid())
+  workspaceId     String
+  telegramBotId   String           @unique
+  username        String?
+  displayName     String?
+  description     String?
+  tokenCiphertext String
+  status          BotStatus        @default(PENDING)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  workspace       Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  buttons         TelegramButton[]
+}
+
+model TelegramButton {
+  id          String      @id @default(cuid())
+  botId       String
+  parentId    String?
+  title       String
+  actionType  String
+  actionValue String?
+  sortOrder   Int         @default(0)
+  createdAt   DateTime    @default(now())
+  bot         TelegramBot @relation(fields: [botId], references: [id], onDelete: Cascade)
+}
+
+model ScheduledJob {
+  id          String             @id @default(cuid())
+  workspaceId String
+  platform    String
+  jobType     String
+  payload     Json
+  runAt       DateTime
+  status      ScheduledJobStatus @default(PENDING)
+  attempts    Int                @default(0)
+  lastError   String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([status, runAt])
+}
