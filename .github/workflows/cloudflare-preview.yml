@@ -1,6 +1,8 @@
-name: Cloudflare temporary preview
+name: Cloudflare deploy
 
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: [main]
     paths:
@@ -9,14 +11,12 @@ on:
       - pnpm-workspace.yaml
       - apps/cloudflare/**
       - apps/web/**
-  pull_request:
-    branches: [main]
 
 permissions:
   contents: read
 
 jobs:
-  deploy-preview:
+  build-and-deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -37,7 +37,9 @@ jobs:
       - name: Build web app
         run: pnpm build:cloudflare
 
-      - name: Check Wrangler temporary deployment support
-        run: |
-          pnpm --filter @ai-panel/cloudflare exec wrangler --version
-          pnpm --filter @ai-panel/cloudflare exec wrangler deploy --help | grep -- --temporary
+      - name: Deploy to Cloudflare
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: pnpm --filter @ai-panel/cloudflare exec wrangler deploy
