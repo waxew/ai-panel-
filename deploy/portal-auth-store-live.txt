@@ -1,0 +1,1 @@
+Deploy trigger for authenticated portal, store manager, admin dashboard, and Telegram commerce integration.
