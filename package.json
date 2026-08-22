@@ -1,7 +1,7 @@
 {
   "name": "ai-panel",
   "private": true,
-  "packageManager": "pnpm@latest",
+  "packageManager": "pnpm@11.22.0",
   "scripts": {
     "dev": "pnpm -r --parallel dev",
     "dev:web": "pnpm --filter @ai-panel/web dev",
