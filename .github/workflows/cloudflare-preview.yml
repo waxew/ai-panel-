@@ -1,14 +1,6 @@
 name: Cloudflare temporary preview
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - .github/workflows/cloudflare-preview.yml
-      - package.json
-      - pnpm-workspace.yaml
-      - apps/cloudflare/**
-      - apps/web/**
   pull_request:
     branches: [main]
 
@@ -37,7 +29,5 @@ jobs:
       - name: Build web app
         run: pnpm build:cloudflare
 
-      - name: Check Wrangler temporary deployment support
-        run: |
-          pnpm --filter @ai-panel/cloudflare exec wrangler --version
-          pnpm --filter @ai-panel/cloudflare exec wrangler deploy --help | grep -- --temporary
+      - name: Deploy temporary Cloudflare preview
+        run: pnpm --filter @ai-panel/cloudflare exec wrangler deploy --temporary
