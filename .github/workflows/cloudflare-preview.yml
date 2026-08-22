@@ -1,0 +1,35 @@
+name: Cloudflare temporary preview
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/cloudflare-preview.yml
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install pnpm
+        run: npm install --global pnpm@latest
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build web app
+        run: pnpm build:cloudflare
+
+      - name: Deploy temporary Cloudflare preview
+        run: pnpm --filter @ai-panel/cloudflare exec wrangler deploy --temporary
