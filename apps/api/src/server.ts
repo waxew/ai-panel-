@@ -1,6 +1,9 @@
 import 'dotenv/config';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import fastifyStatic from '@fastify/static';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { telegramRoutes } from './routes/telegram.js';
 
 const app = Fastify({ logger: true });
@@ -26,6 +29,23 @@ app.get('/api/modules', async () => ({
 }));
 
 await app.register(telegramRoutes, { prefix: '/api/telegram' });
+
+const currentDir = dirname(fileURLToPath(import.meta.url));
+const webDist = join(currentDir, '../../web/dist');
+
+await app.register(fastifyStatic, {
+  root: webDist,
+  prefix: '/',
+  wildcard: false,
+});
+
+app.setNotFoundHandler((request, reply) => {
+  if (request.url.startsWith('/api/')) {
+    return reply.code(404).send({ ok: false, message: 'API route not found' });
+  }
+
+  return reply.sendFile('index.html');
+});
 
 const port = Number(process.env.PORT ?? process.env.API_PORT ?? 4000);
 await app.listen({ port, host: '0.0.0.0' });
