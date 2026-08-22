@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { prisma } from '../db.js';
 import { encryptSecret } from '../lib/crypto.js';
@@ -19,10 +20,26 @@ function parseTelegramToken(token: string) {
 }
 
 function resolveWorkspaceId(input?: string) {
-  return input ?? process.env.DEFAULT_WORKSPACE_ID;
+  return input ?? process.env.DEFAULT_WORKSPACE_ID ?? 'local-workspace';
 }
 
+type DemoBot = {
+  id: string;
+  workspaceId: string;
+  telegramBotId: string;
+  username?: string;
+  displayName?: string;
+  description?: string;
+  tokenCiphertext: string;
+  status: 'ACTIVE';
+  updatedAt: Date;
+};
+
+const demoBots = new Map<string, DemoBot>();
+
 async function ensureDevelopmentWorkspace(workspaceId: string) {
+  if (!prisma) return { id: workspaceId, name: 'Demo Workspace' };
+
   const existing = await prisma.workspace.findUnique({ where: { id: workspaceId } });
   if (existing || process.env.NODE_ENV === 'production') return existing;
 
@@ -48,10 +65,6 @@ export async function telegramRoutes(app: FastifyInstance) {
     }
 
     const workspaceId = resolveWorkspaceId(result.data.workspaceId);
-    if (!workspaceId) {
-      return reply.code(400).send({ ok: false, message: 'Workspace برای اتصال مشخص نشده است.' });
-    }
-
     const workspace = await ensureDevelopmentWorkspace(workspaceId);
     if (!workspace) {
       return reply.code(404).send({ ok: false, message: 'Workspace پیدا نشد.' });
@@ -73,6 +86,43 @@ export async function telegramRoutes(app: FastifyInstance) {
     }
 
     const telegramBotId = String(verification.bot.id);
+
+    if (!prisma) {
+      const existing = [...demoBots.values()].find((item) => item.telegramBotId === telegramBotId);
+      if (existing && existing.workspaceId !== workspaceId) {
+        return reply.code(409).send({ ok: false, message: 'این ربات قبلاً به Workspace دیگری متصل شده است.' });
+      }
+
+      const bot: DemoBot = {
+        id: existing?.id ?? randomUUID(),
+        workspaceId,
+        telegramBotId,
+        username: verification.bot.username,
+        displayName: verification.bot.first_name,
+        description: verification.description,
+        tokenCiphertext: encryptSecret(token),
+        status: 'ACTIVE',
+        updatedAt: new Date(),
+      };
+      demoBots.set(bot.id, bot);
+
+      return reply.send({
+        ok: true,
+        status: 'connected',
+        token: parsed.maskedToken,
+        demoMode: true,
+        bot: {
+          id: bot.id,
+          telegramBotId: bot.telegramBotId,
+          username: bot.username,
+          displayName: bot.displayName,
+          description: bot.description,
+          status: bot.status,
+          updatedAt: bot.updatedAt,
+        },
+      });
+    }
+
     const existing = await prisma.telegramBot.findUnique({ where: { telegramBotId } });
 
     if (existing && existing.workspaceId !== workspaceId) {
@@ -108,12 +158,30 @@ export async function telegramRoutes(app: FastifyInstance) {
       },
     });
 
-    return reply.send({ ok: true, status: 'connected', token: parsed.maskedToken, bot });
+    return reply.send({ ok: true, status: 'connected', token: parsed.maskedToken, demoMode: false, bot });
   });
 
   app.get('/status/:botId', async (request, reply) => {
     const params = z.object({ botId: z.string().min(1) }).safeParse(request.params);
     if (!params.success) return reply.code(400).send({ ok: false });
+
+    if (!prisma) {
+      const bot = demoBots.get(params.data.botId);
+      if (!bot) return reply.code(404).send({ ok: false, message: 'ربات پیدا نشد.' });
+      return reply.send({
+        ok: true,
+        demoMode: true,
+        bot: {
+          id: bot.id,
+          telegramBotId: bot.telegramBotId,
+          username: bot.username,
+          displayName: bot.displayName,
+          description: bot.description,
+          status: bot.status,
+          updatedAt: bot.updatedAt,
+        },
+      });
+    }
 
     const bot = await prisma.telegramBot.findUnique({
       where: { id: params.data.botId },
@@ -129,6 +197,6 @@ export async function telegramRoutes(app: FastifyInstance) {
     });
 
     if (!bot) return reply.code(404).send({ ok: false, message: 'ربات پیدا نشد.' });
-    return reply.send({ ok: true, bot });
+    return reply.send({ ok: true, demoMode: false, bot });
   });
 }
