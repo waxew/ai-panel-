@@ -9,6 +9,8 @@
     "dev:worker": "pnpm --filter @ai-panel/worker dev",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
+    "build:cloudflare": "pnpm --filter @ai-panel/web build",
+    "deploy:cloudflare": "pnpm build:cloudflare && pnpm --filter @ai-panel/cloudflare deploy",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
