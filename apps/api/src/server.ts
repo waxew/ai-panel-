@@ -6,12 +6,13 @@ import { telegramRoutes } from './routes/telegram.js';
 const app = Fastify({ logger: true });
 
 await app.register(cors, {
-  origin: process.env.WEB_ORIGIN ?? 'http://localhost:5173',
+  origin: process.env.WEB_ORIGIN ?? true,
 });
 
 app.get('/health', async () => ({
   ok: true,
   service: 'ai-panel-api',
+  demoMode: !process.env.DATABASE_URL,
   timestamp: new Date().toISOString(),
 }));
 
@@ -26,5 +27,5 @@ app.get('/api/modules', async () => ({
 
 await app.register(telegramRoutes, { prefix: '/api/telegram' });
 
-const port = Number(process.env.API_PORT ?? 4000);
+const port = Number(process.env.PORT ?? process.env.API_PORT ?? 4000);
 await app.listen({ port, host: '0.0.0.0' });
