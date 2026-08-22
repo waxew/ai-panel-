@@ -1,0 +1,35 @@
+Cloudflare CI diagnostic
+commit=4292b54193dc983a94046e6d4b6ef76822c5dcd7
+node=v22.23.2
+pnpm=11.22.0
+install_status=1
+--- install log ---
+[WARN] Cannot use packageManager "pnpm@latest": "latest" is not a valid exact version
+Scope: all 6 workspace projects
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Progress: resolved 17, reused 0, downloaded 16, added 0
+Progress: resolved 19, reused 0, downloaded 18, added 0
+Progress: resolved 20, reused 0, downloaded 19, added 0
+Progress: resolved 29, reused 0, downloaded 23, added 0
+Progress: resolved 95, reused 0, downloaded 64, added 0
+Progress: resolved 178, reused 0, downloaded 74, added 0
+Progress: resolved 267, reused 0, downloaded 121, added 0
+Progress: resolved 274, reused 0, downloaded 135, added 0
+Progress: resolved 396, reused 0, downloaded 167, added 0
+Packages: +272
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Packages are hard linked from the content-addressable store to the virtual store.
+  Content-addressable store is at: /home/runner/.local/share/pnpm/store/v11
+  Virtual store is at:             node_modules/.pnpm
+Progress: resolved 396, reused 0, downloaded 218, added 4
+Progress: resolved 396, reused 0, downloaded 275, added 272, done
+
+devDependencies:
++ dotenv 17.4.2
++ prisma 7.9.1
++ tsx 4.23.12
++ typescript 7.0.2
+
+[ERR_PNPM_IGNORED_BUILDS] Ignored build scripts: @prisma/engines@7.9.1, esbuild@0.28.1, esbuild@0.28.2, prisma@7.9.1, workerd@1.20260820.1
+
+Run "pnpm approve-builds" to pick which dependencies should be allowed to run scripts.
