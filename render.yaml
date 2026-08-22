@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: ai-panel-demo
+    runtime: node
+    region: frankfurt
+    plan: free
+    autoDeployTrigger: commit
+    buildCommand: corepack enable && pnpm install --frozen-lockfile=false && pnpm db:generate && pnpm --filter @ai-panel/web build && pnpm --filter @ai-panel/api build
+    startCommand: pnpm --filter @ai-panel/api start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: APP_ENCRYPTION_KEY
+        generateValue: true
+      - key: DEFAULT_WORKSPACE_ID
+        value: local-workspace
+      - key: VITE_DEFAULT_WORKSPACE_ID
+        value: local-workspace
