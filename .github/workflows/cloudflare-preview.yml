@@ -7,7 +7,7 @@ on:
       - .github/workflows/cloudflare-preview.yml
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   deploy-preview:
@@ -25,11 +25,52 @@ jobs:
       - name: Install pnpm
         run: npm install --global pnpm@latest
 
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+      - name: Diagnose install and build
+        shell: bash
+        run: |
+          set +e
+          REPORT=.github/cloudflare-diagnostic.txt
+          : > "$REPORT"
+          echo "Cloudflare CI diagnostic" >> "$REPORT"
+          echo "commit=$GITHUB_SHA" >> "$REPORT"
+          echo "node=$(node --version)" >> "$REPORT"
+          echo "pnpm=$(pnpm --version)" >> "$REPORT"
 
-      - name: Build web app
-        run: pnpm build:cloudflare
+          pnpm install --no-frozen-lockfile > /tmp/install.log 2>&1
+          INSTALL_STATUS=$?
+          echo "install_status=$INSTALL_STATUS" >> "$REPORT"
+          if [ "$INSTALL_STATUS" -ne 0 ]; then
+            echo "--- install log ---" >> "$REPORT"
+            tail -n 120 /tmp/install.log >> "$REPORT"
+          else
+            pnpm build:cloudflare > /tmp/build.log 2>&1
+            BUILD_STATUS=$?
+            echo "build_status=$BUILD_STATUS" >> "$REPORT"
+            if [ "$BUILD_STATUS" -ne 0 ]; then
+              echo "--- build log ---" >> "$REPORT"
+              tail -n 120 /tmp/build.log >> "$REPORT"
+            else
+              WRANGLER_VERSION=$(pnpm --filter @ai-panel/cloudflare exec wrangler --version 2>&1)
+              WRANGLER_STATUS=$?
+              echo "wrangler_status=$WRANGLER_STATUS" >> "$REPORT"
+              echo "wrangler_version=$WRANGLER_VERSION" >> "$REPORT"
+              pnpm --filter @ai-panel/cloudflare exec wrangler deploy --help > /tmp/wrangler-help.log 2>&1
+              HELP_STATUS=$?
+              echo "wrangler_help_status=$HELP_STATUS" >> "$REPORT"
+              if grep -q -- "--temporary" /tmp/wrangler-help.log; then
+                echo "temporary_flag_supported=yes" >> "$REPORT"
+              else
+                echo "temporary_flag_supported=no" >> "$REPORT"
+                tail -n 80 /tmp/wrangler-help.log >> "$REPORT"
+              fi
+            fi
+          fi
 
-      - name: Deploy temporary Cloudflare preview
-        run: pnpm --filter @ai-panel/cloudflare exec wrangler deploy --temporary
+      - name: Commit diagnostic report
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/cloudflare-diagnostic.txt
+          git commit -m "chore: record Cloudflare CI diagnostic" || exit 0
+          git push
