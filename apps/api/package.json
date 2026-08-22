@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@fastify/cors": "latest",
+    "@fastify/static": "latest",
     "@prisma/adapter-pg": "^7.0.0",
     "@prisma/client": "^7.0.0",
     "dotenv": "latest",
