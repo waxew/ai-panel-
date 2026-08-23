@@ -221,6 +221,7 @@ async function handleApi(request: Request) {
   if (request.method === 'GET' && url.pathname === '/api/session') return handleSession(request);
   if (url.pathname === '/api/customer/dashboard' && request.method === 'GET') return proxyFunction(request, 'customer-dashboard');
   if (url.pathname === '/api/store' && (request.method === 'GET' || request.method === 'POST')) return proxyFunction(request, 'store-manage');
+  if (url.pathname === '/api/store/orders' && (request.method === 'GET' || request.method === 'POST')) return proxyFunction(request, 'store-orders');
   if (url.pathname === '/api/admin/dashboard' && request.method === 'GET') return proxyFunction(request, 'admin-dashboard');
   if (url.pathname === '/api/telegram/connect' && request.method === 'POST') return proxyFunction(request, 'telegram-connect');
   if (url.pathname === '/api/telegram/manage' && (request.method === 'GET' || request.method === 'POST')) return proxyFunction(request, 'telegram-manage');
