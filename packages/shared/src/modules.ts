@@ -64,7 +64,7 @@ export const platformModules: readonly PlatformModuleDefinition[] = [
   {
     key: 'discord', labelFa: 'دیسکورد', labelEn: 'Discord', shortCode: 'DC',
     descriptionFa: 'Bot install، Interactions و Slash Commands', kind: 'channel', status: 'partial', phase: 2,
-    customerRoute: '/app/discord', apiPrefix: '/api/discord', uiRuntime: 'legacy-html', commerceEnabled: false,
+    customerRoute: '/app/discord', apiPrefix: '/api/discord', uiRuntime: 'react', commerceEnabled: false,
     capabilities: ['connection', 'interactions', 'slash-commands', 'command-sync'],
   },
   {
