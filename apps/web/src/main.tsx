@@ -11,6 +11,7 @@ import BookingStaffManager from './BookingStaffManager';
 import BookingCustomersCRM from './BookingCustomersCRM';
 import BookingFinance from './BookingFinance';
 import BookingReports from './BookingReports';
+import BookingStaffAccess from './BookingStaffAccess';
 import PublicBookingPage from './PublicBookingPage';
 import CommerceQuickNav from './CommerceQuickNav';
 import './styles.css';
@@ -31,15 +32,17 @@ const rootView = path.startsWith('/book/')
             ? <BookingFinance />
             : path === '/app/booking/reports'
               ? <BookingReports />
-              : path === '/app/booking/customers'
-                ? <BookingCustomersCRM />
-                : path === '/app/booking/staff'
-                  ? <BookingStaffManager />
-                  : path === '/app/booking/tools'
-                    ? <BookingBusinessTools />
-                    : path === '/app/booking'
-                      ? <BookingManagerV2 />
-                      : <App />;
+              : path === '/app/booking/staff-access'
+                ? <BookingStaffAccess />
+                : path === '/app/booking/customers'
+                  ? <BookingCustomersCRM />
+                  : path === '/app/booking/staff'
+                    ? <BookingStaffManager />
+                    : path === '/app/booking/tools'
+                      ? <BookingBusinessTools />
+                      : path === '/app/booking'
+                        ? <BookingManagerV2 />
+                        : <App />;
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
