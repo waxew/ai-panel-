@@ -6,6 +6,7 @@ const links = [
   ['/app/orders', 'سفارش‌ها'],
   ['/app/telegram', 'تلگرام'],
   ['/app/telegram-builder', 'منوی ربات'],
+  ['/app/bale', 'بله'],
   ['/app/instagram', 'اینستاگرام'],
   ['/app/booking', 'نوبت‌دهی'],
   ['/app/booking/customers', 'پرونده مشتری'],
