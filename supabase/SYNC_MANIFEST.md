@@ -1,11 +1,11 @@
 # Supabase production sync manifest
 
-Checkpoint: 2026-08-23
+Checkpoint: 2026-08-24
 Project ref: `spncmjuvnvfkrahjnyjm`
 
 This manifest records the production-to-GitHub source sync checkpoint. GitHub `main` is the canonical source for future AI Panel changes. Production migrations listed here were already applied before this checkpoint; they were copied into the repository and were not replayed.
 
-## Edge Functions — 29/29 tracked
+## Edge Functions — 34/34 tracked
 
 | Function | verify_jwt |
 | --- | --- |
@@ -38,10 +38,15 @@ This manifest records the production-to-GitHub source sync checkpoint. GitHub `m
 | bale-connect | true |
 | bale-manage | true |
 | bale-webhook | false |
+| booking-loyalty | true |
+| booking-site-manage | true |
+| booking-site-public | false |
+| booking-inbox | true |
+| account-manage | true |
 
 Function source is stored under `supabase/functions/<slug>/index.ts`. Per-function platform auth settings are stored in `supabase/config.toml`.
 
-## Migration history — 27/27 tracked
+## Migration history — 31/31 tracked
 
 1. `20260822213612_initial_ai_panel_schema.sql`
 2. `20260822213855_telegram_token_encryption_secret.sql`
@@ -70,6 +75,10 @@ Function source is stored under `supabase/functions/<slug>/index.ts`. Per-functi
 25. `20260823123126_harden_rubika_buttons.sql`
 26. `20260823123231_add_channel_commerce_rpc.sql`
 27. `20260823123239_grant_channel_commerce_rpc.sql`
+28. `20260823134944_booking_loyalty_and_lottery_v1.sql`
+29. `20260823140406_booking_business_site_and_inbox_v1.sql`
+30. `20260823140912_booking_business_site_autoprovision_v1.sql`
+31. `20260823153918_account_profile_wallet.sql`
 
 The SQL was recovered from `supabase_migrations.schema_migrations` using the original version/name and stored under `supabase/migrations/`.
 
