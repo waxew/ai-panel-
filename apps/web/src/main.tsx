@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import TelegramMenuBuilder from './TelegramMenuBuilder';
 import StoreOrders from './StoreOrders';
+import CommerceQuickNav from './CommerceQuickNav';
 import './styles.css';
 
 const rootView = window.location.pathname === '/app/telegram-builder'
@@ -14,5 +15,6 @@ const rootView = window.location.pathname === '/app/telegram-builder'
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     {rootView}
+    <CommerceQuickNav />
   </React.StrictMode>,
 );
