@@ -4,6 +4,7 @@ const links = [
   ['/app/orders', 'سفارش‌ها'],
   ['/app/telegram', 'تلگرام'],
   ['/app/telegram-builder', 'منوی ربات'],
+  ['/app/instagram', 'اینستاگرام'],
 ] as const;
 
 export default function CommerceQuickNav() {
