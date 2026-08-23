@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Panel | Rubika Bot</title>
+  <style>
+    :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111827;background:#f5f7fb}*{box-sizing:border-box}body{margin:0}.shell{display:grid;grid-template-columns:250px 1fr;min-height:100vh}.side{background:#111827;color:#fff;padding:28px 20px;display:flex;flex-direction:column;gap:24px}.brand{font-weight:900;font-size:20px;letter-spacing:.5px}.brand small{display:block;font-size:11px;color:#94a3b8;margin-top:4px}.nav a{display:block;color:#cbd5e1;text-decoration:none;padding:12px 14px;border-radius:12px;margin:4px 0}.nav a.active,.nav a:hover{background:#1f2937;color:#fff}.main{padding:34px;max-width:1320px;width:100%;margin:auto}.header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:24px}.eyebrow{font-size:12px;font-weight:800;color:#7c3aed;text-transform:uppercase}.header h1{margin:8px 0 6px;font-size:30px}.header p{margin:0;color:#64748b;line-height:1.8}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.card{background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:20px;box-shadow:0 8px 30px rgba(15,23,42,.04)}.card h2{margin:6px 0 14px;font-size:19px}.wide{grid-column:1/-1}.muted{color:#64748b;font-size:13px;line-height:1.8}label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}input,textarea,select{width:100%;border:1px solid #d7dce3;border-radius:12px;padding:11px 12px;font:inherit;background:#fff}input:focus,textarea:focus,select:focus{outline:2px solid #ddd6fe;border-color:#8b5cf6}.ltr{direction:ltr;text-align:left}.btn{border:0;border-radius:12px;padding:11px 15px;font:inherit;font-weight:800;cursor:pointer;text-decoration:none;display:inline-block}.btn:disabled{opacity:.55;cursor:not-allowed}.primary{background:#7c3aed;color:#fff}.ghost{background:#f5f3ff;color:#6d28d9}.danger{background:#fff1f2;color:#be123c}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.status{display:inline-flex;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:900;background:#dcfce7;color:#166534}.notice{padding:12px 14px;border-radius:12px;margin-bottom:16px;background:#ecfdf5;color:#047857}.notice.error{background:#fff1f2;color:#be123c}.bot{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:14px;border:1px solid #edf0f4;border-radius:14px;margin:10px 0;cursor:pointer}.bot.active{border-color:#8b5cf6;background:#faf5ff}.bot b{display:block}.bot small{display:block;color:#64748b;margin-top:4px}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.metrics div{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:16px}.metrics strong{display:block;font-size:26px;margin-top:7px}.metrics small{color:#64748b}.empty{padding:30px;text-align:center;color:#94a3b8;border:1px dashed #d7dce3;border-radius:14px}.button-list{display:grid;gap:9px}.menu-item{border:1px solid #edf0f4;border-radius:14px;padding:13px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}.menu-item small{display:block;color:#64748b;margin-top:4px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form-grid .full{grid-column:1/-1}.preview{background:#111827;color:#fff;border-radius:18px;padding:18px;min-height:250px}.preview .bubble{background:#fff;color:#111827;border-radius:14px;padding:14px;line-height:1.8}.keypad{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.keypad span{background:#374151;border-radius:10px;padding:10px;text-align:center;font-size:12px}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}@media(max-width:900px){.shell{display:block}.side{padding:16px}.nav{display:flex;overflow:auto}.main{padding:20px}.grid,.form-grid,.metrics{grid-template-columns:1fr}.wide,.form-grid .full{grid-column:auto}.header{display:block}.menu-item,.bot{display:grid}.keypad{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="brand">AI PANEL<small>Commerce Automation OS</small></div>
+    <nav class="nav">
+      <a href="/app">داشبورد</a>
+      <a href="/app/store">فروشگاه من</a>
+      <a href="/app/telegram">ربات تلگرام</a>
+      <a href="/app/whatsapp">ربات واتساپ</a>
+      <a class="active" href="/app/rubika">ربات روبیکا</a>
+      <a href="/app/discord">ربات دیسکورد</a>
+    </nav>
+  </aside>
+  <main class="main">
+    <header class="header">
+      <div><span class="eyebrow">Rubika Bot API v3</span><h1>ربات روبیکا</h1><p>اتصال امن توکن، Webhook، پیام خوش‌آمد، منوی ربات و اتصال به فروشگاه مشترک AI Panel.</p></div>
+    </header>
+    <div id="notice"></div>
+    <div id="metrics" class="metrics"></div>
+
+    <section class="grid">
+      <article class="card">
+        <span class="eyebrow">مرحله ۱</span><h2>اتصال ربات</h2>
+        <p class="muted">توکن ربات روبیکا را وارد کنید. AI Panel ابتدا آن را با Bot API اعتبارسنجی می‌کند، سپس رمزنگاری و Webhook را فعال می‌کند.</p>
+        <form id="connectForm">
+          <label>Bot Token</label><input id="token" class="ltr" type="password" autocomplete="off" placeholder="توکن دریافتی از BotFather روبیکا" required />
+          <div style="height:12px"></div><button id="connectBtn" class="btn primary">اعتبارسنجی و اتصال</button>
+        </form>
+      </article>
+
+      <article class="card">
+        <span class="eyebrow">ربات‌ها</span><h2>ربات‌های متصل</h2>
+        <div id="bots"><div class="empty">در حال دریافت اطلاعات...</div></div>
+      </article>
+
+      <article class="card">
+        <span class="eyebrow">پیام شروع</span><h2>پیام خوش‌آمد</h2>
+        <form id="welcomeForm">
+          <textarea id="welcome" rows="6" maxlength="4000" placeholder="سلام! به ربات ما خوش آمدید."></textarea>
+          <div style="height:12px"></div><button id="welcomeBtn" class="btn primary">ذخیره پیام</button>
+        </form>
+      </article>
+
+      <article class="card">
+        <span class="eyebrow">پیش‌نمایش</span><h2>نمای ربات</h2>
+        <div class="preview"><div id="previewMessage" class="bubble">یک ربات را انتخاب کنید.</div><div id="previewButtons" class="keypad"></div></div>
+      </article>
+
+      <article class="card wide">
+        <div class="toolbar"><div><span class="eyebrow">Menu Builder</span><h2>ساخت دکمه‌های ربات</h2></div></div>
+        <div class="form-grid">
+          <form id="buttonForm">
+            <label>عنوان دکمه</label><input id="buttonTitle" placeholder="مثلاً محصولات" maxlength="64" required />
+            <label>نوع عملکرد</label><select id="actionType"><option value="CATALOG">محصولات فروشگاه</option><option value="CART">سبد خرید</option><option value="ORDERS">سفارش‌های من</option><option value="SUPPORT">پشتیبانی</option><option value="TEXT">ارسال متن</option><option value="URL">لینک</option><option value="SUBMENU">زیرمنو</option></select>
+            <label>زیرمجموعه</label><select id="parentId"><option value="">منوی اصلی</option></select>
+            <label>متن / لینک عملکرد</label><textarea id="actionValue" rows="3" placeholder="برای متن، پشتیبانی، لینک یا عنوان زیرمنو"></textarea>
+            <div style="height:12px"></div><button id="buttonBtn" class="btn primary">افزودن دکمه</button>
+          </form>
+          <div><span class="eyebrow">دکمه‌های فعلی</span><h2>ساختار منو</h2><div id="buttons"><div class="empty">رباتی انتخاب نشده است.</div></div></div>
+        </div>
+      </article>
+    </section>
+  </main>
+</div>
+<script>
+const state={data:null,activeBotId:null};
+const notice=document.getElementById('notice');
+function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function show(msg,error=false){notice.innerHTML=msg?`<div class="notice ${error?'error':''}">${esc(msg)}</div>`:''}
+async function request(url,init){const res=await fetch(url,init);const data=await res.json().catch(()=>({}));if(res.status===401){location.href='/login';throw new Error('unauthorized')}if(!res.ok)throw new Error(data.message||'عملیات انجام نشد.');return data}
+async function load(botId=state.activeBotId){try{state.data=await request('/api/rubika/manage'+(botId?`?botId=${encodeURIComponent(botId)}`:''));if(!state.activeBotId&&state.data.bots?.length)state.activeBotId=state.data.bot?.id||state.data.bots[0].id;if(state.activeBotId&&state.data.bot?.id!==state.activeBotId){state.data=await request(`/api/rubika/manage?botId=${encodeURIComponent(state.activeBotId)}`)}render()}catch(e){if(e.message!=='unauthorized')show(e.message,true)}}
+function activeBot(){return state.data?.bot||null}
+function roots(){return (state.data?.buttons||[]).filter(x=>!x.parentId).sort((a,b)=>a.sortOrder-b.sortOrder)}
+function render(){const d=state.data||{bots:[],bot:null,buttons:[]};document.getElementById('metrics').innerHTML=`<div><small>ربات متصل</small><strong>${new Intl.NumberFormat('fa-IR').format(d.bots?.length||0)}</strong></div><div><small>ربات فعال</small><strong>${new Intl.NumberFormat('fa-IR').format((d.bots||[]).filter(x=>x.status==='ACTIVE').length)}</strong></div><div><small>دکمه منو</small><strong>${new Intl.NumberFormat('fa-IR').format(d.buttons?.length||0)}</strong></div>`;
+ document.getElementById('bots').innerHTML=d.bots?.length?d.bots.map(b=>`<div class="bot ${b.id===state.activeBotId?'active':''}" data-bot="${esc(b.id)}"><span><b>${esc(b.displayName||'Rubika Bot')}</b><small>${esc(b.username?('@'+b.username):b.rubikaBotId)}</small></span><span class="status">${esc(b.status)}</span></div>`).join(''):'<div class="empty">هنوز ربات روبیکا متصل نشده است.</div>';
+ document.querySelectorAll('[data-bot]').forEach(el=>el.onclick=()=>{state.activeBotId=el.dataset.bot;load(state.activeBotId)});
+ const bot=d.bot;document.getElementById('welcome').value=bot?.welcomeMessage||'';document.getElementById('welcomeBtn').disabled=!bot;document.getElementById('buttonBtn').disabled=!bot;
+ const root=roots();document.getElementById('previewMessage').textContent=bot?.welcomeMessage||'یک ربات را انتخاب کنید.';document.getElementById('previewButtons').innerHTML=root.map(x=>`<span>${esc(x.title)}</span>`).join('');
+ document.getElementById('parentId').innerHTML='<option value="">منوی اصلی</option>'+d.buttons.map(x=>`<option value="${esc(x.id)}">${esc(x.title)}</option>`).join('');
+ document.getElementById('buttons').innerHTML=d.buttons?.length?`<div class="button-list">${d.buttons.map(x=>`<div class="menu-item"><span><b>${esc(x.title)}</b><small>${esc(x.actionType)}${x.parentId?' · زیرمنو':''}</small></span><button class="btn danger" data-delete="${esc(x.id)}">حذف</button></div>`).join('')}</div>`:'<div class="empty">هنوز دکمه‌ای ساخته نشده است.</div>';
+ document.querySelectorAll('[data-delete]').forEach(el=>el.onclick=()=>removeButton(el.dataset.delete));
+}
+async function post(body){if(!state.activeBotId)throw new Error('ابتدا یک ربات را انتخاب کنید.');return request('/api/rubika/manage',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...body,botId:state.activeBotId})})}
+document.getElementById('connectForm').onsubmit=async e=>{e.preventDefault();const btn=document.getElementById('connectBtn');btn.disabled=true;show('');try{const data=await request('/api/rubika/connect',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({token:document.getElementById('token').value.trim()})});document.getElementById('token').value='';state.activeBotId=data.bot?.id||null;show('ربات روبیکا متصل شد و Webhook فعال شد.');await load(state.activeBotId)}catch(err){show(err.message,true)}finally{btn.disabled=false}};
+document.getElementById('welcomeForm').onsubmit=async e=>{e.preventDefault();const btn=document.getElementById('welcomeBtn');btn.disabled=true;show('');try{state.data=await post({action:'update_welcome',welcomeMessage:document.getElementById('welcome').value});show('پیام خوش‌آمد ذخیره شد.');render()}catch(err){show(err.message,true)}finally{btn.disabled=false}};
+document.getElementById('buttonForm').onsubmit=async e=>{e.preventDefault();const btn=document.getElementById('buttonBtn');btn.disabled=true;show('');try{state.data=await post({action:'create_button',title:document.getElementById('buttonTitle').value,actionType:document.getElementById('actionType').value,parentId:document.getElementById('parentId').value||null,actionValue:document.getElementById('actionValue').value||null});document.getElementById('buttonTitle').value='';document.getElementById('actionValue').value='';show('دکمه اضافه شد.');render()}catch(err){show(err.message,true)}finally{btn.disabled=false}};
+async function removeButton(id){if(!confirm('این دکمه حذف شود؟'))return;show('');try{state.data=await post({action:'delete_button',buttonId:id});show('دکمه حذف شد.');render()}catch(err){show(err.message,true)}}
+load();
+</script>
+</body>
+</html>
