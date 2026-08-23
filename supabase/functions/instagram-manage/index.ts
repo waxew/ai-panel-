@@ -8,6 +8,9 @@ const corsHeaders = {
 };
 
 const triggerTypes = new Set(["COMMENT_KEYWORD", "DM_KEYWORD", "STORY_REPLY"]);
+const META_APP_ID_SECRET = "meta_app_id";
+const META_APP_SECRET_SECRET = "meta_app_secret";
+const META_OWNER_SECRET = "meta_platform_owner_workspace";
 
 function json(data: unknown, status = 200) {
   return Response.json(data, { status, headers: corsHeaders });
@@ -29,8 +32,33 @@ function cleanKeywords(value: unknown) {
   return [...new Set(raw.map((item) => typeof item === "string" ? item.trim().toLocaleLowerCase("fa") : "").filter(Boolean))].slice(0, 30);
 }
 
+async function readSecrets(admin: any, ids: string[]) {
+  const { data, error } = await admin.from("AppSecret").select("id,value").in("id", ids);
+  if (error) throw new Error(`secret_read:${error.message}`);
+  return new Map((data ?? []).map((row: any) => [row.id as string, row.value as string]));
+}
+
+function maskAppId(value: string) {
+  if (!value) return null;
+  if (value.length <= 6) return `${value.slice(0, 2)}••••`;
+  return `${value.slice(0, 4)}••••${value.slice(-3)}`;
+}
+
+async function readPlatformConfig(admin: any, workspaceId: string) {
+  const secrets = await readSecrets(admin, [META_APP_ID_SECRET, META_APP_SECRET_SECRET, META_OWNER_SECRET]);
+  const appId = secrets.get(META_APP_ID_SECRET) ?? "";
+  const appSecret = secrets.get(META_APP_SECRET_SECRET) ?? "";
+  const ownerWorkspaceId = secrets.get(META_OWNER_SECRET) ?? "";
+  return {
+    configured: Boolean(appId && appSecret),
+    editable: !ownerWorkspaceId || ownerWorkspaceId === workspaceId,
+    ownedByThisWorkspace: Boolean(ownerWorkspaceId && ownerWorkspaceId === workspaceId),
+    appIdMasked: maskAppId(appId),
+  };
+}
+
 async function readDashboard(admin: any, workspaceId: string) {
-  const [accountsResult, rulesResult, eventsResult] = await Promise.all([
+  const [accountsResult, rulesResult, eventsResult, platform] = await Promise.all([
     admin.from("InstagramAccount")
       .select("id,username,displayName,followersCount,followingCount,postsCount,engagementRate,metrics,status,lastSyncedAt,metaAccountId,pageId,permissions,webhookSubscribed,createdAt,updatedAt")
       .eq("workspaceId", workspaceId)
@@ -44,6 +72,7 @@ async function readDashboard(admin: any, workspaceId: string) {
       .eq("workspaceId", workspaceId)
       .order("createdAt", { ascending: false })
       .limit(50),
+    readPlatformConfig(admin, workspaceId),
   ]);
 
   const firstError = [accountsResult.error, rulesResult.error, eventsResult.error].find(Boolean);
@@ -57,6 +86,7 @@ async function readDashboard(admin: any, workspaceId: string) {
     accounts,
     rules,
     events,
+    platform,
     connection: {
       configured: accounts.some((account: any) => Boolean(account.metaAccountId)),
       webhookReady: accounts.some((account: any) => Boolean(account.webhookSubscribed)),
@@ -103,6 +133,28 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
   const action = cleanString(body.action, 40);
 
   try {
+    if (action === "save_platform_config") {
+      const appId = cleanString(body.appId, 80);
+      const appSecret = cleanString(body.appSecret, 256);
+      if (!/^\d{5,80}$/.test(appId)) return json({ ok: false, message: "Meta App ID معتبر وارد کنید." }, 400);
+      if (appSecret.length < 16) return json({ ok: false, message: "Meta App Secret معتبر وارد کنید." }, 400);
+
+      const current = await readSecrets(admin, [META_OWNER_SECRET]);
+      const ownerWorkspaceId = current.get(META_OWNER_SECRET) ?? "";
+      if (ownerWorkspaceId && ownerWorkspaceId !== workspaceId) {
+        return json({ ok: false, message: "تنظیمات Meta متعلق به Workspace مدیر پلتفرم است و قابل تغییر نیست." }, 403);
+      }
+
+      const rows = [
+        { id: META_APP_ID_SECRET, value: appId },
+        { id: META_APP_SECRET_SECRET, value: appSecret },
+        { id: META_OWNER_SECRET, value: workspaceId },
+      ];
+      const { error } = await admin.from("AppSecret").upsert(rows, { onConflict: "id" });
+      if (error) throw new Error(`platform_config:${error.message}`);
+      return json({ ...(await readDashboard(admin, workspaceId)), platformConfigSaved: true });
+    }
+
     if (action === "create_rule") {
       const name = cleanString(body.name, 120);
       const triggerType = cleanString(body.triggerType, 40).toUpperCase();
