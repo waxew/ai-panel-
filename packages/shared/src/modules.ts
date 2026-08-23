@@ -46,7 +46,7 @@ export const platformModules: readonly PlatformModuleDefinition[] = [
   {
     key: 'whatsapp', labelFa: 'واتساپ', labelEn: 'WhatsApp', shortCode: 'WA',
     descriptionFa: 'WhatsApp Business، Inbox، Template و پاسخ خودکار', kind: 'channel', status: 'partial', phase: 2,
-    customerRoute: '/app/whatsapp', apiPrefix: '/api/whatsapp', uiRuntime: 'legacy-html', commerceEnabled: false,
+    customerRoute: '/app/whatsapp', apiPrefix: '/api/whatsapp', uiRuntime: 'react', commerceEnabled: false,
     capabilities: ['connection', 'webhook', 'inbox', 'templates', 'keyword-rules'],
   },
   {
