@@ -126,6 +126,22 @@ async function proxyFunction(request: Request, slug: string, method = request.me
   return response;
 }
 
+async function proxyPublicFunction(request: Request, slug: string, method = request.method) {
+  const headers = authHeaders(request, { accept: 'application/json' });
+  const contentType = request.headers.get('content-type');
+  if (contentType) headers.set('content-type', contentType);
+
+  const sourceUrl = new URL(request.url);
+  const upstreamUrl = new URL(`${SUPABASE_URL}/functions/v1/${slug}`);
+  sourceUrl.searchParams.forEach((value, key) => upstreamUrl.searchParams.append(key, value));
+  const body = method === 'GET' || method === 'HEAD' ? undefined : await request.arrayBuffer();
+  const upstream = await fetch(upstreamUrl.toString(), { method, headers, body });
+  const responseHeaders = new Headers(upstream.headers);
+  responseHeaders.set('cache-control', 'no-store');
+  responseHeaders.delete('set-cookie');
+  return new Response(upstream.body, { status: upstream.status, headers: responseHeaders });
+}
+
 async function handleSignup(request: Request) {
   let body: { email?: unknown; password?: unknown };
   try { body = await request.json(); } catch { return json({ ok: false, message: 'درخواست معتبر نیست.' }, { status: 400 }); }
@@ -230,6 +246,7 @@ async function handleApi(request: Request) {
   if (url.pathname === '/api/instagram/manage' && (request.method === 'GET' || request.method === 'POST')) return proxyFunction(request, 'instagram-manage');
   if (url.pathname === '/api/booking' && (request.method === 'GET' || request.method === 'POST')) return proxyFunction(request, 'booking-manage');
   if (url.pathname === '/api/booking/automations' && (request.method === 'GET' || request.method === 'POST')) return proxyFunction(request, 'booking-automations');
+  if (url.pathname === '/api/public/booking' && (request.method === 'GET' || request.method === 'POST')) return proxyPublicFunction(request, 'booking-public');
 
   return null;
 }
