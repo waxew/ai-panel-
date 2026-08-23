@@ -4,12 +4,12 @@ type Appointment={id:string;serviceId:string;staffId:string;customerId:string;st
 type Rank={id:string;title?:string;name?:string;color:string;count:number;revenue:number};
 type Data={ok:boolean;message?:string;summary:{income:number;expense:number;net:number;receivable:number;monthIncome:number;monthExpense:number;monthNet:number};appointments:Appointment[];byService:Rank[];byStaff:Rank[]};
 const nf=new Intl.NumberFormat('fa-IR');const money=(v:number|string)=>`${nf.format(Number(v||0))} ریال`;
-async function load(){const r=await fetch('/api/booking/finance');const d=await r.json().catch(()=>({})) as Data;if(!r.ok)throw new Error(d.message||'گزارش در دسترس نیست.');return d;}
+async function load(){const r=await fetch('/api/booking/finance?mode=reports');const d=await r.json().catch(()=>({})) as Data;if(!r.ok)throw new Error(d.message||'گزارش در دسترس نیست.');return d;}
 export default function BookingReports(){
  const[data,setData]=useState<Data|null>(null),[error,setError]=useState(''),[range,setRange]=useState<'30'|'90'|'365'>('30');
  useEffect(()=>{void load().then(setData).catch(e=>setError(e instanceof Error?e.message:'خطا'));},[]);
  const filtered=useMemo(()=>{if(!data)return[];const after=Date.now()-Number(range)*86400000;return data.appointments.filter(a=>new Date(a.startsAt).getTime()>=after);},[data,range]);
- const stats=useMemo(()=>{const total=filtered.length,done=filtered.filter(x=>x.status==='DONE').length,cancelled=filtered.filter(x=>x.status==='CANCELLED').length,noShow=filtered.filter(x=>x.status==='NO_SHOW').length,confirmed=filtered.filter(x=>x.status==='CONFIRMED'||x.status==='DONE').length;const value=filtered.reduce((s,x)=>s+Number(x.amount||0),0),paid=filtered.reduce((s,x)=>s+Number(x.paidAmount||0),0);return{total,done,cancelled,noShow,confirmed,value,paid,completion:total?Math.round(done/total*100):0,cancelRate:total?Math.round(cancelled/total*100):0};},[filtered]);
+ const stats=useMemo(()=>{const total=filtered.length,done=filtered.filter(x=>x.status==='DONE').length,cancelled=filtered.filter(x=>x.status==='CANCELLED').length,noShow=filtered.filter(x=>x.status==='NO_SHOW').length;const value=filtered.reduce((s,x)=>s+Number(x.amount||0),0),paid=filtered.reduce((s,x)=>s+Number(x.paidAmount||0),0);return{total,done,cancelled,noShow,value,paid,completion:total?Math.round(done/total*100):0,cancelRate:total?Math.round(cancelled/total*100):0};},[filtered]);
  const daily=useMemo(()=>{const m=new Map<string,number>();filtered.forEach(a=>{const k=new Date(a.startsAt).toISOString().slice(0,10);m.set(k,(m.get(k)||0)+1)});return[...m.entries()].sort().slice(-14);},[filtered]);
  const max=Math.max(1,...daily.map(x=>x[1]));
  if(!data)return <main className="br loading" dir="rtl"><style>{styles}</style>{error||'در حال آماده‌سازی گزارش...'}</main>;
