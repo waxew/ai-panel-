@@ -3,7 +3,6 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const META_APP_SECRET = Deno.env.get("META_APP_SECRET") ?? "";
 const META_API_VERSION = Deno.env.get("META_API_VERSION") ?? "v24.0";
 const admin = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
 const enc = new TextEncoder();
@@ -99,9 +98,10 @@ Deno.serve(async (request) => {
   }
   if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
   const raw = await request.text();
-  if (!META_APP_SECRET) return new Response("Meta secret not configured", { status: 503 });
+  const metaAppSecret = await appSecret("meta_app_secret").catch(() => "");
+  if (!metaAppSecret) return new Response("Meta secret not configured", { status: 503 });
   const signature = request.headers.get("x-hub-signature-256") ?? "";
-  const expected = `sha256=${await hmacHex(META_APP_SECRET, raw)}`;
+  const expected = `sha256=${await hmacHex(metaAppSecret, raw)}`;
   if (!timingSafeEqual(signature, expected)) return new Response("Invalid signature", { status: 401 });
 
   let payload: any; try { payload = JSON.parse(raw); } catch { return new Response("Bad request", { status: 400 }); }
