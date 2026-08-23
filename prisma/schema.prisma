@@ -40,18 +40,23 @@ model User {
 }
 
 model Workspace {
-  id                   String                     @id @default(cuid())
-  name                 String
-  createdAt            DateTime                   @default(now())
-  updatedAt            DateTime                   @updatedAt
-  members              WorkspaceMember[]
-  telegramBots         TelegramBot[]
-  discordBots          DiscordBot[]
-  instagramAccounts    InstagramAccount[]
-  instagramRules       InstagramAutomationRule[]
-  instagramEvents      InstagramAutomationEvent[]
-  instagramOAuthStates InstagramOAuthState[]
-  scheduledJobs        ScheduledJob[]
+  id                      String                       @id @default(cuid())
+  name                    String
+  createdAt               DateTime                     @default(now())
+  updatedAt               DateTime                     @updatedAt
+  members                 WorkspaceMember[]
+  telegramBots            TelegramBot[]
+  discordBots             DiscordBot[]
+  instagramAccounts       InstagramAccount[]
+  instagramRules          InstagramAutomationRule[]
+  instagramEvents         InstagramAutomationEvent[]
+  instagramOAuthStates    InstagramOAuthState[]
+  whatsappAccounts        WhatsAppAccount[]
+  whatsappConversations   WhatsAppConversation[]
+  whatsappMessages        WhatsAppMessage[]
+  whatsappAutomationRules WhatsAppAutomationRule[]
+  whatsappTemplates       WhatsAppTemplate[]
+  scheduledJobs           ScheduledJob[]
 }
 
 model WorkspaceMember {
@@ -218,6 +223,121 @@ model InstagramAutomationEvent {
   @@index([workspaceId, createdAt])
   @@index([instagramAccountId, createdAt])
   @@index([ruleId, createdAt])
+}
+
+model WhatsAppAccount {
+  id                    String                    @id @default(cuid())
+  workspaceId           String
+  wabaId                 String
+  phoneNumberId          String                    @unique
+  displayPhoneNumber     String?
+  verifiedName           String?
+  accessTokenCiphertext  String
+  tokenType              String                    @default("SYSTEM_USER")
+  status                 BotStatus                 @default(PENDING)
+  webhookSubscribed      Boolean                   @default(false)
+  qualityRating          String?
+  messagingLimit         String?
+  lastSyncedAt           DateTime?
+  connectionMeta         Json                      @default("{}")
+  createdAt              DateTime                  @default(now())
+  updatedAt              DateTime                  @updatedAt
+  workspace              Workspace                 @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  conversations          WhatsAppConversation[]
+  messages               WhatsAppMessage[]
+  automationRules        WhatsAppAutomationRule[]
+  templates              WhatsAppTemplate[]
+
+  @@index([workspaceId])
+  @@index([wabaId])
+}
+
+model WhatsAppConversation {
+  id                              String           @id @default(cuid())
+  workspaceId                     String
+  whatsappAccountId               String
+  waUserId                        String
+  customerPhone                   String?
+  customerName                    String?
+  status                          String           @default("OPEN")
+  lastMessageAt                   DateTime?
+  customerServiceWindowExpiresAt  DateTime?
+  unreadCount                     Int              @default(0)
+  metadata                        Json             @default("{}")
+  createdAt                       DateTime         @default(now())
+  updatedAt                       DateTime         @updatedAt
+  workspace                       Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  whatsappAccount                 WhatsAppAccount  @relation(fields: [whatsappAccountId], references: [id], onDelete: Cascade)
+  messages                        WhatsAppMessage[]
+
+  @@unique([whatsappAccountId, waUserId])
+  @@index([workspaceId, lastMessageAt])
+}
+
+model WhatsAppMessage {
+  id                  String               @id @default(cuid())
+  workspaceId         String
+  whatsappAccountId   String
+  conversationId      String
+  providerMessageId   String?              @unique
+  direction           String
+  messageType         String               @default("text")
+  body                String?
+  templateName        String?
+  status              String               @default("RECEIVED")
+  pricingCategory     String?
+  isTemplate          Boolean              @default(false)
+  providerTimestamp   DateTime?
+  metadata            Json                 @default("{}")
+  createdAt           DateTime             @default(now())
+  workspace           Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  whatsappAccount     WhatsAppAccount       @relation(fields: [whatsappAccountId], references: [id], onDelete: Cascade)
+  conversation        WhatsAppConversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([workspaceId, createdAt])
+}
+
+model WhatsAppAutomationRule {
+  id                  String            @id @default(cuid())
+  workspaceId         String
+  whatsappAccountId   String?
+  name                String
+  triggerType         String
+  triggerConfig       Json              @default("{}")
+  actionType          String            @default("SEND_MESSAGE")
+  actionConfig        Json              @default("{}")
+  isActive            Boolean           @default(false)
+  executions          Int               @default(0)
+  lastTriggeredAt     DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  workspace           Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  whatsappAccount     WhatsAppAccount?   @relation(fields: [whatsappAccountId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([whatsappAccountId, isActive])
+}
+
+model WhatsAppTemplate {
+  id                  String           @id @default(cuid())
+  workspaceId         String
+  whatsappAccountId   String
+  metaTemplateId      String?
+  name                String
+  language            String
+  category            String
+  status              String
+  components          Json             @default("[]")
+  qualityScore        String?
+  lastSyncedAt        DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  workspace           Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  whatsappAccount     WhatsAppAccount   @relation(fields: [whatsappAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([whatsappAccountId, name, language])
+  @@index([workspaceId])
 }
 
 model ScheduledJob {
