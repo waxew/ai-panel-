@@ -205,13 +205,13 @@ async function handleApi(request: Request) {
   if (request.method === 'GET' && url.pathname === '/api/modules') {
     return json({ modules: [
       { key: 'telegram', enabled: true, phase: 1 },
-      { key: 'instagram', enabled: false, phase: 2 },
+      { key: 'instagram', enabled: true, phase: 2 },
       { key: 'whatsapp', enabled: false, phase: 2 },
       { key: 'bale', enabled: false, phase: 2 },
       { key: 'rubika', enabled: false, phase: 2 },
       { key: 'discord', enabled: false, phase: 2 },
       { key: 'scheduler', enabled: false, phase: 2 },
-      { key: 'analytics', enabled: false, phase: 2 },
+      { key: 'analytics', enabled: true, phase: 2 },
     ] });
   }
 
@@ -225,6 +225,7 @@ async function handleApi(request: Request) {
   if (url.pathname === '/api/admin/dashboard' && request.method === 'GET') return proxyFunction(request, 'admin-dashboard');
   if (url.pathname === '/api/telegram/connect' && request.method === 'POST') return proxyFunction(request, 'telegram-connect');
   if (url.pathname === '/api/telegram/manage' && (request.method === 'GET' || request.method === 'POST')) return proxyFunction(request, 'telegram-manage');
+  if (url.pathname === '/api/instagram/manage' && (request.method === 'GET' || request.method === 'POST')) return proxyFunction(request, 'instagram-manage');
 
   return null;
 }
