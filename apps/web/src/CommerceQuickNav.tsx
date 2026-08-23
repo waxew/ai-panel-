@@ -11,7 +11,13 @@ const links = [
 
 type ConnectResponse = {
   ok?: boolean;
+  code?: string;
   authorizationUrl?: string;
+  message?: string;
+};
+
+type ManageResponse = {
+  ok?: boolean;
   message?: string;
 };
 
@@ -20,17 +26,47 @@ export default function CommerceQuickNav() {
   const [connecting, setConnecting] = useState(false);
   if (!path.startsWith('/app')) return null;
 
+  async function saveMetaConfig() {
+    const appId = window.prompt('Meta App ID را وارد کنید:')?.trim() ?? '';
+    if (!appId) return false;
+    const appSecret = window.prompt('Meta App Secret را وارد کنید:')?.trim() ?? '';
+    if (!appSecret) return false;
+
+    const response = await fetch('/api/instagram/manage', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ action: 'save_platform_config', appId, appSecret }),
+    });
+    const data = (await response.json().catch(() => ({}))) as ManageResponse;
+    if (!response.ok) {
+      window.alert(data.message || 'ذخیره تنظیمات Meta انجام نشد.');
+      return false;
+    }
+    window.alert('تنظیمات Meta ذخیره شد. حالا اتصال Instagram شروع می‌شود.');
+    return true;
+  }
+
+  async function startConnection() {
+    const response = await fetch('/api/instagram/connect', { method: 'POST' });
+    const data = (await response.json().catch(() => ({}))) as ConnectResponse;
+    if (response.ok && data.authorizationUrl) {
+      window.location.assign(data.authorizationUrl);
+      return true;
+    }
+    if (data.code === 'META_NOT_CONFIGURED') return false;
+    window.alert(data.message || 'شروع اتصال Meta انجام نشد.');
+    return true;
+  }
+
   async function connectInstagram() {
     if (connecting) return;
     setConnecting(true);
     try {
-      const response = await fetch('/api/instagram/connect', { method: 'POST' });
-      const data = (await response.json().catch(() => ({}))) as ConnectResponse;
-      if (!response.ok || !data.authorizationUrl) {
-        window.alert(data.message || 'شروع اتصال Meta انجام نشد.');
-        return;
-      }
-      window.location.assign(data.authorizationUrl);
+      const handled = await startConnection();
+      if (handled) return;
+      const saved = await saveMetaConfig();
+      if (!saved) return;
+      await startConnection();
     } catch {
       window.alert('ارتباط با سرویس اتصال Meta برقرار نشد.');
     } finally {
