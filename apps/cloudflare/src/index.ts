@@ -49,6 +49,7 @@ if(url.pathname==='/api/booking/automations'&&(request.method==='GET'||request.m
 if(url.pathname==='/api/booking/finance'&&(request.method==='GET'||request.method==='POST'))return proxyFunction(request,'booking-finance');
 if(url.pathname==='/api/booking/staff-access'&&(request.method==='GET'||request.method==='POST'))return proxyFunction(request,'booking-staff-access');
 if(url.pathname==='/api/booking/feedback'&&(request.method==='GET'||request.method==='POST'))return proxyFunction(request,'booking-feedback-manage');
+if(url.pathname==='/api/booking/loyalty'&&(request.method==='GET'||request.method==='POST'))return proxyFunction(request,'booking-loyalty');
 if(url.pathname==='/api/public/booking'&&(request.method==='GET'||request.method==='POST'))return proxyPublicFunction(request,'booking-public');
 if(url.pathname==='/api/public/feedback'&&(request.method==='GET'||request.method==='POST'))return proxyPublicFunction(request,'booking-feedback-public');
 return null;}
