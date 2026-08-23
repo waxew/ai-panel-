@@ -23,51 +23,79 @@ import PublicBusinessSite from './PublicBusinessSite';
 import CommerceQuickNav from './CommerceQuickNav';
 import './styles.css';
 
-const path = window.location.pathname;
+async function adoptImplicitAuthSession() {
+  if (!window.location.hash) return;
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  const accessToken = params.get('access_token');
+  const refreshToken = params.get('refresh_token');
+  if (!accessToken || !refreshToken) return;
 
-const rootView = path.startsWith('/book/')
-  ? <PublicBookingPage />
-  : path.startsWith('/feedback/')
-    ? <PublicFeedbackPage />
-    : path.startsWith('/site/')
-      ? <PublicBusinessSite />
-      : path === '/app/telegram-builder'
-        ? <TelegramMenuBuilder />
-        : path === '/app/bale'
-          ? <BaleControlCenter />
-          : path === '/app/orders'
-            ? <StoreOrders />
-            : path === '/app/instagram'
-              ? <InstagramControlCenter />
-              : path === '/app/booking/inbox'
-                ? <BookingInbox />
-                : path === '/app/booking/automations'
-                  ? <BookingAutomations />
-                  : path === '/app/booking/finance'
-                    ? <BookingFinance />
-                    : path === '/app/booking/reports'
-                      ? <BookingReports />
-                      : path === '/app/booking/feedback'
-                        ? <BookingFeedbackManager />
-                        : path === '/app/booking/loyalty'
-                          ? <BookingLoyalty />
-                          : path === '/app/booking/site'
-                            ? <BookingBusinessSiteManager />
-                            : path === '/app/booking/staff-access'
-                              ? <BookingStaffAccess />
-                              : path === '/app/booking/customers'
-                                ? <BookingCustomersCRM />
-                                : path === '/app/booking/staff'
-                                  ? <BookingStaffManager />
-                                  : path === '/app/booking/tools'
-                                    ? <BookingBusinessTools />
-                                    : path === '/app/booking'
-                                      ? <BookingManagerV2 />
-                                      : <App />;
+  try {
+    const response = await fetch('/api/auth/adopt-session', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ access_token: accessToken, refresh_token: refreshToken }),
+    });
+    if (response.ok) {
+      window.history.replaceState({}, '', '/app');
+    } else {
+      window.history.replaceState({}, '', '/login?confirmation_error=1');
+    }
+  } catch {
+    window.history.replaceState({}, '', '/login?confirmation_error=1');
+  }
+}
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    {rootView}
-    <CommerceQuickNav />
-  </React.StrictMode>,
-);
+async function renderApp() {
+  await adoptImplicitAuthSession();
+  const path = window.location.pathname;
+
+  const rootView = path.startsWith('/book/')
+    ? <PublicBookingPage />
+    : path.startsWith('/feedback/')
+      ? <PublicFeedbackPage />
+      : path.startsWith('/site/')
+        ? <PublicBusinessSite />
+        : path === '/app/telegram-builder'
+          ? <TelegramMenuBuilder />
+          : path === '/app/bale'
+            ? <BaleControlCenter />
+            : path === '/app/orders'
+              ? <StoreOrders />
+              : path === '/app/instagram'
+                ? <InstagramControlCenter />
+                : path === '/app/booking/inbox'
+                  ? <BookingInbox />
+                  : path === '/app/booking/automations'
+                    ? <BookingAutomations />
+                    : path === '/app/booking/finance'
+                      ? <BookingFinance />
+                      : path === '/app/booking/reports'
+                        ? <BookingReports />
+                        : path === '/app/booking/feedback'
+                          ? <BookingFeedbackManager />
+                          : path === '/app/booking/loyalty'
+                            ? <BookingLoyalty />
+                            : path === '/app/booking/site'
+                              ? <BookingBusinessSiteManager />
+                              : path === '/app/booking/staff-access'
+                                ? <BookingStaffAccess />
+                                : path === '/app/booking/customers'
+                                  ? <BookingCustomersCRM />
+                                  : path === '/app/booking/staff'
+                                    ? <BookingStaffManager />
+                                    : path === '/app/booking/tools'
+                                      ? <BookingBusinessTools />
+                                      : path === '/app/booking'
+                                        ? <BookingManagerV2 />
+                                        : <App />;
+
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      {rootView}
+      <CommerceQuickNav />
+    </React.StrictMode>,
+  );
+}
+
+void renderApp();
