@@ -3,8 +3,6 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const META_APP_ID = Deno.env.get("META_APP_ID") ?? "";
-const META_APP_SECRET = Deno.env.get("META_APP_SECRET") ?? "";
 const META_API_VERSION = Deno.env.get("META_API_VERSION") ?? "v24.0";
 const APP_URL = (Deno.env.get("APP_URL") ?? "https://ai-panel-demo.bustling-larch.workers.dev").replace(/\/$/, "");
 const CALLBACK_URL = Deno.env.get("INSTAGRAM_OAUTH_REDIRECT_URI") ?? `${SUPABASE_URL}/functions/v1/instagram-connect/callback`;
@@ -24,6 +22,10 @@ async function appSecret(id: string) {
   const { data, error } = await admin.from("AppSecret").select("value").eq("id", id).maybeSingle();
   if (error || !data?.value) throw new Error(`missing_secret:${id}`);
   return data.value as string;
+}
+async function metaCredentials() {
+  const [appId, appSecretValue] = await Promise.all([appSecret("meta_app_id"), appSecret("meta_app_secret")]);
+  return { appId, appSecret: appSecretValue };
 }
 async function encryptToken(token: string) {
   const keyHex = await appSecret("instagram_token_encryption");
@@ -51,15 +53,15 @@ async function workspaceForUser(userId: string) {
   if (error) throw error;
   return data?.[0]?.workspaceId as string | undefined;
 }
-async function exchangeToken(code: string) {
-  const body = new URLSearchParams({ client_id: META_APP_ID, client_secret: META_APP_SECRET, grant_type: "authorization_code", redirect_uri: CALLBACK_URL, code });
+async function exchangeToken(code: string, appId: string, appSecretValue: string) {
+  const body = new URLSearchParams({ client_id: appId, client_secret: appSecretValue, grant_type: "authorization_code", redirect_uri: CALLBACK_URL, code });
   const shortResponse = await fetch("https://api.instagram.com/oauth/access_token", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body });
   const short = await shortResponse.json();
   if (!shortResponse.ok || !short.access_token) throw new Error(`short_token:${short.error_message ?? short.error?.message ?? shortResponse.status}`);
 
   const longUrl = new URL("https://graph.instagram.com/access_token");
   longUrl.searchParams.set("grant_type", "ig_exchange_token");
-  longUrl.searchParams.set("client_secret", META_APP_SECRET);
+  longUrl.searchParams.set("client_secret", appSecretValue);
   longUrl.searchParams.set("access_token", short.access_token);
   const longResponse = await fetch(longUrl);
   const long = await longResponse.json();
@@ -89,7 +91,10 @@ Deno.serve(async (request) => {
   const url = new URL(request.url);
 
   if (request.method === "POST" && (url.pathname.endsWith("/instagram-connect") || url.pathname.endsWith("/instagram-connect/"))) {
-    if (!META_APP_ID || !META_APP_SECRET) return json({ ok: false, code: "META_NOT_CONFIGURED", message: "Meta App ID / App Secret هنوز روی سرور تنظیم نشده است." }, 503);
+    let credentials: { appId: string; appSecret: string };
+    try { credentials = await metaCredentials(); }
+    catch { return json({ ok: false, code: "META_NOT_CONFIGURED", message: "ابتدا Meta App ID و App Secret را در پنل اینستاگرام ذخیره کنید." }, 503); }
+
     const user = await userFromRequest(request);
     if (!user) return json({ ok: false, message: "ورود به حساب الزامی است." }, 401);
     const workspaceId = await workspaceForUser(user.id);
@@ -104,7 +109,7 @@ Deno.serve(async (request) => {
     const authUrl = new URL("https://www.instagram.com/oauth/authorize");
     authUrl.searchParams.set("enable_fb_login", "0");
     authUrl.searchParams.set("force_authentication", "1");
-    authUrl.searchParams.set("client_id", META_APP_ID);
+    authUrl.searchParams.set("client_id", credentials.appId);
     authUrl.searchParams.set("redirect_uri", CALLBACK_URL);
     authUrl.searchParams.set("response_type", "code");
     authUrl.searchParams.set("scope", "instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish");
@@ -113,7 +118,10 @@ Deno.serve(async (request) => {
   }
 
   if (request.method === "GET" && url.pathname.endsWith("/instagram-connect/callback")) {
-    if (!META_APP_ID || !META_APP_SECRET) return redirectResult("error", "meta_not_configured");
+    let credentials: { appId: string; appSecret: string };
+    try { credentials = await metaCredentials(); }
+    catch { return redirectResult("error", "meta_not_configured"); }
+
     const code = url.searchParams.get("code") ?? "";
     const state = url.searchParams.get("state") ?? "";
     const providerError = url.searchParams.get("error") ?? url.searchParams.get("error_reason") ?? "";
@@ -131,7 +139,7 @@ Deno.serve(async (request) => {
     if (!claimed) return redirectResult("error", "state_already_used");
 
     try {
-      const exchanged = await exchangeToken(code);
+      const exchanged = await exchangeToken(code, credentials.appId, credentials.appSecret);
       const profile = await fetchProfile(exchanged.accessToken);
       const ciphertext = await encryptToken(exchanged.accessToken);
       const subscription = await subscribeWebhooks(profile.id, exchanged.accessToken);
