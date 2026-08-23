@@ -59,13 +59,23 @@ jobs:
         run: |
           set -euo pipefail
           BASE_URL=https://ai-panel-demo.bustling-larch.workers.dev
-          sleep 3
-          curl --fail --silent --show-error --retry 8 --retry-delay 2 --retry-all-errors \
-            "$BASE_URL/health" | tee /tmp/production-health.json
-          grep -q '"ok":true' /tmp/production-health.json
+
+          health_ok=false
+          for attempt in $(seq 1 15); do
+            health_status=$(curl --silent --show-error --output /tmp/production-health.json --write-out '%{http_code}' \
+              "$BASE_URL/health" || true)
+            if [ "$health_status" = "200" ] && grep -q '"ok":true' /tmp/production-health.json; then
+              health_ok=true
+              break
+            fi
+            echo "Production health smoke attempt $attempt returned HTTP $health_status"
+            cat /tmp/production-health.json || true
+            sleep 2
+          done
+          test "$health_ok" = "true"
 
           session_ok=false
-          for attempt in $(seq 1 10); do
+          for attempt in $(seq 1 15); do
             status=$(curl --silent --show-error --output /tmp/production-session.json --write-out '%{http_code}' \
               "$BASE_URL/api/session" || true)
             if [ "$status" = "401" ] && grep -q '"authenticated":false' /tmp/production-session.json; then
@@ -96,13 +106,23 @@ jobs:
           PREVIEW_URL: ${{ steps.preview.outputs.url }}
         run: |
           set -euo pipefail
-          sleep 5
-          curl --fail --silent --show-error --retry 10 --retry-delay 2 --retry-all-errors \
-            "$PREVIEW_URL/health" | tee /tmp/preview-health.json
-          grep -q '"ok":true' /tmp/preview-health.json
+
+          health_ok=false
+          for attempt in $(seq 1 30); do
+            health_status=$(curl --silent --show-error --output /tmp/preview-health.json --write-out '%{http_code}' \
+              "$PREVIEW_URL/health" || true)
+            if [ "$health_status" = "200" ] && grep -q '"ok":true' /tmp/preview-health.json; then
+              health_ok=true
+              break
+            fi
+            echo "Preview health smoke attempt $attempt returned HTTP $health_status"
+            cat /tmp/preview-health.json || true
+            sleep 3
+          done
+          test "$health_ok" = "true"
 
           session_ok=false
-          for attempt in $(seq 1 10); do
+          for attempt in $(seq 1 20); do
             status=$(curl --silent --show-error --output /tmp/preview-session.json --write-out '%{http_code}' \
               "$PREVIEW_URL/api/session" || true)
             if [ "$status" = "401" ] && grep -q '"authenticated":false' /tmp/preview-session.json; then
@@ -111,12 +131,12 @@ jobs:
             fi
             echo "Preview session smoke attempt $attempt returned HTTP $status"
             cat /tmp/preview-session.json || true
-            sleep 2
+            sleep 3
           done
           test "$session_ok" = "true"
 
           adopt_ok=false
-          for attempt in $(seq 1 10); do
+          for attempt in $(seq 1 20); do
             adopt_status=$(curl --silent --show-error --output /tmp/preview-adopt.json --write-out '%{http_code}' \
               -X POST "$PREVIEW_URL/api/auth/adopt-session" \
               -H 'content-type: application/json' \
@@ -127,6 +147,6 @@ jobs:
             fi
             echo "Preview adopt-session smoke attempt $attempt returned HTTP $adopt_status"
             cat /tmp/preview-adopt.json || true
-            sleep 2
+            sleep 3
           done
           test "$adopt_ok" = "true"
