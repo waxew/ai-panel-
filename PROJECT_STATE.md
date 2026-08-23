@@ -35,7 +35,7 @@ This file is the cross-chat handoff for the project. It describes the current re
 | WhatsApp | partial | React | active | Meta production setup/E2E and commerce parity |
 | Bale | partial | React | active | real-bot E2E and feature parity |
 | Rubika | partial | React | active | real-bot E2E and feature parity |
-| Discord | partial | legacy HTML | active | moderation/community features, React migration |
+| Discord | partial | React | active | real-bot/server E2E, moderation/community features |
 | Booking/Tiktime | partial | React | active | real SMS provider, external payment provider; loyalty/site/inbox foundations are present |
 | Scheduler | planned | none | foundation only | shared execution worker/queue and publishing adapters |
 | Analytics | partial | fragmented | partial | normalized cross-channel analytics engine |
@@ -69,15 +69,14 @@ Current rule: no Supabase deployment or schema change is complete unless matchin
 - Preview and production use separate concurrency groups so a PR run cannot cancel a production deploy.
 - `packages/shared/tsconfig.json` explicitly sets `rootDir: src`, fixing the TypeScript 7 CI regression discovered in the 2026-08-24 audit.
 
-## UI migration rule
+## UI migration checkpoint
 
-WhatsApp and Rubika have been migrated from standalone HTML pages to React routes at `/app/whatsapp` and `/app/rubika`. Discord is the only remaining customer channel using an independent HTML page. No new module may copy the standalone HTML pattern.
+The standalone customer-channel HTML pattern has been retired. WhatsApp, Rubika and Discord now join Telegram, Bale and Instagram on React routes inside the main SPA. `apps/cloudflare/wrangler.jsonc` runs the Worker before static assets only for `/api/*` and `/health`; customer module routes use the SPA fallback. No new customer module may introduce a standalone HTML control panel.
 
 ## Next architecture milestones
 
-1. Complete the final legacy HTML migration for Discord.
-2. Extract shared provider UI primitives and normalized module API contracts.
-3. Implement the generic scheduler/worker.
-4. Implement normalized cross-channel analytics.
-5. Complete billing/payment/subscription/referral flows on top of the shared wallet core.
-6. Add Twitter/X using the unified module contract.
+1. Extract shared provider UI primitives and normalized module API contracts.
+2. Implement the generic scheduler/worker.
+3. Implement normalized cross-channel analytics.
+4. Complete billing/payment/subscription/referral flows on top of the shared wallet core.
+5. Add Twitter/X using the unified module contract.
