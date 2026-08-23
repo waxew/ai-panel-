@@ -12,6 +12,7 @@ const bookingLinks = [
   ['/app/booking/staff', 'پرسنل'],
   ['/app/booking/staff-access', 'دسترسی'],
   ['/app/booking/feedback', 'رضایت'],
+  ['/app/booking/loyalty', 'باشگاه'],
   ['/app/booking/finance', 'مالی'],
   ['/app/booking/reports', 'گزارش'],
   ['/app/booking/automations', 'اتوماسیون'],
