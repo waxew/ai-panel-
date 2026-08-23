@@ -1,4 +1,4 @@
-import { customerNavigationModules } from '@ai-panel/shared';
+import { customerNavigationModules, getProviderApiRoute, isModuleRouteActive, moduleStatusLabelFa } from '@ai-panel/shared';
 import { useState } from 'react';
 
 const coreLinks = [
@@ -21,6 +21,9 @@ const bookingLinks = [
   ['/app/booking/tools', 'ابزارها'],
 ] as const;
 
+const instagramManageRoute = getProviderApiRoute('instagram', 'manage');
+const instagramConnectRoute = getProviderApiRoute('instagram', 'connect');
+
 type ConnectResponse = { ok?: boolean; code?: string; authorizationUrl?: string; message?: string };
 type ManageResponse = { ok?: boolean; message?: string };
 
@@ -30,11 +33,12 @@ export default function CommerceQuickNav() {
   if (!path.startsWith('/app')) return null;
 
   async function saveMetaConfig() {
+    if (!instagramManageRoute) return false;
     const appId = window.prompt('Meta App ID را وارد کنید:')?.trim() ?? '';
     if (!appId) return false;
     const appSecret = window.prompt('Meta App Secret را وارد کنید:')?.trim() ?? '';
     if (!appSecret) return false;
-    const response = await fetch('/api/instagram/manage', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'save_platform_config', appId, appSecret }) });
+    const response = await fetch(instagramManageRoute, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'save_platform_config', appId, appSecret }) });
     const data = (await response.json().catch(() => ({}))) as ManageResponse;
     if (!response.ok) { window.alert(data.message || 'ذخیره تنظیمات Meta انجام نشد.'); return false; }
     window.alert('تنظیمات Meta ذخیره شد. حالا اتصال Instagram شروع می‌شود.');
@@ -42,7 +46,8 @@ export default function CommerceQuickNav() {
   }
 
   async function startConnection() {
-    const response = await fetch('/api/instagram/connect', { method: 'POST' });
+    if (!instagramConnectRoute) return true;
+    const response = await fetch(instagramConnectRoute, { method: 'POST' });
     const data = (await response.json().catch(() => ({}))) as ConnectResponse;
     if (response.ok && data.authorizationUrl) { window.location.assign(data.authorizationUrl); return true; }
     if (data.code === 'META_NOT_CONFIGURED') return false;
@@ -62,7 +67,7 @@ export default function CommerceQuickNav() {
   return <nav className="commerce-quick-nav" dir="rtl" aria-label="AI Panel navigation"><style>{styles}</style>
     {coreLinks.map(([href, label]) => <a key={href} href={href} className={path === href ? 'active' : ''}>{label}</a>)}
     <i className="divider" />
-    {customerNavigationModules.map((module) => <a key={module.key} href={module.customerRoute!} className={path === module.customerRoute || path.startsWith(`${module.customerRoute}/`) ? 'active module' : 'module'} title={module.descriptionFa}><b>{module.shortCode}</b>{module.labelFa}<em className={module.status}>{module.status === 'live' ? 'فعال' : 'درحال توسعه'}</em></a>)}
+    {customerNavigationModules.map((module) => <a key={module.key} href={module.customerRoute!} className={isModuleRouteActive(path, module.customerRoute) ? 'active module' : 'module'} title={module.descriptionFa}><b>{module.shortCode}</b>{module.labelFa}<em className={module.status}>{moduleStatusLabelFa(module.status)}</em></a>)}
     {inBooking && <><i className="divider" />{bookingLinks.map(([href, label]) => <a key={href} href={href} className={path === href ? 'active' : ''}>{label}</a>)}</>}
     {path === '/app/instagram' && <button className="meta-connect" type="button" disabled={connecting} onClick={() => void connectInstagram()}>{connecting ? 'در حال اتصال…' : 'اتصال Meta'}</button>}
   </nav>;
