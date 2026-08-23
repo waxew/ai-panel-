@@ -60,7 +60,7 @@ async function processComment(value: any) {
 
   await eventRow({ workspaceId: account.workspaceId, instagramAccountId: account.id, eventType: "COMMENT", providerEventId, sourceUserId: userId || null, sourceUsername: username || null, sourceText: text, outcome: "RECEIVED", metadata: { commentId, mediaId } });
 
-  const { data: rules } = await admin.from("InstagramAutomationRule").select("id,triggerConfig,actionConfig").eq("workspaceId", account.workspaceId).eq("instagramAccountId", account.id).eq("triggerType", "COMMENT_KEYWORD").eq("isActive", true);
+  const { data: rules } = await admin.from("InstagramAutomationRule").select("id,triggerConfig,actionConfig,executions").eq("workspaceId", account.workspaceId).eq("instagramAccountId", account.id).eq("triggerType", "COMMENT_KEYWORD").eq("isActive", true);
   const rule = (rules ?? []).find((r: any) => matches(text, r.triggerConfig?.keywords));
   if (!rule) return;
 
@@ -81,7 +81,7 @@ async function processComment(value: any) {
     const result = await response.json().catch(() => ({}));
     const outcome = response.ok ? "SENT" : "FAILED";
     await eventRow({ workspaceId: account.workspaceId, instagramAccountId: account.id, ruleId: rule.id, eventType: "COMMENT", sourceUserId: userId || null, sourceUsername: username || null, sourceText: text, outcome, metadata: { commentId, mediaId, meta: result } });
-    if (response.ok) await admin.from("InstagramAutomationRule").update({ executions: Number((rule as any).executions ?? 0) + 1, lastTriggeredAt: new Date().toISOString(), updatedAt: new Date().toISOString() }).eq("id", rule.id);
+    if (response.ok) await admin.from("InstagramAutomationRule").update({ executions: Number(rule.executions ?? 0) + 1, lastTriggeredAt: new Date().toISOString(), updatedAt: new Date().toISOString() }).eq("id", rule.id);
   } catch (error) {
     await eventRow({ workspaceId: account.workspaceId, instagramAccountId: account.id, ruleId: rule.id, eventType: "COMMENT", sourceText: text, outcome: "FAILED", metadata: { commentId, reason: String(error) } });
   }
