@@ -10,6 +10,7 @@ const links = [
   ['/app/booking', 'نوبت‌دهی'],
   ['/app/booking/customers', 'پرونده مشتری'],
   ['/app/booking/staff', 'پرسنل و ظرفیت'],
+  ['/app/booking/staff-access', 'دسترسی پرسنل'],
   ['/app/booking/finance', 'مالی'],
   ['/app/booking/reports', 'گزارش'],
   ['/app/booking/tools', 'ابزار کسب‌وکار'],
