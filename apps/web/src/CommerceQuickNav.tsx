@@ -8,6 +8,7 @@ const links = [
   ['/app/telegram-builder', 'منوی ربات'],
   ['/app/instagram', 'اینستاگرام'],
   ['/app/booking', 'نوبت‌دهی'],
+  ['/app/booking/customers', 'پرونده مشتری'],
   ['/app/booking/staff', 'پرسنل و ظرفیت'],
   ['/app/booking/tools', 'ابزار کسب‌وکار'],
 ] as const;
