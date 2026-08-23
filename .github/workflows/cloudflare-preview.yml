@@ -58,16 +58,25 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          BASE_URL=https://ai-panel-demo.bustling-larch.workers.dev
           sleep 3
           curl --fail --silent --show-error --retry 8 --retry-delay 2 --retry-all-errors \
-            https://ai-panel-demo.bustling-larch.workers.dev/health \
-            | tee /tmp/production-health.json
+            "$BASE_URL/health" | tee /tmp/production-health.json
           grep -q '"ok":true' /tmp/production-health.json
-          status=$(curl --silent --show-error --retry 5 --retry-delay 2 --retry-all-errors \
-            --output /tmp/production-session.json --write-out '%{http_code}' \
-            https://ai-panel-demo.bustling-larch.workers.dev/api/session)
-          test "$status" = "401"
-          grep -q '"authenticated":false' /tmp/production-session.json
+
+          session_ok=false
+          for attempt in $(seq 1 10); do
+            status=$(curl --silent --show-error --output /tmp/production-session.json --write-out '%{http_code}' \
+              "$BASE_URL/api/session" || true)
+            if [ "$status" = "401" ] && grep -q '"authenticated":false' /tmp/production-session.json; then
+              session_ok=true
+              break
+            fi
+            echo "Production session smoke attempt $attempt returned HTTP $status"
+            cat /tmp/production-session.json || true
+            sleep 2
+          done
+          test "$session_ok" = "true"
 
       - name: Deploy temporary preview
         id: preview
@@ -88,16 +97,36 @@ jobs:
         run: |
           set -euo pipefail
           sleep 5
-          curl --fail --silent --show-error --retry 10 --retry-delay 2 --retry-all-errors "$PREVIEW_URL/health" \
-            | tee /tmp/preview-health.json
+          curl --fail --silent --show-error --retry 10 --retry-delay 2 --retry-all-errors \
+            "$PREVIEW_URL/health" | tee /tmp/preview-health.json
           grep -q '"ok":true' /tmp/preview-health.json
-          status=$(curl --silent --show-error --retry 5 --retry-delay 2 --retry-all-errors \
-            --output /tmp/preview-session.json --write-out '%{http_code}' "$PREVIEW_URL/api/session")
-          test "$status" = "401"
-          grep -q '"authenticated":false' /tmp/preview-session.json
-          adopt_status=$(curl --silent --show-error --retry 5 --retry-delay 2 --retry-all-errors \
-            --output /tmp/preview-adopt.json --write-out '%{http_code}' \
-            -X POST "$PREVIEW_URL/api/auth/adopt-session" \
-            -H 'content-type: application/json' \
-            --data '{"access_token":"invalid","refresh_token":"invalid"}')
-          test "$adopt_status" = "401"
+
+          session_ok=false
+          for attempt in $(seq 1 10); do
+            status=$(curl --silent --show-error --output /tmp/preview-session.json --write-out '%{http_code}' \
+              "$PREVIEW_URL/api/session" || true)
+            if [ "$status" = "401" ] && grep -q '"authenticated":false' /tmp/preview-session.json; then
+              session_ok=true
+              break
+            fi
+            echo "Preview session smoke attempt $attempt returned HTTP $status"
+            cat /tmp/preview-session.json || true
+            sleep 2
+          done
+          test "$session_ok" = "true"
+
+          adopt_ok=false
+          for attempt in $(seq 1 10); do
+            adopt_status=$(curl --silent --show-error --output /tmp/preview-adopt.json --write-out '%{http_code}' \
+              -X POST "$PREVIEW_URL/api/auth/adopt-session" \
+              -H 'content-type: application/json' \
+              --data '{"access_token":"invalid","refresh_token":"invalid"}' || true)
+            if [ "$adopt_status" = "401" ]; then
+              adopt_ok=true
+              break
+            fi
+            echo "Preview adopt-session smoke attempt $attempt returned HTTP $adopt_status"
+            cat /tmp/preview-adopt.json || true
+            sleep 2
+          done
+          test "$adopt_ok" = "true"
