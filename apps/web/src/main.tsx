@@ -16,6 +16,7 @@ import BookingStaffAccess from './BookingStaffAccess';
 import BookingFeedbackManager from './BookingFeedbackManager';
 import BookingLoyalty from './BookingLoyalty';
 import BookingBusinessSiteManager from './BookingBusinessSiteManager';
+import BookingInbox from './BookingInbox';
 import PublicBookingPage from './PublicBookingPage';
 import PublicFeedbackPage from './PublicFeedbackPage';
 import PublicBusinessSite from './PublicBusinessSite';
@@ -38,29 +39,31 @@ const rootView = path.startsWith('/book/')
             ? <StoreOrders />
             : path === '/app/instagram'
               ? <InstagramControlCenter />
-              : path === '/app/booking/automations'
-                ? <BookingAutomations />
-                : path === '/app/booking/finance'
-                  ? <BookingFinance />
-                  : path === '/app/booking/reports'
-                    ? <BookingReports />
-                    : path === '/app/booking/feedback'
-                      ? <BookingFeedbackManager />
-                      : path === '/app/booking/loyalty'
-                        ? <BookingLoyalty />
-                        : path === '/app/booking/site'
-                          ? <BookingBusinessSiteManager />
-                          : path === '/app/booking/staff-access'
-                            ? <BookingStaffAccess />
-                            : path === '/app/booking/customers'
-                              ? <BookingCustomersCRM />
-                              : path === '/app/booking/staff'
-                                ? <BookingStaffManager />
-                                : path === '/app/booking/tools'
-                                  ? <BookingBusinessTools />
-                                  : path === '/app/booking'
-                                    ? <BookingManagerV2 />
-                                    : <App />;
+              : path === '/app/booking/inbox'
+                ? <BookingInbox />
+                : path === '/app/booking/automations'
+                  ? <BookingAutomations />
+                  : path === '/app/booking/finance'
+                    ? <BookingFinance />
+                    : path === '/app/booking/reports'
+                      ? <BookingReports />
+                      : path === '/app/booking/feedback'
+                        ? <BookingFeedbackManager />
+                        : path === '/app/booking/loyalty'
+                          ? <BookingLoyalty />
+                          : path === '/app/booking/site'
+                            ? <BookingBusinessSiteManager />
+                            : path === '/app/booking/staff-access'
+                              ? <BookingStaffAccess />
+                              : path === '/app/booking/customers'
+                                ? <BookingCustomersCRM />
+                                : path === '/app/booking/staff'
+                                  ? <BookingStaffManager />
+                                  : path === '/app/booking/tools'
+                                    ? <BookingBusinessTools />
+                                    : path === '/app/booking'
+                                      ? <BookingManagerV2 />
+                                      : <App />;
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
