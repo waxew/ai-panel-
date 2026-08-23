@@ -39,13 +39,16 @@ model User {
 }
 
 model Workspace {
-  id            String             @id @default(cuid())
-  name          String
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-  members       WorkspaceMember[]
-  telegramBots  TelegramBot[]
-  scheduledJobs ScheduledJob[]
+  id                 String                     @id @default(cuid())
+  name               String
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+  members            WorkspaceMember[]
+  telegramBots       TelegramBot[]
+  instagramAccounts  InstagramAccount[]
+  instagramRules     InstagramAutomationRule[]
+  instagramEvents    InstagramAutomationEvent[]
+  scheduledJobs      ScheduledJob[]
 }
 
 model WorkspaceMember {
@@ -84,6 +87,74 @@ model TelegramButton {
   sortOrder   Int         @default(0)
   createdAt   DateTime    @default(now())
   bot         TelegramBot @relation(fields: [botId], references: [id], onDelete: Cascade)
+}
+
+model InstagramAccount {
+  id                    String                     @id @default(cuid())
+  workspaceId           String
+  username              String
+  displayName           String?
+  followersCount        BigInt                     @default(0)
+  followingCount        BigInt                     @default(0)
+  postsCount            BigInt                     @default(0)
+  engagementRate        Decimal?
+  metrics               Json                       @default("{}")
+  status                BotStatus                  @default(PENDING)
+  lastSyncedAt          DateTime?
+  metaAccountId         String?                    @unique
+  pageId                String?
+  accessTokenCiphertext String?
+  permissions           Json                       @default("[]")
+  webhookSubscribed     Boolean                    @default(false)
+  connectionMeta        Json                       @default("{}")
+  createdAt             DateTime                   @default(now())
+  updatedAt             DateTime                   @updatedAt
+  workspace             Workspace                  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  automationRules       InstagramAutomationRule[]
+  automationEvents      InstagramAutomationEvent[]
+}
+
+model InstagramAutomationRule {
+  id                 String                     @id @default(cuid())
+  workspaceId        String
+  instagramAccountId String?
+  name               String
+  triggerType        String
+  triggerConfig      Json                       @default("{}")
+  actionType         String                     @default("SEND_DM")
+  actionConfig       Json                       @default("{}")
+  isActive           Boolean                    @default(false)
+  executions         Int                        @default(0)
+  lastTriggeredAt    DateTime?
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+  workspace          Workspace                  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  instagramAccount   InstagramAccount?          @relation(fields: [instagramAccountId], references: [id], onDelete: Cascade)
+  events             InstagramAutomationEvent[]
+
+  @@index([workspaceId])
+  @@index([instagramAccountId, isActive])
+}
+
+model InstagramAutomationEvent {
+  id                 String                    @id @default(cuid())
+  workspaceId        String
+  instagramAccountId String?
+  ruleId             String?
+  eventType          String
+  providerEventId    String?                   @unique
+  sourceUserId       String?
+  sourceUsername     String?
+  sourceText         String?
+  outcome            String                    @default("RECEIVED")
+  metadata           Json                      @default("{}")
+  createdAt          DateTime                  @default(now())
+  workspace          Workspace                 @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  instagramAccount   InstagramAccount?         @relation(fields: [instagramAccountId], references: [id], onDelete: SetNull)
+  rule               InstagramAutomationRule?  @relation(fields: [ruleId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, createdAt])
+  @@index([ruleId, createdAt])
 }
 
 model ScheduledJob {
