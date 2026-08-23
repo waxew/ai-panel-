@@ -4,7 +4,7 @@ import App from './App';
 import TelegramMenuBuilder from './TelegramMenuBuilder';
 import StoreOrders from './StoreOrders';
 import InstagramControlCenter from './InstagramControlCenter';
-import AppointmentManager from './AppointmentManager';
+import BookingManagerV2 from './BookingManagerV2';
 import CommerceQuickNav from './CommerceQuickNav';
 import './styles.css';
 
@@ -15,7 +15,7 @@ const rootView = window.location.pathname === '/app/telegram-builder'
     : window.location.pathname === '/app/instagram'
       ? <InstagramControlCenter />
       : window.location.pathname === '/app/booking'
-        ? <AppointmentManager />
+        ? <BookingManagerV2 />
         : <App />;
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
