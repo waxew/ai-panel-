@@ -1,30 +1,31 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import TelegramMenuBuilder from './TelegramMenuBuilder';
-import BaleControlCenter from './BaleControlCenter';
-import StoreOrders from './StoreOrders';
-import InstagramControlCenter from './InstagramControlCenter';
-import WhatsAppControlCenter from './WhatsAppControlCenter';
-import RubikaControlCenter from './RubikaControlCenter';
-import DiscordControlCenter from './DiscordControlCenter';
-import BookingManagerV2 from './BookingManagerV2';
-import BookingBusinessTools from './BookingBusinessTools';
-import BookingAutomations from './BookingAutomations';
-import BookingStaffManager from './BookingStaffManager';
-import BookingCustomersCRM from './BookingCustomersCRM';
-import BookingFinance from './BookingFinance';
-import BookingReports from './BookingReports';
-import BookingStaffAccess from './BookingStaffAccess';
-import BookingFeedbackManager from './BookingFeedbackManager';
-import BookingLoyalty from './BookingLoyalty';
-import BookingBusinessSiteManager from './BookingBusinessSiteManager';
-import BookingInbox from './BookingInbox';
-import PublicBookingPage from './PublicBookingPage';
-import PublicFeedbackPage from './PublicFeedbackPage';
-import PublicBusinessSite from './PublicBusinessSite';
 import CommerceQuickNav from './CommerceQuickNav';
 import './styles.css';
+
+const TelegramMenuBuilder = lazy(() => import('./TelegramMenuBuilder'));
+const BaleControlCenter = lazy(() => import('./BaleControlCenter'));
+const StoreOrders = lazy(() => import('./StoreOrders'));
+const InstagramControlCenter = lazy(() => import('./InstagramControlCenter'));
+const WhatsAppControlCenter = lazy(() => import('./WhatsAppControlCenter'));
+const RubikaControlCenter = lazy(() => import('./RubikaControlCenter'));
+const DiscordControlCenter = lazy(() => import('./DiscordControlCenter'));
+const BookingManagerV2 = lazy(() => import('./BookingManagerV2'));
+const BookingBusinessTools = lazy(() => import('./BookingBusinessTools'));
+const BookingAutomations = lazy(() => import('./BookingAutomations'));
+const BookingStaffManager = lazy(() => import('./BookingStaffManager'));
+const BookingCustomersCRM = lazy(() => import('./BookingCustomersCRM'));
+const BookingFinance = lazy(() => import('./BookingFinance'));
+const BookingReports = lazy(() => import('./BookingReports'));
+const BookingStaffAccess = lazy(() => import('./BookingStaffAccess'));
+const BookingFeedbackManager = lazy(() => import('./BookingFeedbackManager'));
+const BookingLoyalty = lazy(() => import('./BookingLoyalty'));
+const BookingBusinessSiteManager = lazy(() => import('./BookingBusinessSiteManager'));
+const BookingInbox = lazy(() => import('./BookingInbox'));
+const PublicBookingPage = lazy(() => import('./PublicBookingPage'));
+const PublicFeedbackPage = lazy(() => import('./PublicFeedbackPage'));
+const PublicBusinessSite = lazy(() => import('./PublicBusinessSite'));
 
 async function adoptImplicitAuthSession() {
   if (!window.location.hash) return;
@@ -47,6 +48,10 @@ async function adoptImplicitAuthSession() {
   } catch {
     window.history.replaceState({}, '', '/login?confirmation_error=1');
   }
+}
+
+function RouteLoading() {
+  return <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#070a0f', color: '#dbe4ef', fontFamily: 'Inter, system-ui, sans-serif' }}>در حال بارگذاری ماژول...</div>;
 }
 
 async function renderApp() {
@@ -101,7 +106,7 @@ async function renderApp() {
 
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-      {rootView}
+      <Suspense fallback={<RouteLoading />}>{rootView}</Suspense>
       <CommerceQuickNav />
     </React.StrictMode>,
   );
