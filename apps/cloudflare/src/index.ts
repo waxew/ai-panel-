@@ -50,8 +50,10 @@ if(url.pathname==='/api/booking/finance'&&(request.method==='GET'||request.metho
 if(url.pathname==='/api/booking/staff-access'&&(request.method==='GET'||request.method==='POST'))return proxyFunction(request,'booking-staff-access');
 if(url.pathname==='/api/booking/feedback'&&(request.method==='GET'||request.method==='POST'))return proxyFunction(request,'booking-feedback-manage');
 if(url.pathname==='/api/booking/loyalty'&&(request.method==='GET'||request.method==='POST'))return proxyFunction(request,'booking-loyalty');
+if(url.pathname==='/api/booking/site'&&(request.method==='GET'||request.method==='POST'))return proxyFunction(request,'booking-site-manage');
 if(url.pathname==='/api/public/booking'&&(request.method==='GET'||request.method==='POST'))return proxyPublicFunction(request,'booking-public');
 if(url.pathname==='/api/public/feedback'&&(request.method==='GET'||request.method==='POST'))return proxyPublicFunction(request,'booking-feedback-public');
+if(url.pathname==='/api/public/site'&&(request.method==='GET'||request.method==='POST'))return proxyPublicFunction(request,'booking-site-public');
 return null;}
 
 export default{async fetch(request:Request,env:Env):Promise<Response>{const url=new URL(request.url);if(url.pathname==='/app/discord'){return env.ASSETS.fetch(new Request(new URL('/discord.html',request.url),request));}if(url.pathname==='/app/whatsapp'){return env.ASSETS.fetch(new Request(new URL('/whatsapp.html',request.url),request));}if(url.pathname==='/app/rubika'){return env.ASSETS.fetch(new Request(new URL('/rubika.html',request.url),request));}if(url.pathname==='/health'||url.pathname.startsWith('/api/')){const response=await handleApi(request);if(response)return response;return json({ok:false,message:'API route not found.'},{status:404});}return env.ASSETS.fetch(request);}};
