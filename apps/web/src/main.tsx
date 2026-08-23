@@ -9,6 +9,8 @@ import BookingBusinessTools from './BookingBusinessTools';
 import BookingAutomations from './BookingAutomations';
 import BookingStaffManager from './BookingStaffManager';
 import BookingCustomersCRM from './BookingCustomersCRM';
+import BookingFinance from './BookingFinance';
+import BookingReports from './BookingReports';
 import PublicBookingPage from './PublicBookingPage';
 import CommerceQuickNav from './CommerceQuickNav';
 import './styles.css';
@@ -25,15 +27,19 @@ const rootView = path.startsWith('/book/')
         ? <InstagramControlCenter />
         : path === '/app/booking/automations'
           ? <BookingAutomations />
-          : path === '/app/booking/customers'
-            ? <BookingCustomersCRM />
-            : path === '/app/booking/staff'
-              ? <BookingStaffManager />
-              : path === '/app/booking/tools'
-                ? <BookingBusinessTools />
-                : path === '/app/booking'
-                  ? <BookingManagerV2 />
-                  : <App />;
+          : path === '/app/booking/finance'
+            ? <BookingFinance />
+            : path === '/app/booking/reports'
+              ? <BookingReports />
+              : path === '/app/booking/customers'
+                ? <BookingCustomersCRM />
+                : path === '/app/booking/staff'
+                  ? <BookingStaffManager />
+                  : path === '/app/booking/tools'
+                    ? <BookingBusinessTools />
+                    : path === '/app/booking'
+                      ? <BookingManagerV2 />
+                      : <App />;
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
