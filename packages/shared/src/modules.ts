@@ -58,7 +58,7 @@ export const platformModules: readonly PlatformModuleDefinition[] = [
   {
     key: 'rubika', labelFa: 'روبیکا', labelEn: 'Rubika', shortCode: 'RU',
     descriptionFa: 'ربات، Webhook، منوساز و Commerce Core مشترک', kind: 'channel', status: 'partial', phase: 2,
-    customerRoute: '/app/rubika', apiPrefix: '/api/rubika', uiRuntime: 'legacy-html', commerceEnabled: true,
+    customerRoute: '/app/rubika', apiPrefix: '/api/rubika', uiRuntime: 'react', commerceEnabled: true,
     capabilities: ['connection', 'webhook', 'menu-builder', 'catalog', 'cart', 'orders'],
   },
   {

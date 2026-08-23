@@ -34,7 +34,7 @@ This file is the cross-chat handoff for the project. It describes the current re
 | Instagram | partial | React | active | real-account E2E, scheduled publishing, full content analytics |
 | WhatsApp | partial | React | active | Meta production setup/E2E and commerce parity |
 | Bale | partial | React | active | real-bot E2E and feature parity |
-| Rubika | partial | legacy HTML | active | real-bot E2E, React migration |
+| Rubika | partial | React | active | real-bot E2E and feature parity |
 | Discord | partial | legacy HTML | active | moderation/community features, React migration |
 | Booking/Tiktime | partial | React | active | real SMS provider, external payment provider; loyalty/site/inbox foundations are present |
 | Scheduler | planned | none | foundation only | shared execution worker/queue and publishing adapters |
@@ -71,11 +71,11 @@ Current rule: no Supabase deployment or schema change is complete unless matchin
 
 ## UI migration rule
 
-WhatsApp has been migrated from its standalone HTML page to the React application at `/app/whatsapp`. Rubika and Discord still use independent HTML pages. They remain supported adapters, but no new module may copy this pattern. Their target is the shared React module shell and central navigation.
+WhatsApp and Rubika have been migrated from standalone HTML pages to React routes at `/app/whatsapp` and `/app/rubika`. Discord is the only remaining customer channel using an independent HTML page. No new module may copy the standalone HTML pattern.
 
 ## Next architecture milestones
 
-1. Complete the remaining legacy HTML migrations for Rubika and Discord.
+1. Complete the final legacy HTML migration for Discord.
 2. Extract shared provider UI primitives and normalized module API contracts.
 3. Implement the generic scheduler/worker.
 4. Implement normalized cross-channel analytics.
