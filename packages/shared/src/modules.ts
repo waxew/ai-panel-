@@ -69,9 +69,9 @@ export const platformModules: readonly PlatformModuleDefinition[] = [
   },
   {
     key: 'booking', labelFa: 'نوبت‌دهی', labelEn: 'Booking', shortCode: 'BK',
-    descriptionFa: 'نوبت، پرسنل، CRM، مالی، گزارش و اتوماسیون', kind: 'business-tool', status: 'partial', phase: 2,
+    descriptionFa: 'نوبت، پرسنل، CRM، مالی، گزارش، باشگاه مشتریان، سایت و مرکز پیام', kind: 'business-tool', status: 'partial', phase: 2,
     customerRoute: '/app/booking', apiPrefix: '/api/booking', uiRuntime: 'react', commerceEnabled: false,
-    capabilities: ['appointments', 'staff', 'customers', 'finance', 'reports', 'feedback', 'automations'],
+    capabilities: ['appointments', 'staff', 'customers', 'finance', 'reports', 'feedback', 'automations', 'loyalty', 'business-site', 'inbox'],
   },
   {
     key: 'scheduler', labelFa: 'زمان‌بندی', labelEn: 'Scheduler', shortCode: 'SC',

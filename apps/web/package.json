@@ -11,8 +11,8 @@
   "dependencies": {
     "@ai-panel/shared": "workspace:*",
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
-    "typescript": "latest",
+    "vite": "8.2.2",
+    "typescript": "7.0.2",
     "react": "latest",
     "react-dom": "latest"
   },

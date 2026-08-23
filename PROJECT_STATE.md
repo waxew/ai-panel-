@@ -1,7 +1,7 @@
 # AI Panel project state
 
-Architecture checkpoint: 2026-08-23
-Supabase source-sync checkpoint: 2026-08-23
+Architecture checkpoint: 2026-08-24
+Supabase source-sync checkpoint: 2026-08-24
 
 This file is the cross-chat handoff for the project. It describes the current repository/production state that future work must continue from.
 
@@ -16,17 +16,27 @@ This file is the cross-chat handoff for the project. It describes the current re
 - Render is not the active runtime at this checkpoint.
 - Prisma is legacy/reference schema material; Supabase SQL migrations are canonical for production database evolution.
 
+## Current auth/account checkpoint
+
+- Supabase email/password authentication is active behind the Cloudflare Worker.
+- Access and refresh tokens are stored as HttpOnly, Secure, SameSite=Lax cookies by the Worker.
+- `/api/session` validates identity directly with Supabase Auth and does not fail login when dashboard enrichment fails.
+- Existing accounts can sign in with email/password and are routed into `/app`.
+- New signup uses the current-origin confirmation redirect. When Supabase returns an implicit-flow session in the confirmation URL fragment, the React bootstrap sends that session to `/api/auth/adopt-session`; the Worker validates/rotates the tokens with Supabase before adopting them into HttpOnly cookies and routing to `/app`.
+- `/app/account` is the shared account/profile/wallet page. It reads/writes profile data through `account-manage` and displays the real `UserWallet` and `WalletTransaction` ledger.
+- The auth-user provisioning trigger creates the internal User, Wallet, Workspace and WorkspaceMember records for a new account.
+
 ## Module status
 
 | Module | Status | UI | Backend | Main remaining work |
 | --- | --- | --- | --- | --- |
-| Telegram | live | React | active | payment, wallet/subscriptions/referrals, broader bot-builder features |
+| Telegram | live | React | active | payment, subscription/referral expansion, broader bot-builder features |
 | Instagram | partial | React | active | real-account E2E, scheduled publishing, full content analytics |
 | WhatsApp | partial | legacy HTML | active | Meta production setup/E2E, commerce parity, React migration |
 | Bale | partial | React | active | real-bot E2E and feature parity |
 | Rubika | partial | legacy HTML | active | real-bot E2E, React migration |
 | Discord | partial | legacy HTML | active | moderation/community features, React migration |
-| Booking/Tiktime | partial | React | active | real SMS provider, external payment provider |
+| Booking/Tiktime | partial | React | active | real SMS provider, external payment provider; loyalty/site/inbox foundations are present |
 | Scheduler | planned | none | foundation only | shared execution worker/queue and publishing adapters |
 | Analytics | partial | fragmented | partial | normalized cross-channel analytics engine |
 | Twitter/X | planned | none | none | next provider module after architecture/core work |
@@ -34,22 +44,30 @@ This file is the cross-chat handoff for the project. It describes the current re
 ## Shared cores already present
 
 - Supabase Auth + workspace membership.
+- Shared account/profile + wallet/ledger.
 - Commerce Core: store, categories, items, customers, carts and orders.
 - Channel commerce RPC used by multiple providers.
-- Booking domain: appointments, services, staff, CRM, finance, feedback and automation outbox.
+- Booking domain: appointments, services, staff, CRM, finance, feedback, automation outbox, loyalty/lottery, business site and unified booking inbox.
 - Admin/customer dashboards.
 
 ## Supabase ↔ GitHub sync status
 
-Production source drift identified during the architecture audit has been repaired at this checkpoint:
+Production source drift identified during the 2026-08-24 end-to-end audit has been repaired at this checkpoint:
 
-- 29/29 active Supabase Edge Functions have source tracked under `supabase/functions/<slug>/index.ts`.
-- 27/27 applied production migrations have matching files under `supabase/migrations/` using their original version and name.
+- 34/34 active Supabase Edge Functions have source tracked under `supabase/functions/<slug>/index.ts`.
+- 31/31 applied production migrations have matching files under `supabase/migrations/` using their original version and name.
 - Production `verify_jwt` settings are tracked in `supabase/config.toml`.
 - `supabase/SYNC_MANIFEST.md` records the synced inventory.
 - Existing production migrations were copied into GitHub; they were not replayed against production during this sync.
 
 Current rule: no Supabase deployment or schema change is complete unless matching source, migration and relevant function configuration are committed in the same change set.
+
+## Deployment verification rule
+
+- Pull requests build shared contracts and the web app, deploy with Wrangler temporary preview, and HTTP-smoke the preview `/health` endpoint.
+- Pushes to `main` deploy production and HTTP-smoke `https://ai-panel-demo.bustling-larch.workers.dev/health`.
+- Preview and production use separate concurrency groups so a PR run cannot cancel a production deploy.
+- `packages/shared/tsconfig.json` explicitly sets `rootDir: src`, fixing the TypeScript 7 CI regression discovered in the 2026-08-24 audit.
 
 ## UI migration rule
 
@@ -61,5 +79,5 @@ WhatsApp, Rubika and Discord currently use independent HTML pages. They remain s
 2. Extract shared provider UI primitives and normalized module API contracts.
 3. Implement the generic scheduler/worker.
 4. Implement normalized cross-channel analytics.
-5. Complete billing/payment/wallet/subscription/referral core flows.
+5. Complete billing/payment/subscription/referral flows on top of the shared wallet core.
 6. Add Twitter/X using the unified module contract.
