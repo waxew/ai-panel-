@@ -1,4 +1,4 @@
-# Synced from production project spncmjuvnvfkrahjnyjm on 2026-08-23.
+# Synced from production project spncmjuvnvfkrahjnyjm on 2026-08-24.
 # Authenticated functions keep the Supabase platform JWT check enabled.
 # Public callbacks/webhooks disable the platform check and validate their own provider state/signature/secret in code.
 
@@ -88,3 +88,18 @@ verify_jwt = true
 
 [functions.bale-webhook]
 verify_jwt = false
+
+[functions.booking-loyalty]
+verify_jwt = true
+
+[functions.booking-site-manage]
+verify_jwt = true
+
+[functions.booking-site-public]
+verify_jwt = false
+
+[functions.booking-inbox]
+verify_jwt = true
+
+[functions.account-manage]
+verify_jwt = true
