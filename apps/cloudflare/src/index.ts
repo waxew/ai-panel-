@@ -229,6 +229,7 @@ async function handleApi(request: Request) {
   if (url.pathname === '/api/instagram/connect' && request.method === 'POST') return proxyFunction(request, 'instagram-connect');
   if (url.pathname === '/api/instagram/manage' && (request.method === 'GET' || request.method === 'POST')) return proxyFunction(request, 'instagram-manage');
   if (url.pathname === '/api/booking' && (request.method === 'GET' || request.method === 'POST')) return proxyFunction(request, 'booking-manage');
+  if (url.pathname === '/api/booking/automations' && (request.method === 'GET' || request.method === 'POST')) return proxyFunction(request, 'booking-automations');
 
   return null;
 }
