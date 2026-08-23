@@ -8,6 +8,7 @@ const links = [
   ['/app/telegram-builder', 'منوی ربات'],
   ['/app/instagram', 'اینستاگرام'],
   ['/app/booking', 'نوبت‌دهی'],
+  ['/app/booking/tools', 'ابزار کسب‌وکار'],
 ] as const;
 
 type ConnectResponse = {
