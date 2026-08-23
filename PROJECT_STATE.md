@@ -11,6 +11,7 @@ This file is the cross-chat handoff for the project. It describes the current re
 - Authentication/database/Edge Functions: Supabase project `spncmjuvnvfkrahjnyjm`.
 - Canonical Cloudflare config: `apps/cloudflare/wrangler.jsonc`.
 - Canonical module registry: `packages/shared/src/modules.ts`.
+- Canonical provider/API contract helpers: `packages/shared/src/providers.ts`.
 - Canonical database history: `supabase/migrations/`.
 - Canonical Edge Function source: `supabase/functions/` plus `supabase/config.toml`.
 - Render is not the active runtime at this checkpoint.
@@ -49,6 +50,7 @@ This file is the cross-chat handoff for the project. It describes the current re
 - Channel commerce RPC used by multiple providers.
 - Booking domain: appointments, services, staff, CRM, finance, feedback, automation outbox, loyalty/lottery, business site and unified booking inbox.
 - Admin/customer dashboards.
+- Provider contract helpers derive customer route, connect/manage API routes, module manifest entries and shared status labels from the central module registry. Navigation uses these helpers instead of duplicating Instagram API paths and route-active/status logic.
 
 ## Supabase ↔ GitHub sync status
 
@@ -73,9 +75,13 @@ Current rule: no Supabase deployment or schema change is complete unless matchin
 
 The standalone customer-channel HTML pattern has been retired. WhatsApp, Rubika and Discord now join Telegram, Bale and Instagram on React routes inside the main SPA. `apps/cloudflare/wrangler.jsonc` runs the Worker before static assets only for `/api/*` and `/health`; customer module routes use the SPA fallback. No new customer module may introduce a standalone HTML control panel.
 
+## Provider contract checkpoint
+
+`packages/shared/src/providers.ts` is the first normalized provider contract layer. It exports the platform manifest, active provider contracts, derived connect/manage API routes, status labels and route-active logic. New provider code should use these helpers instead of reconstructing paths or status labels locally. `CommerceQuickNav` is the first consumer. Next, move the remaining landing/Worker module manifests and shared provider UI primitives onto this layer.
+
 ## Next architecture milestones
 
-1. Extract shared provider UI primitives and normalized module API contracts.
+1. Finish provider contract adoption and extract shared provider UI primitives.
 2. Implement the generic scheduler/worker.
 3. Implement normalized cross-channel analytics.
 4. Complete billing/payment/subscription/referral flows on top of the shared wallet core.
