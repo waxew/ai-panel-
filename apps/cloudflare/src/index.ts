@@ -225,6 +225,7 @@ async function handleApi(request: Request) {
   if (url.pathname === '/api/admin/dashboard' && request.method === 'GET') return proxyFunction(request, 'admin-dashboard');
   if (url.pathname === '/api/telegram/connect' && request.method === 'POST') return proxyFunction(request, 'telegram-connect');
   if (url.pathname === '/api/telegram/manage' && (request.method === 'GET' || request.method === 'POST')) return proxyFunction(request, 'telegram-manage');
+  if (url.pathname === '/api/instagram/connect' && request.method === 'POST') return proxyFunction(request, 'instagram-connect');
   if (url.pathname === '/api/instagram/manage' && (request.method === 'GET' || request.method === 'POST')) return proxyFunction(request, 'instagram-manage');
 
   return null;
