@@ -46,6 +46,7 @@ model Workspace {
   updatedAt            DateTime                   @updatedAt
   members              WorkspaceMember[]
   telegramBots         TelegramBot[]
+  discordBots          DiscordBot[]
   instagramAccounts    InstagramAccount[]
   instagramRules       InstagramAutomationRule[]
   instagramEvents      InstagramAutomationEvent[]
@@ -89,6 +90,47 @@ model TelegramButton {
   sortOrder   Int         @default(0)
   createdAt   DateTime    @default(now())
   bot         TelegramBot @relation(fields: [botId], references: [id], onDelete: Cascade)
+}
+
+model DiscordBot {
+  id               String           @id @default(cuid())
+  workspaceId      String
+  applicationId    String           @unique
+  botUserId        String           @unique
+  username         String?
+  displayName      String?
+  description      String?
+  publicKey        String
+  tokenCiphertext  String
+  status           BotStatus        @default(PENDING)
+  defaultGuildId   String?
+  defaultChannelId String?
+  settings         Json             @default("{}")
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  workspace        Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  commands         DiscordCommand[]
+
+  @@index([workspaceId])
+}
+
+model DiscordCommand {
+  id                String     @id @default(cuid())
+  botId             String
+  name              String
+  description       String     @default("")
+  responseText      String     @default("")
+  responseEphemeral Boolean    @default(false)
+  isActive          Boolean    @default(true)
+  executions        Int        @default(0)
+  lastUsedAt        DateTime?
+  sortOrder         Int        @default(0)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  bot               DiscordBot @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  @@unique([botId, name])
+  @@index([botId, sortOrder])
 }
 
 model InstagramAccount {
