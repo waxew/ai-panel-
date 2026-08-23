@@ -1,6 +1,7 @@
 # AI Panel project state
 
 Architecture checkpoint: 2026-08-23
+Supabase source-sync checkpoint: 2026-08-23
 
 This file is the cross-chat handoff for the project. It describes the current repository/production state that future work must continue from.
 
@@ -10,7 +11,10 @@ This file is the cross-chat handoff for the project. It describes the current re
 - Authentication/database/Edge Functions: Supabase project `spncmjuvnvfkrahjnyjm`.
 - Canonical Cloudflare config: `apps/cloudflare/wrangler.jsonc`.
 - Canonical module registry: `packages/shared/src/modules.ts`.
+- Canonical database history: `supabase/migrations/`.
+- Canonical Edge Function source: `supabase/functions/` plus `supabase/config.toml`.
 - Render is not the active runtime at this checkpoint.
+- Prisma is legacy/reference schema material; Supabase SQL migrations are canonical for production database evolution.
 
 ## Module status
 
@@ -25,7 +29,7 @@ This file is the cross-chat handoff for the project. It describes the current re
 | Booking/Tiktime | partial | React | active | real SMS provider, external payment provider |
 | Scheduler | planned | none | foundation only | shared execution worker/queue and publishing adapters |
 | Analytics | partial | fragmented | partial | normalized cross-channel analytics engine |
-| Twitter/X | planned | none | none | next provider module after sync/architecture work |
+| Twitter/X | planned | none | none | next provider module after architecture/core work |
 
 ## Shared cores already present
 
@@ -35,11 +39,17 @@ This file is the cross-chat handoff for the project. It describes the current re
 - Booking domain: appointments, services, staff, CRM, finance, feedback and automation outbox.
 - Admin/customer dashboards.
 
-## Known source-sync debt
+## Supabase ↔ GitHub sync status
 
-Production contains Supabase migrations and some Edge Functions that were created/deployed before their source was consistently tracked in GitHub. Architecture work must reduce this debt, not add to it.
+Production source drift identified during the architecture audit has been repaired at this checkpoint:
 
-Current rule: no new deployment is considered complete unless its migration/function source is committed in the repository.
+- 29/29 active Supabase Edge Functions have source tracked under `supabase/functions/<slug>/index.ts`.
+- 27/27 applied production migrations have matching files under `supabase/migrations/` using their original version and name.
+- Production `verify_jwt` settings are tracked in `supabase/config.toml`.
+- `supabase/SYNC_MANIFEST.md` records the synced inventory.
+- Existing production migrations were copied into GitHub; they were not replayed against production during this sync.
+
+Current rule: no Supabase deployment or schema change is complete unless matching source, migration and relevant function configuration are committed in the same change set.
 
 ## UI migration rule
 
@@ -47,9 +57,9 @@ WhatsApp, Rubika and Discord currently use independent HTML pages. They remain s
 
 ## Next architecture milestones
 
-1. Recover/commit missing deployed Supabase Edge Function sources.
-2. Recover production migration history into `supabase/migrations` and keep it current.
-3. Migrate legacy HTML channel pages to React module pages.
-4. Extract shared provider UI primitives and normalized module API contracts.
-5. Implement the generic scheduler/worker.
+1. Migrate legacy HTML channel pages to React module pages.
+2. Extract shared provider UI primitives and normalized module API contracts.
+3. Implement the generic scheduler/worker.
+4. Implement normalized cross-channel analytics.
+5. Complete billing/payment/wallet/subscription/referral core flows.
 6. Add Twitter/X using the unified module contract.
