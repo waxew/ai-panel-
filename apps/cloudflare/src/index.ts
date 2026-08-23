@@ -206,6 +206,7 @@ async function handleApi(request: Request) {
     return json({ modules: [
       { key: 'telegram', enabled: true, phase: 1 },
       { key: 'instagram', enabled: true, phase: 2 },
+      { key: 'booking', enabled: true, phase: 2 },
       { key: 'whatsapp', enabled: false, phase: 2 },
       { key: 'bale', enabled: false, phase: 2 },
       { key: 'rubika', enabled: false, phase: 2 },
@@ -227,6 +228,7 @@ async function handleApi(request: Request) {
   if (url.pathname === '/api/telegram/manage' && (request.method === 'GET' || request.method === 'POST')) return proxyFunction(request, 'telegram-manage');
   if (url.pathname === '/api/instagram/connect' && request.method === 'POST') return proxyFunction(request, 'instagram-connect');
   if (url.pathname === '/api/instagram/manage' && (request.method === 'GET' || request.method === 'POST')) return proxyFunction(request, 'instagram-manage');
+  if (url.pathname === '/api/booking' && (request.method === 'GET' || request.method === 'POST')) return proxyFunction(request, 'booking-manage');
 
   return null;
 }
