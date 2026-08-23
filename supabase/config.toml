@@ -1,0 +1,90 @@
+# Synced from production project spncmjuvnvfkrahjnyjm on 2026-08-23.
+# Authenticated functions keep the Supabase platform JWT check enabled.
+# Public callbacks/webhooks disable the platform check and validate their own provider state/signature/secret in code.
+
+[functions.telegram-connect]
+verify_jwt = true
+
+[functions.telegram-webhook]
+verify_jwt = false
+
+[functions.customer-dashboard]
+verify_jwt = true
+
+[functions.store-manage]
+verify_jwt = true
+
+[functions.admin-dashboard]
+verify_jwt = true
+
+[functions.telegram-manage]
+verify_jwt = true
+
+[functions.store-orders]
+verify_jwt = true
+
+[functions.instagram-manage]
+verify_jwt = true
+
+[functions.instagram-connect]
+verify_jwt = false
+
+[functions.instagram-webhook]
+verify_jwt = false
+
+[functions.booking-manage]
+verify_jwt = true
+
+[functions.booking-automations]
+verify_jwt = true
+
+[functions.booking-public]
+verify_jwt = false
+
+[functions.booking-finance]
+verify_jwt = true
+
+[functions.booking-staff-access]
+verify_jwt = true
+
+[functions.booking-feedback-manage]
+verify_jwt = true
+
+[functions.booking-feedback-public]
+verify_jwt = false
+
+[functions.discord-connect]
+verify_jwt = true
+
+[functions.rubika-connect]
+verify_jwt = true
+
+[functions.discord-manage]
+verify_jwt = true
+
+[functions.discord-interactions]
+verify_jwt = false
+
+[functions.whatsapp-connect]
+verify_jwt = true
+
+[functions.rubika-manage]
+verify_jwt = true
+
+[functions.whatsapp-manage]
+verify_jwt = true
+
+[functions.whatsapp-webhook]
+verify_jwt = false
+
+[functions.rubika-webhook]
+verify_jwt = false
+
+[functions.bale-connect]
+verify_jwt = true
+
+[functions.bale-manage]
+verify_jwt = true
+
+[functions.bale-webhook]
+verify_jwt = false
