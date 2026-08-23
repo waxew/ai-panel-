@@ -29,26 +29,28 @@ enum ScheduledJobStatus {
 }
 
 model User {
-  id          String      @id @default(cuid())
-  email       String      @unique
-  displayName String?
-  role        UserRole    @default(CUSTOMER)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  workspaces  WorkspaceMember[]
+  id                   String                @id @default(cuid())
+  email                String                @unique
+  displayName          String?
+  role                 UserRole              @default(CUSTOMER)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  workspaces           WorkspaceMember[]
+  instagramOAuthStates InstagramOAuthState[]
 }
 
 model Workspace {
-  id                 String                     @id @default(cuid())
-  name               String
-  createdAt          DateTime                   @default(now())
-  updatedAt          DateTime                   @updatedAt
-  members            WorkspaceMember[]
-  telegramBots       TelegramBot[]
-  instagramAccounts  InstagramAccount[]
-  instagramRules     InstagramAutomationRule[]
-  instagramEvents    InstagramAutomationEvent[]
-  scheduledJobs      ScheduledJob[]
+  id                   String                     @id @default(cuid())
+  name                 String
+  createdAt            DateTime                   @default(now())
+  updatedAt            DateTime                   @updatedAt
+  members              WorkspaceMember[]
+  telegramBots         TelegramBot[]
+  instagramAccounts    InstagramAccount[]
+  instagramRules       InstagramAutomationRule[]
+  instagramEvents      InstagramAutomationEvent[]
+  instagramOAuthStates InstagramOAuthState[]
+  scheduledJobs        ScheduledJob[]
 }
 
 model WorkspaceMember {
@@ -104,6 +106,8 @@ model InstagramAccount {
   metaAccountId         String?                    @unique
   pageId                String?
   accessTokenCiphertext String?
+  tokenExpiresAt        DateTime?
+  tokenRefreshedAt      DateTime?
   permissions           Json                       @default("[]")
   webhookSubscribed     Boolean                    @default(false)
   connectionMeta        Json                       @default("{}")
@@ -112,6 +116,22 @@ model InstagramAccount {
   workspace             Workspace                  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   automationRules       InstagramAutomationRule[]
   automationEvents      InstagramAutomationEvent[]
+}
+
+model InstagramOAuthState {
+  id          String    @id @default(cuid())
+  workspaceId String
+  userId      String
+  stateHash   String    @unique
+  redirectUri String
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, expiresAt])
+  @@index([userId, expiresAt])
 }
 
 model InstagramAutomationRule {
@@ -154,6 +174,7 @@ model InstagramAutomationEvent {
   rule               InstagramAutomationRule?  @relation(fields: [ruleId], references: [id], onDelete: SetNull)
 
   @@index([workspaceId, createdAt])
+  @@index([instagramAccountId, createdAt])
   @@index([ruleId, createdAt])
 }
 
