@@ -1,43 +1,46 @@
-# Ai Panel
+# AI Panel
 
-SaaS bot-builder platform for Telegram first, then Instagram automation, scheduled publishing, analytics and admin operations.
+Multi-tenant SaaS for building and operating automation across Telegram, Instagram, WhatsApp, Bale, Rubika, Discord and business tools such as booking, commerce, scheduling and analytics.
 
-## Phase 1 scope
+## Start here
 
-- Customer dashboard
-- Telegram bot connection flow
-- Bot profile and button builder
-- Products, orders, wallet and services domain model
-- Scheduled jobs foundation
-- Admin/customer separation
-- PostgreSQL + Redis infrastructure
-- Background worker foundation
+Before changing the project, read:
+
+1. `AGENTS.md` — mandatory development rules.
+2. `PROJECT_STATE.md` — current cross-chat/runtime status.
+3. `ARCHITECTURE_PLATFORM_MODULES.md` — unified architecture.
+4. `packages/shared/src/modules.ts` — canonical module registry.
 
 ## Repository structure
 
 ```text
 apps/
-  web/      React/Vite customer and admin panel
-  api/      Fastify API
-  worker/   background jobs and scheduled publishing
+  web/          React/Vite customer + admin UI
+  cloudflare/   production same-origin gateway + static assets
+  api/          legacy/local Fastify service
+  worker/       scheduled/background worker foundation
 packages/
-  shared/   shared TypeScript types
-prisma/     database schema
-docker-compose.yml
+  shared/       shared platform contracts and module registry
+prisma/         legacy/schema model reference
+supabase/
+  functions/    deployed Edge Function source (must remain in sync)
 ```
+
+Production database/auth/Edge Functions use Supabase. Production frontend/API gateway uses Cloudflare Workers.
+
+## Architecture rule
+
+Provider integrations are isolated adapters. Shared business behavior belongs to shared cores. A provider must not import another provider implementation. New modules must register centrally and use the shared React shell; standalone provider HTML pages are migration-only legacy adapters.
 
 ## Local development
 
-1. Copy `.env.example` to `.env`.
-2. Start PostgreSQL and Redis: `docker compose up -d`.
-3. Install dependencies: `pnpm install`.
-4. Generate Prisma client and migrate the database after Prisma is wired into the API.
-5. Start all apps: `pnpm dev`.
+1. Copy `.env.example` to `.env` for the legacy/local services when needed.
+2. `pnpm install`
+3. `pnpm dev`
 
 Web: http://localhost:5173
-API: http://localhost:4000
-Health: http://localhost:4000/health
+Legacy/local API: http://localhost:4000
 
-## Security rules
+## Security
 
-Telegram bot tokens, Instagram access tokens and other credentials must never be stored in plaintext. The database schema uses ciphertext fields so application-level encryption can be added before persistence.
+Provider credentials are backend-only and encrypted at rest. Provider secrets must never be returned to browsers or committed to GitHub. Workspace authorization is enforced server-side.

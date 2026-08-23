@@ -1,46 +1,83 @@
-# Platform module architecture
+# AI Panel unified module architecture
 
-AI Panel is a multi-tenant SaaS with a unified customer experience and isolated provider integrations.
+AI Panel is a multi-tenant SaaS with one customer experience, shared business cores and isolated provider adapters.
 
-## Rule
+## Source of truth
 
-Every external platform owns its provider-specific code. Shared business rules stay in core/shared packages. A platform module must not import another platform module directly.
+The module catalog lives in `packages/shared/src/modules.ts`. Navigation, module status and future API discovery must derive from this registry rather than duplicate module lists in individual pages.
 
-## Backend layout
+Cross-chat development state lives in `PROJECT_STATE.md`. Coding agents must follow `AGENTS.md` before editing the project.
+
+## Architecture layers
 
 ```text
-apps/cloudflare/src/
-  core/
-    http.ts
-    types.ts
-  modules/
-    telegram/
-      index.ts
-    instagram/
-      index.ts
-    whatsapp/
-      index.ts
-    bale/
-      index.ts
-    rubika/
-      index.ts
-    discord/
-      index.ts
-    scheduler/
-      index.ts
-    analytics/
-      index.ts
-    registry.ts
+apps/web
+  shared shell + navigation
+  customer/admin pages
+  provider feature UIs
+
+apps/cloudflare
+  auth/session gateway
+  same-origin API routing
+  public webhook/interaction routing
+
+supabase/functions
+  provider connect/manage/webhook adapters
+  business service endpoints
+
+shared/core domain
+  workspace authorization
+  commerce
+  scheduling
+  analytics
+  billing
+  normalized contracts
+
+provider adapters
+  telegram
+  instagram
+  whatsapp
+  bale
+  rubika
+  discord
+  twitter (planned)
 ```
 
-Each provider module is responsible for its own API endpoints, authentication/connection flow, webhooks, provider payload validation, provider errors and mapping provider data into AI Panel domain data.
+## Provider contract
 
-## Frontend layout
+A provider module owns only provider-specific behavior:
+
+- credential validation and connection flow;
+- provider API calls;
+- webhook/signature validation;
+- provider payload parsing;
+- mapping to/from shared domain data;
+- provider-specific errors/capabilities.
+
+A provider module must not own shared commerce, billing, scheduler or analytics rules and must not import another provider module.
+
+## Shared core contract
+
+Shared cores own business behavior independent of a social network:
+
+- Commerce Core: products, customers, cart, checkout and orders.
+- Scheduler Core: scheduled jobs, retries, idempotency and execution state.
+- Analytics Core: normalized metrics/events and cross-channel reports.
+- Billing Core: plans, subscriptions, wallet/payment/refund state.
+- Workspace/Auth Core: tenant scope and role authorization.
+
+Providers consume these cores through stable interfaces.
+
+## UI contract
+
+Target structure:
 
 ```text
 apps/web/src/
   app/
   components/
+    shell/
+    modules/
   features/
     telegram/
     instagram/
@@ -48,35 +85,46 @@ apps/web/src/
     bale/
     rubika/
     discord/
+    twitter/
+    booking/
     scheduler/
     analytics/
-  pages/
-    public/
-    customer/
-    admin/
 ```
 
-The customer sees one product catalog and one dashboard, while feature pages are implemented independently.
+All new customer modules use the React shell and central registry. Standalone HTML pages are deprecated adapters and must not be used as a template for new modules.
 
-## Shared domain
+## Module lifecycle
 
-`packages/shared` owns platform identifiers, labels, product metadata types and cross-app contracts. It must not contain credentials or provider-specific API clients.
+Statuses are intentionally explicit:
 
-## Security
+- `planned`: architecture placeholder; no customer route.
+- `partial`: real implementation exists but production capability/E2E is incomplete.
+- `live`: core supported flow is operational; additional features may still be added.
 
-- Credentials are backend-only and encrypted at rest.
-- Provider secrets are never returned to the browser.
-- Customer endpoints are scoped to the authenticated user's workspace.
-- Admin endpoints require ADMIN or SUPER_ADMIN authorization.
-- Webhooks validate a provider signature/secret where the provider supports it.
+Changing a status requires updating both the registry and `PROJECT_STATE.md`.
 
-## Provider onboarding
+## Database and Edge Function source policy
 
-- Telegram: BotFather token.
-- Bale: Bale BotFather token; Telegram-compatible Bot API with provider-specific differences.
-- Rubika: Rubika BotFather token; Rubika Bot API v3 and webhook endpoint.
-- Discord: Discord application/bot token plus server installation/OAuth flow.
-- WhatsApp: Meta WhatsApp Business Platform connection (WABA, phone number and access credentials); not a BotFather-style flow.
-- Instagram: Meta account/business connection and provider permissions.
+GitHub must be able to reconstruct production.
 
-The common dashboard consumes normalized service-instance summaries so customers do not need to understand provider implementation differences.
+- Every schema change is committed as a Supabase migration.
+- Every Edge Function deployed to Supabase has matching committed source.
+- Production-only code or schema is architecture drift and must be repaired.
+
+## Cloudflare routing
+
+There is one Wrangler configuration: `apps/cloudflare/wrangler.jsonc`.
+
+Worker-first routes include all API/health routes plus compatibility routes for legacy module HTML pages. React routes use SPA fallback.
+
+## Adding a new provider
+
+1. Register the provider in `packages/shared/src/modules.ts` as `planned`.
+2. Add provider-owned database models only when provider-specific persistence is required.
+3. Implement connect/manage/webhook functions without importing another provider.
+4. Reuse shared cores for commerce/scheduling/analytics/billing.
+5. Add the React feature route and unified navigation entry.
+6. Add E2E/provider verification.
+7. Move status from `planned` to `partial`/`live` and update `PROJECT_STATE.md`.
+
+Twitter/X is the next planned provider and must follow this sequence.

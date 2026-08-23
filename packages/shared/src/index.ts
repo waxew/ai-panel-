@@ -1,3 +1,3 @@
-export type PlatformModule = 'telegram' | 'instagram' | 'scheduler' | 'analytics';
+export * from './modules';
 
 export type BotConnectionStatus = 'pending' | 'active' | 'invalid' | 'disabled';

@@ -10,6 +10,7 @@ on:
       - .github/workflows/cloudflare-preview.yml
       - package.json
       - pnpm-workspace.yaml
+      - packages/shared/**
       - apps/cloudflare/**
       - apps/web/**
 
@@ -38,6 +39,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+
+      - name: Build shared contracts
+        run: pnpm --filter @ai-panel/shared build
 
       - name: Build web app
         run: pnpm build:cloudflare
