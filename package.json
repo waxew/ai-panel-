@@ -20,6 +20,6 @@
     "dotenv": "latest",
     "prisma": "^7.0.0",
     "tsx": "latest",
-    "typescript": "latest"
+    "typescript": "7.0.2"
   }
 }
