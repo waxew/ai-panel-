@@ -1,0 +1,1 @@
+alter table public."RubikaBot" add column "webhookSecretHash" text;
