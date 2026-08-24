@@ -1,6 +1,7 @@
 import { customerNavigationModules } from '@ai-panel/shared';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 
+// Production validation checkpoint for the Telegram Mini App release.
 type SessionUser={id:string;email:string;displayName?:string|null;role:'CUSTOMER'|'ADMIN'|'SUPER_ADMIN'};
 type TelegramUser={id:number;first_name:string;last_name?:string;username?:string;photo_url?:string};
 type TelegramWebApp={initData:string;initDataUnsafe?:{user?:TelegramUser};ready?:()=>void;expand?:()=>void;setHeaderColor?:(v:string)=>void;setBackgroundColor?:(v:string)=>void};
@@ -11,18 +12,18 @@ const coreLinks=[
 ] as const;
 const go=(href:string)=>window.location.assign(href);
 async function session(){const r=await fetch('/api/session',{headers:{accept:'application/json'}});if(!r.ok)return null;const d=await r.json().catch(()=>({})) as {authenticated?:boolean;user?:SessionUser};return d.authenticated&&d.user?d.user:null}
-async function post(path:string,body:unknown){const r=await fetch(path,{method:'POST',headers:{'content-type':'application/json',accept:'application/json'},body:JSON.stringify(body)});return{r,d:await r.json().catch(()=>({})) as Record<string,any>}}
+async function post(path:string,body:unknown){const r=await fetch(path,{method:'POST',headers:{'content-type':'application/json',accept:'application/json'},body:JSON.stringify(body)});return{r,d:await r.json().catch(()=>({})) as Record<string,unknown>}}
 
 export default function TelegramProjectMiniAppV2(){
  const tg=window.Telegram?.WebApp; const initData=tg?.initData??''; const preview=tg?.initDataUnsafe?.user??null;
  const [user,setUser]=useState<SessionUser|null>(null); const [tgUser,setTgUser]=useState<TelegramUser|null>(preview); const [boot,setBoot]=useState(true); const [tgState,setTgState]=useState<'checking'|'verified'|'invalid'|'preview'>(initData?'checking':'preview');
  const [mode,setMode]=useState<'login'|'register'>('login'); const [email,setEmail]=useState(''); const [password,setPassword]=useState(''); const [busy,setBusy]=useState(false); const [message,setMessage]=useState('');
  useEffect(()=>{tg?.ready?.();tg?.expand?.();try{tg?.setHeaderColor?.('#090d16');tg?.setBackgroundColor?.('#090d16')}catch{}
-  let dead=false;(async()=>{let current=await session();if(initData){const v=await post('/api/telegram-miniapp/validate',{initData});if(v.r.ok&&v.d.user){if(!dead){setTgUser(v.d.user);setTgState('verified')}}else if(!dead)setTgState('invalid');if(!current&&v.r.ok){const a=await post('/api/telegram-miniapp/auto-login',{initData});if(a.r.ok)current=await session();}}
+  let dead=false;(async()=>{let current=await session();if(initData){const v=await post('/api/telegram-miniapp/validate',{initData});const verifiedUser=v.d.user as TelegramUser|undefined;if(v.r.ok&&verifiedUser){if(!dead){setTgUser(verifiedUser);setTgState('verified')}}else if(!dead)setTgState('invalid');if(!current&&v.r.ok){const a=await post('/api/telegram-miniapp/auto-login',{initData});if(a.r.ok)current=await session();}}
   if(!dead){setUser(current);setBoot(false)}})();return()=>{dead=true}},[initData,tg]);
  const name=useMemo(()=>tgUser?[tgUser.first_name,tgUser.last_name].filter(Boolean).join(' '):(user?.displayName||user?.email||'کاربر AI Panel'),[tgUser,user]);
  async function link(){if(!initData)return;await post('/api/telegram-miniapp/link',{initData}).catch(()=>undefined)}
- async function submit(e:FormEvent){e.preventDefault();setBusy(true);setMessage('');try{const endpoint=mode==='login'?'/api/auth/signin':'/api/auth/signup';const {r,d}=await post(endpoint,{email,password});if(!r.ok){setMessage(d.message??'عملیات انجام نشد.');return}if(mode==='register'&&d.requiresConfirmation){setMessage(d.message??'برای تکمیل ثبت‌نام ایمیل خود را تأیید کنید.');return}const s=await session();if(!s){setMessage('نشست حساب ساخته نشد.');return}setUser(s);await link();setMessage('حساب Telegram به AI Panel متصل شد.')}catch{setMessage('ارتباط با سرور برقرار نشد.')}finally{setBusy(false)}}
+ async function submit(e:FormEvent){e.preventDefault();setBusy(true);setMessage('');try{const endpoint=mode==='login'?'/api/auth/signin':'/api/auth/signup';const {r,d}=await post(endpoint,{email,password});if(!r.ok){setMessage(typeof d.message==='string'?d.message:'عملیات انجام نشد.');return}if(mode==='register'&&d.requiresConfirmation===true){setMessage(typeof d.message==='string'?d.message:'برای تکمیل ثبت‌نام ایمیل خود را تأیید کنید.');return}const s=await session();if(!s){setMessage('نشست حساب ساخته نشد.');return}setUser(s);await link();setMessage('حساب Telegram به AI Panel متصل شد.')}catch{setMessage('ارتباط با سرور برقرار نشد.')}finally{setBusy(false)}}
  if(boot)return <div className="tgx loading" dir="rtl"><style>{css}</style><div className="spin"/><b>AI PANEL</b><span>در حال ورود امن...</span></div>;
  return <div className="tgx" dir="rtl"><style>{css}</style><header><div className="brand"><i>AP</i><div><b>AI PANEL</b><small>Telegram Mini App</small></div></div><span className={`state ${tgState}`}>{tgState==='verified'?'Telegram ✓':tgState==='checking'?'در حال بررسی':tgState==='invalid'?'Telegram نامعتبر':'Preview'}</span></header><main>
  <section className="hero"><div><small>پروژه داخل تلگرام</small><h1>سلام {name}</h1><p>همان حساب، فروشگاه، ربات‌ها و ابزارهای AI Panel در Telegram.</p></div><div className="avatar">{name.slice(0,1).toUpperCase()}</div></section>
