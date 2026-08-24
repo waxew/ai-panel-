@@ -15,7 +15,7 @@ const authenticated=withSupabase({auth:"user"},async(request,ctx)=>{
  const workspaceIds=(memberships??[]).map((x:any)=>x.workspaceId as string);
  const hasWorkspaces=workspaceIds.length>0;
  const now=new Date().toISOString();
- const [subscriptionsResult,ordersResult,telegramResult,baleResult,rubikaResult,discordResult,instagramResult,whatsappResult,jobsResult,workspacesResult,pendingJobsCountResult,openWhatsAppCountResult,storeOrdersCountResult,paidStoreOrdersCountResult,bookingCustomersCountResult,upcomingBookingsCountResult]=await Promise.all([
+ const [subscriptionsResult,ordersResult,telegramResult,baleResult,rubikaResult,discordResult,instagramResult,whatsappResult,jobsResult,workspacesResult,storesResult,pendingJobsCountResult,openWhatsAppCountResult,bookingCustomersCountResult,upcomingBookingsCountResult]=await Promise.all([
   admin.from("Subscription").select("id,productId,status,startsAt,expiresAt,createdAt,updatedAt").eq("userId",userId).order("createdAt",{ascending:false}),
   admin.from("Order").select("id,productId,amount,currency,status,provider,createdAt,paidAt").eq("userId",userId).order("createdAt",{ascending:false}).limit(20),
   hasWorkspaces?admin.from("TelegramBot").select("id,workspaceId,telegramBotId,username,displayName,description,status,welcomeMessage,createdAt,updatedAt").in("workspaceId",workspaceIds).order("createdAt",{ascending:false}):emptyData(),
@@ -26,14 +26,19 @@ const authenticated=withSupabase({auth:"user"},async(request,ctx)=>{
   hasWorkspaces?admin.from("WhatsAppAccount").select("id,workspaceId,wabaId,phoneNumberId,displayPhoneNumber,verifiedName,status,webhookSubscribed,qualityRating,lastSyncedAt,createdAt,updatedAt").in("workspaceId",workspaceIds).order("createdAt",{ascending:false}):emptyData(),
   hasWorkspaces?admin.from("ScheduledJob").select("id,workspaceId,platform,jobType,runAt,status,attempts,createdAt").in("workspaceId",workspaceIds).order("runAt",{ascending:false}).limit(50):emptyData(),
   hasWorkspaces?admin.from("Workspace").select("id,name,createdAt,updatedAt").in("id",workspaceIds):emptyData(),
+  hasWorkspaces?admin.from("Store").select("id,workspaceId").in("workspaceId",workspaceIds):emptyData(),
   hasWorkspaces?admin.from("ScheduledJob").select("id",{count:"exact",head:true}).in("workspaceId",workspaceIds).in("status",["PENDING","PROCESSING"]):emptyCount(),
   hasWorkspaces?admin.from("WhatsAppConversation").select("id",{count:"exact",head:true}).in("workspaceId",workspaceIds).eq("status","OPEN"):emptyCount(),
-  hasWorkspaces?admin.from("StoreOrder").select("id",{count:"exact",head:true}).in("workspaceId",workspaceIds):emptyCount(),
-  hasWorkspaces?admin.from("StoreOrder").select("id",{count:"exact",head:true}).in("workspaceId",workspaceIds).in("status",["PAID","PROCESSING","COMPLETED"]):emptyCount(),
   hasWorkspaces?admin.from("BookingCustomer").select("id",{count:"exact",head:true}).in("workspaceId",workspaceIds):emptyCount(),
   hasWorkspaces?admin.from("BookingAppointment").select("id",{count:"exact",head:true}).in("workspaceId",workspaceIds).gte("startsAt",now).in("status",["PENDING","CONFIRMED"]):emptyCount()
  ]);
- const firstError=[subscriptionsResult,ordersResult,telegramResult,baleResult,rubikaResult,discordResult,instagramResult,whatsappResult,jobsResult,workspacesResult,pendingJobsCountResult,openWhatsAppCountResult,storeOrdersCountResult,paidStoreOrdersCountResult,bookingCustomersCountResult,upcomingBookingsCountResult].map((x:any)=>x.error).find(Boolean);if(firstError){console.error(firstError);return json({ok:false,message:"دریافت اطلاعات داشبورد انجام نشد."},500)}
+ const firstError=[subscriptionsResult,ordersResult,telegramResult,baleResult,rubikaResult,discordResult,instagramResult,whatsappResult,jobsResult,workspacesResult,storesResult,pendingJobsCountResult,openWhatsAppCountResult,bookingCustomersCountResult,upcomingBookingsCountResult].map((x:any)=>x.error).find(Boolean);if(firstError){console.error(firstError);return json({ok:false,message:"دریافت اطلاعات داشبورد انجام نشد."},500)}
+ const storeIds=(storesResult.data??[]).map((x:any)=>x.id as string);
+ const [storeOrdersCountResult,paidStoreOrdersCountResult]=storeIds.length?await Promise.all([
+  admin.from("StoreOrder").select("id",{count:"exact",head:true}).in("storeId",storeIds),
+  admin.from("StoreOrder").select("id",{count:"exact",head:true}).in("storeId",storeIds).in("status",["PAID","PROCESSING","COMPLETED"])
+ ]):[{count:0,error:null},{count:0,error:null}];
+ if(storeOrdersCountResult.error||paidStoreOrdersCountResult.error){console.error(storeOrdersCountResult.error,paidStoreOrdersCountResult.error);return json({ok:false,message:"دریافت آمار سفارش‌ها انجام نشد."},500)}
  const productIds=Array.from(new Set([...(subscriptionsResult.data??[]).map((x:any)=>x.productId),...(ordersResult.data??[]).map((x:any)=>x.productId)].filter(Boolean)));let products:any[]=[];
  if(productIds.length){const {data,error}=await admin.from("Product").select("id,name,shortDescription,category,status,priceAmount,currency,billingPeriod").in("id",productIds);if(error)return json({ok:false,message:"دریافت اطلاعات محصولات انجام نشد."},500);products=data??[]}
  const productMap=new Map(products.map((p:any)=>[p.id,p]));
