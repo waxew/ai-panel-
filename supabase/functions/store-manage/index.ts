@@ -148,18 +148,19 @@ async function itemsUsingProductType(admin: any, storeId: string, productTypeId:
 
 async function readDashboard(admin: any, workspaceId: string) {
   const store = await ownedStore(admin, workspaceId);
-  if (!store) return { ok: true, store: null, productTypes: [], categories: [], items: [], orders: [], summary: { itemCount: 0, categoryCount: 0, orderCount: 0, paidOrderCount: 0, customerCount: 0 } };
+  if (!store) return { ok: true, store: null, productTypes: [], categories: [], items: [], orders: [], shareTargets: { telegram: [] }, summary: { itemCount: 0, categoryCount: 0, orderCount: 0, paidOrderCount: 0, customerCount: 0 } };
 
-  const [categoriesResult, itemsResult, ordersResult, customersResult, orderCountResult, paidOrderCountResult] = await Promise.all([
+  const [categoriesResult, itemsResult, ordersResult, customersResult, orderCountResult, paidOrderCountResult, telegramBotsResult] = await Promise.all([
     admin.from("StoreCategory").select("id,title,slug,sortOrder,isActive,createdAt,updatedAt").eq("storeId", store.id).order("sortOrder", { ascending: true }),
     admin.from("StoreItem").select("id,categoryId,sku,title,description,itemType,priceAmount,currency,inventoryCount,imageUrl,sortOrder,isActive,metadata,createdAt,updatedAt").eq("storeId", store.id).order("sortOrder", { ascending: true }).order("createdAt", { ascending: false }),
     admin.from("StoreOrder").select("id,customerId,sourcePlatform,status,subtotalAmount,discountAmount,totalAmount,currency,note,createdAt,paidAt").eq("storeId", store.id).order("createdAt", { ascending: false }).limit(30),
     admin.from("StoreCustomer").select("id", { count: "exact", head: true }).eq("storeId", store.id),
     admin.from("StoreOrder").select("id", { count: "exact", head: true }).eq("storeId", store.id),
     admin.from("StoreOrder").select("id", { count: "exact", head: true }).eq("storeId", store.id).in("status", ["PAID", "PROCESSING", "COMPLETED"]),
+    admin.from("TelegramBot").select("id,username,displayName,status,createdAt").eq("workspaceId", workspaceId).eq("status", "ACTIVE").not("username", "is", null).order("createdAt", { ascending: false }).limit(5),
   ]);
 
-  const error = [categoriesResult.error, itemsResult.error, ordersResult.error, customersResult.error, orderCountResult.error, paidOrderCountResult.error].find(Boolean);
+  const error = [categoriesResult.error, itemsResult.error, ordersResult.error, customersResult.error, orderCountResult.error, paidOrderCountResult.error, telegramBotsResult.error].find(Boolean);
   if (error) throw new Error(`store_dashboard:${error.message}`);
 
   const categories = categoriesResult.data ?? [];
@@ -171,6 +172,9 @@ async function readDashboard(admin: any, workspaceId: string) {
     categories,
     items,
     orders: ordersResult.data ?? [],
+    shareTargets: {
+      telegram: (telegramBotsResult.data ?? []).map((bot: any) => ({ id: bot.id, username: bot.username, displayName: bot.displayName ?? null })),
+    },
     summary: {
       itemCount: items.length,
       categoryCount: categories.length,
@@ -367,6 +371,24 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
     } catch (error) {
       console.error("category delete failed", error);
       return json({ ok: false, message: "حذف دسته‌بندی انجام نشد." }, 500);
+    }
+  }
+
+  if (action === "bulk_set_price") {
+    const priceAmount = Number(body.priceAmount);
+    const categoryId = typeof body.categoryId === "string" && body.categoryId ? body.categoryId : null;
+    if (!Number.isSafeInteger(priceAmount) || priceAmount < 0) return json({ ok: false, message: "قیمت گروهی معتبر نیست." }, 400);
+    try {
+      await requireCategory(admin, store.id, categoryId);
+      let query = admin.from("StoreItem").update({ priceAmount, updatedAt: new Date().toISOString() }).eq("storeId", store.id);
+      if (categoryId) query = query.eq("categoryId", categoryId);
+      const { data: updated, error } = await query.select("id");
+      if (error) throw error;
+      return json({ ...(await readDashboard(admin, workspaceId)), bulkUpdated: updated?.length ?? 0 });
+    } catch (error) {
+      console.error("bulk price update failed", error);
+      if (String(error).includes("invalid_category")) return json({ ok: false, message: "دسته‌بندی انتخاب‌شده معتبر نیست." }, 400);
+      return json({ ok: false, message: "تغییر گروهی قیمت انجام نشد." }, 500);
     }
   }
 
