@@ -12,6 +12,8 @@ This file is the cross-chat handoff for the project. It describes the current re
 - Canonical Cloudflare config: `apps/cloudflare/wrangler.jsonc`.
 - Canonical module registry: `packages/shared/src/modules.ts`.
 - Canonical provider/API contract helpers: `packages/shared/src/providers.ts`.
+- Canonical Bot Commerce contracts: `packages/shared/src/bot-commerce.ts`.
+- Canonical merged commerce architecture: `ARCHITECTURE_UNIFIED_BOT_COMMERCE.md`.
 - Canonical database history: `supabase/migrations/`.
 - Canonical Edge Function source: `supabase/functions/` plus `supabase/config.toml`.
 - Render is not the active runtime at this checkpoint.
@@ -31,11 +33,11 @@ This file is the cross-chat handoff for the project. It describes the current re
 
 | Module | Status | UI | Backend | Main remaining work |
 | --- | --- | --- | --- | --- |
-| Telegram | live | React | active | payment, subscription/referral expansion, broader bot-builder features |
+| Telegram | live | React | active | Payment/Fulfillment/Wallet/Referral expansion through shared Bot Commerce cores |
 | Instagram | partial | React | active | real-account E2E, scheduled publishing, deeper post/content analytics |
-| WhatsApp | partial | React | active | Meta production setup/E2E and commerce parity |
-| Bale | partial | React | active | real-bot E2E and feature parity |
-| Rubika | partial | React | active | real-bot E2E and feature parity |
+| WhatsApp | partial | React | active | Meta production setup/E2E and future adoption of shared Bot Commerce where API capabilities allow |
+| Bale | partial | React | active | real-bot E2E plus remaining shared Bot Commerce actions |
+| Rubika | partial | React | active | real-bot E2E plus remaining shared Bot Commerce actions |
 | Discord | partial | React | active | real-bot/server E2E, moderation/community features |
 | Booking/Tiktime | partial | React | active | real SMS provider, external payment provider; loyalty/site/inbox foundations are present |
 | Scheduler | planned | none | foundation only | shared execution worker/queue and publishing adapters |
@@ -45,14 +47,36 @@ This file is the cross-chat handoff for the project. It describes the current re
 ## Shared cores already present
 
 - Supabase Auth + workspace membership.
-- Shared account/profile + wallet/ledger.
-- Commerce Core: store, categories, items, customers, carts and orders.
-- Store Template Engine v1: draft/published storefront configuration stored in `Store.settings`, using the existing Commerce catalog as the single data source.
+- Shared account/profile + AI Panel account wallet/ledger.
+- Commerce Core: Store, categories, items, customers, carts and orders.
+- Store Template Engine v1: draft/published web-store configuration stored in `Store.settings`, using the existing Commerce catalog as the single data source.
+- Unified Bot Commerce v1: one logical commerce menu/flow with Draft/Published/version state and Telegram/Bale/Rubika targets.
 - Channel commerce RPC used by multiple providers.
 - Booking domain: appointments, services, staff, CRM, finance, feedback, automation outbox, loyalty/lottery, business site and unified booking inbox.
 - Admin/customer dashboards.
-- Provider contract helpers derive customer route, connect/manage API routes, module manifest entries and shared status labels from the central module registry. Navigation uses these helpers instead of duplicating Instagram API paths and route-active/status logic.
-- Route-level React code splitting keeps channel, Booking and public pages in independent chunks; the primary client bundle was reduced from about 540 kB to about 242 kB at the 2026-08-24 build checkpoint.
+- Provider contract helpers derive customer route, connect/manage API routes, module manifest entries and shared status labels from the central module registry.
+- Cloudflare `/api/modules` now consumes the shared module registry rather than keeping a second hardcoded manifest.
+- Customer channel/control surfaces are React SPA routes; Cloudflare no longer owns provider-specific HTML control panels.
+
+## Unified Bot Commerce v1 checkpoint
+
+The Babba-style Telegram commerce-builder flow and AI Panel multi-provider architecture are now merged at the architecture/application layer.
+
+- Babba is used as the feature reference; AI Panel remains the system architecture and source-of-truth model.
+- `/app/bot-commerce` is the canonical shared bot-commerce editor. `/app/telegram-builder` is a backward-compatible alias to the same editor.
+- `/app/telegram`, `/app/bale` and `/app/rubika` remain provider connection/health surfaces. Token/API/Webhook behavior stays inside provider adapters.
+- One Bot Commerce draft can select multiple connected Telegram, Bale and Rubika bots as release targets.
+- Three initial presets exist: full commerce, services/subscriptions and digital products.
+- Shared logical actions are defined once in `packages/shared/src/bot-commerce.ts`.
+- Runtime-ready common actions across all three current adapters are `CATALOG`, `CART`, `ORDERS`, `SUPPORT`, `TEXT`, `URL` and `SUBMENU`.
+- Planned actions `SEARCH`, `TRACK_ORDER`, `ACCOUNT`, `WALLET`, `MY_SERVICES`, `PRICING`, `REFERRAL` and `TUTORIAL` are present as architecture foundations but are rejected by the backend if enabled during Publish. The product must not present an unfinished action as a live feature.
+- `bot-commerce-manage` is the authenticated application service. It validates target ownership, target ACTIVE state, menu graph/cycles/depth, action readiness and URL/value constraints.
+- Canonical shared Bot Commerce state is stored under `Store.settings.botCommerce` with `draft`, `draftSavedAt`, `published`, `publishedAt`, `version` and `legacyTargets`.
+- Publish materializes the enabled logical menu into the existing Telegram/Bale/Rubika Button tables as a compatibility projection so current webhook runtimes continue operating without a destructive migration.
+- Before the first projection into a bot, its previous provider-specific menu/welcome state is snapshotted. Unpublish restores that legacy state.
+- The existing provider Button identifiers are `text`, so shared projection identifiers are compatible with all three current tables.
+- No database migration is required for v1 because the canonical configuration envelope already exists in `Store.settings JSONB`.
+- The merchant Store domain is deliberately separate from AI Panel SaaS billing. A future Store-customer wallet must not reuse the AI Panel owner `UserWallet`.
 
 ## Store Template Engine v1 checkpoint
 
@@ -60,10 +84,9 @@ This file is the cross-chat handoff for the project. It describes the current re
 - It supports three base presets (`minimal`, `showcase`, `catalog`), global colors, logo URL, card radius and typography scale.
 - Page composition uses reorderable/disableable `hero`, `categories`, `products` and `promo` sections. Product/category sections read the existing `StoreCategory` and `StoreItem` records instead of maintaining a duplicate catalog.
 - The editor includes desktop/mobile live preview; when the Store has no catalog yet, preview-only placeholder data is used and is never persisted.
-- `store-manage` now accepts `save_template_draft` and `publish_template`. Both validate and normalize the template server-side before writing it under `Store.settings.templateEngine`.
-- Draft and published snapshots are separate. Publish increments a version and records `publishedAt`; this creates the stable configuration boundary for a future public storefront renderer.
-- No database migration is required because the existing `Store.settings JSONB` column is the configuration envelope. Checkout, cart and order ownership remain in Commerce Core.
-- First-time users are supported: the editor can call the existing `ensure_store` action before the first save/publish.
+- `store-manage` accepts `save_template_draft` and `publish_template`. Both validate and normalize the template server-side before writing it under `Store.settings.templateEngine`.
+- Draft and published snapshots are separate. Publish increments a version and records `publishedAt`.
+- First-time users can call the existing `ensure_store` action before the first save/publish.
 
 ## Analytics v1 checkpoint
 
@@ -74,39 +97,46 @@ This file is the cross-chat handoff for the project. It describes the current re
 - Instagram v1 KPIs include total followers/following/posts, average stored engagement rate, last sync, and per-account comparison.
 - Operational KPIs include pending scheduler jobs, open WhatsApp conversations, Store orders/successful orders, Booking customers and upcoming appointments.
 - Store order metrics are scoped through `Store.workspaceId -> StoreOrder.storeId`; `StoreOrder` does not have a direct `workspaceId` column.
-- Existing customer-dashboard response fields are preserved so current dashboard/session consumers remain compatible.
 
 ## Supabase ↔ GitHub sync status
 
-Production source drift identified during the 2026-08-24 end-to-end audit has been repaired at this checkpoint:
-
-- 34/34 active Supabase Edge Functions have source tracked under `supabase/functions/<slug>/index.ts`.
+- 35/35 active Supabase Edge Functions have source tracked under `supabase/functions/<slug>/index.ts` after adding `bot-commerce-manage`.
 - 31/31 applied production migrations have matching files under `supabase/migrations/` using their original version and name.
 - Production `verify_jwt` settings are tracked in `supabase/config.toml`.
+- `bot-commerce-manage` is deployed with `verify_jwt=true` and matching source is committed in this change set.
 - `supabase/SYNC_MANIFEST.md` records the synced inventory.
-- Existing production migrations were copied into GitHub; they were not replayed against production during this sync.
 
 Current rule: no Supabase deployment or schema change is complete unless matching source, migration and relevant function configuration are committed in the same change set.
 
 ## Deployment verification rule
 
-- Pull requests build shared contracts and the web app, deploy with Wrangler temporary preview, and poll/smoke the preview `/health`, unauthenticated `/api/session`, and invalid adopt-session behavior during temporary-route propagation.
-- Pushes to `main` deploy production and smoke `https://ai-panel-demo.bustling-larch.workers.dev/health` plus unauthenticated session behavior.
+- The platform workflow covers changes under shared contracts, web, Cloudflare and Supabase source.
+- Pull requests install dependencies, build shared contracts, typecheck the Cloudflare Worker, build the React app, validate Supabase function/config pairing, deploy a temporary Wrangler preview, and smoke `/health` plus unauthenticated session behavior.
+- Production release order is backend-first: changed Supabase Edge Functions and any committed migrations must be available before Cloudflare routes/UI that consume them.
+- Supabase automatic production deployment is gated by repository variable `SUPABASE_DEPLOY_ENABLED`; database migration deployment is separately gated by `SUPABASE_DB_DEPLOY_ENABLED` and its DB password secret.
+- Pushes to `main` deploy Cloudflare production and run production health/session smoke checks.
 - Preview and production use separate concurrency groups so a PR run cannot cancel a production deploy.
-- `packages/shared/tsconfig.json` explicitly sets `rootDir: src`, fixing the TypeScript 7 CI regression discovered in the 2026-08-24 audit.
 
 ## UI migration checkpoint
 
-The standalone customer-channel HTML pattern has been retired. WhatsApp, Rubika and Discord now join Telegram, Bale and Instagram on React routes inside the main SPA. `apps/cloudflare/wrangler.jsonc` runs the Worker before static assets only for `/api/*` and `/health`; customer module routes use the SPA fallback. No new customer module may introduce a standalone HTML control panel.
+The standalone customer-channel HTML pattern has been retired. WhatsApp, Rubika and Discord join Telegram, Bale and Instagram on React routes inside the main SPA. `apps/cloudflare/wrangler.jsonc` runs the Worker before static assets only for `/api/*` and `/health`; customer module routes use the SPA fallback. No new customer module may introduce a standalone HTML control panel.
 
 ## Provider contract checkpoint
 
-`packages/shared/src/providers.ts` is the first normalized provider contract layer. It exports the platform manifest, active provider contracts, derived connect/manage API routes, status labels and route-active logic. New provider code should use these helpers instead of reconstructing paths or status labels locally. `CommerceQuickNav` is the first consumer. Next, move the remaining landing/Worker module manifests and shared provider UI primitives onto this layer.
+`packages/shared/src/providers.ts` is the normalized provider route/API helper layer. `packages/shared/src/bot-commerce.ts` is the shared bot-commerce action/template contract. Telegram/Bale/Rubika provider code should render/execute shared actions rather than introduce independent commerce schemas or canonical menus.
 
 ## Next architecture milestones
 
-1. Finish provider contract adoption and extract shared provider UI primitives.
-2. Implement the generic scheduler/worker and expose its shared queue UI.
-3. Extend Analytics v1 with historical/post-level metrics and actionable recommendations.
-4. Complete billing/payment/subscription/referral flows on top of the shared wallet core.
-5. Add Twitter/X using the unified module contract.
+Complete the Babba feature set domain-first, then expose each completed core to every compatible provider:
+
+1. Product plans/variants (`StoreItemPlan` or equivalent normalized model).
+2. Payment Core: payment methods, card-to-card, gateway attempts/transactions and verified order payment transitions.
+3. Fulfillment Core: manual fulfillment plus secure automatic digital/file/code delivery.
+4. StoreCustomer account and order-tracking runtime actions.
+5. Store-customer wallet with an immutable ledger, separate from AI Panel SaaS/account wallet.
+6. Promotion/discount codes with redemption limits.
+7. Referral/sub-affiliate core.
+8. Shared seller customer management, message templates and bulk catalog price operations.
+9. Backup/export jobs and normalized commerce analytics.
+10. Generic scheduler/worker/queue for long-running delivery, broadcast, import/export and bulk jobs.
+11. Twitter/X after the shared platform/business cores are sufficiently complete.

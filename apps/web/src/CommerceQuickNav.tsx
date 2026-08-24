@@ -4,6 +4,7 @@ import { useState } from 'react';
 const coreLinks = [
   ['/app', 'داشبورد'],
   ['/app/store', 'فروشگاه'],
+  ['/app/bot-commerce', 'ربات فروشگاهی'],
   ['/app/store/templates', 'قالب فروشگاه'],
   ['/app/orders', 'سفارش‌ها'],
 ] as const;
@@ -66,7 +67,7 @@ export default function CommerceQuickNav() {
 
   const inBooking = path.startsWith('/app/booking');
   return <nav className="commerce-quick-nav" dir="rtl" aria-label="AI Panel navigation"><style>{styles}</style>
-    {coreLinks.map(([href, label]) => <a key={href} href={href} className={path === href ? 'active' : ''}>{label}</a>)}
+    {coreLinks.map(([href, label]) => <a key={href} href={href} className={path === href || (href === '/app/bot-commerce' && path === '/app/telegram-builder') ? 'active' : ''}>{label}</a>)}
     <i className="divider" />
     {customerNavigationModules.map((module) => <a key={module.key} href={module.customerRoute!} className={isModuleRouteActive(path, module.customerRoute) ? 'active module' : 'module'} title={module.descriptionFa}><b>{module.shortCode}</b>{module.labelFa}<em className={module.status}>{moduleStatusLabelFa(module.status)}</em></a>)}
     {inBooking && <><i className="divider" />{bookingLinks.map(([href, label]) => <a key={href} href={href} className={path === href ? 'active' : ''}>{label}</a>)}</>}

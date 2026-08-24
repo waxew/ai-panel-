@@ -4,7 +4,7 @@ import App from './App';
 import CommerceQuickNav from './CommerceQuickNav';
 import './styles.css';
 
-const TelegramMenuBuilder = lazy(() => import('./TelegramMenuBuilder'));
+const BotCommerceBuilder = lazy(() => import('./BotCommerceBuilder'));
 const BaleControlCenter = lazy(() => import('./BaleControlCenter'));
 const StoreOrders = lazy(() => import('./StoreOrders'));
 const StoreTemplateEngine = lazy(() => import('./StoreTemplateEngine'));
@@ -66,8 +66,8 @@ async function renderApp() {
       ? <PublicFeedbackPage />
       : path.startsWith('/site/')
         ? <PublicBusinessSite />
-        : path === '/app/telegram-builder'
-          ? <TelegramMenuBuilder />
+        : path === '/app/bot-commerce' || path === '/app/telegram-builder'
+          ? <BotCommerceBuilder />
           : path === '/app/bale'
             ? <BaleControlCenter />
             : path === '/app/orders'

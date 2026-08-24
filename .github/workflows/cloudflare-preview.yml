@@ -1,4 +1,4 @@
-name: Cloudflare deploy
+name: AI Panel platform deploy
 
 on:
   workflow_dispatch:
@@ -13,21 +13,24 @@ on:
       - packages/shared/**
       - apps/cloudflare/**
       - apps/web/**
+      - supabase/**
 
 permissions:
   contents: read
 
 concurrency:
-  group: ai-panel-cloudflare-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'production' }}
+  group: ai-panel-platform-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'production' }}
   cancel-in-progress: true
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -43,10 +46,84 @@ jobs:
       - name: Build shared contracts
         run: pnpm --filter @ai-panel/shared build
 
+      - name: Typecheck Cloudflare gateway
+        run: pnpm --filter @ai-panel/cloudflare typecheck
+
       - name: Build web app
         run: pnpm build:cloudflare
 
-      - name: Deploy production
+      - name: Validate Supabase source/config pairing
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=0
+          for dir in supabase/functions/*; do
+            [ -d "$dir" ] || continue
+            slug=$(basename "$dir")
+            [ "$slug" = "_shared" ] && continue
+            if [ ! -f "$dir/index.ts" ]; then
+              echo "Missing index.ts for $slug"
+              missing=1
+            fi
+            if ! grep -Fq "[functions.$slug]" supabase/config.toml; then
+              echo "Missing verify_jwt config for $slug"
+              missing=1
+            fi
+          done
+          test "$missing" = "0"
+
+      - name: Setup Supabase CLI
+        if: ((github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch') && vars.SUPABASE_DEPLOY_ENABLED == 'true'
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Detect changed Supabase functions
+        id: changed-functions
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.SUPABASE_DEPLOY_ENABLED == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          before="${{ github.event.before }}"
+          if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ]; then
+            slugs=$(find supabase/functions -mindepth 1 -maxdepth 1 -type d ! -name _shared -printf '%f\n' | sort -u | tr '\n' ' ')
+          else
+            slugs=$(git diff --name-only "$before" "$GITHUB_SHA" -- 'supabase/functions/**' | awk -F/ '$1=="supabase" && $2=="functions" && $3!="_shared" {print $3}' | sort -u | tr '\n' ' ')
+          fi
+          echo "slugs=$slugs" >> "$GITHUB_OUTPUT"
+          echo "Changed functions: $slugs"
+
+      - name: Deploy changed Supabase Edge Functions
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.SUPABASE_DEPLOY_ENABLED == 'true' && steps.changed-functions.outputs.slugs != ''
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SLUGS: ${{ steps.changed-functions.outputs.slugs }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for slug in $SLUGS; do
+            echo "Deploying Supabase function: $slug"
+            supabase functions deploy "$slug" --project-ref spncmjuvnvfkrahjnyjm
+          done
+
+      - name: Deploy all Supabase Edge Functions (manual release)
+        if: github.event_name == 'workflow_dispatch' && vars.SUPABASE_DEPLOY_ENABLED == 'true'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase functions deploy --project-ref spncmjuvnvfkrahjnyjm
+
+      - name: Apply Supabase migrations
+        if: ((github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch') && vars.SUPABASE_DB_DEPLOY_ENABLED == 'true'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase link --project-ref spncmjuvnvfkrahjnyjm --password "$SUPABASE_DB_PASSWORD"
+          supabase db push
+
+      - name: Deploy Cloudflare production
         if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

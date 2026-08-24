@@ -5,7 +5,7 @@ Project ref: `spncmjuvnvfkrahjnyjm`
 
 This manifest records the production-to-GitHub source sync checkpoint. GitHub `main` is the canonical source for future AI Panel changes. Production migrations listed here were already applied before this checkpoint; they were copied into the repository and were not replayed.
 
-## Edge Functions — 34/34 tracked
+## Edge Functions — 35/35 tracked
 
 | Function | verify_jwt |
 | --- | --- |
@@ -13,6 +13,7 @@ This manifest records the production-to-GitHub source sync checkpoint. GitHub `m
 | telegram-webhook | false |
 | customer-dashboard | true |
 | store-manage | true |
+| bot-commerce-manage | true |
 | admin-dashboard | true |
 | telegram-manage | true |
 | store-orders | true |
@@ -46,7 +47,10 @@ This manifest records the production-to-GitHub source sync checkpoint. GitHub `m
 
 Function source is stored under `supabase/functions/<slug>/index.ts`. Per-function platform auth settings are stored in `supabase/config.toml`.
 
-Current production note: `customer-dashboard` version 7 is ACTIVE with `verify_jwt=true`; the tracked source includes the additive normalized Analytics v1 payload and corrected Store-order workspace scoping through `Store.workspaceId -> StoreOrder.storeId`.
+Current production notes:
+
+- `customer-dashboard` version 7 is ACTIVE with `verify_jwt=true`; the tracked source includes the additive normalized Analytics v1 payload and corrected Store-order workspace scoping through `Store.workspaceId -> StoreOrder.storeId`.
+- `bot-commerce-manage` was added on 2026-08-24 with `verify_jwt=true`. It is the authenticated shared Draft/Publish/application service for Telegram/Bale/Rubika Bot Commerce and persists canonical state under `Store.settings.botCommerce`.
 
 ## Migration history — 31/31 tracked
 
@@ -82,7 +86,9 @@ Current production note: `customer-dashboard` version 7 is ACTIVE with `verify_j
 30. `20260823140912_booking_business_site_autoprovision_v1.sql`
 31. `20260823153918_account_profile_wallet.sql`
 
-The SQL was recovered from `supabase_migrations.schema_migrations` using the original version/name and stored under `supabase/migrations/`.
+The historical SQL was recovered from `supabase_migrations.schema_migrations` using the original version/name and stored under `supabase/migrations/`.
+
+No new database migration was required for Unified Bot Commerce v1 because its configuration is stored in the existing `Store.settings JSONB` envelope.
 
 ## Going forward
 
