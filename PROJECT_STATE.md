@@ -47,11 +47,23 @@ This file is the cross-chat handoff for the project. It describes the current re
 - Supabase Auth + workspace membership.
 - Shared account/profile + wallet/ledger.
 - Commerce Core: store, categories, items, customers, carts and orders.
+- Store Template Engine v1: draft/published storefront configuration stored in `Store.settings`, using the existing Commerce catalog as the single data source.
 - Channel commerce RPC used by multiple providers.
 - Booking domain: appointments, services, staff, CRM, finance, feedback, automation outbox, loyalty/lottery, business site and unified booking inbox.
 - Admin/customer dashboards.
 - Provider contract helpers derive customer route, connect/manage API routes, module manifest entries and shared status labels from the central module registry. Navigation uses these helpers instead of duplicating Instagram API paths and route-active/status logic.
 - Route-level React code splitting keeps channel, Booking and public pages in independent chunks; the primary client bundle was reduced from about 540 kB to about 242 kB at the 2026-08-24 build checkpoint.
+
+## Store Template Engine v1 checkpoint
+
+- `/app/store/templates` is a lazy-loaded React editor exposed from the Commerce quick navigation.
+- It supports three base presets (`minimal`, `showcase`, `catalog`), global colors, logo URL, card radius and typography scale.
+- Page composition uses reorderable/disableable `hero`, `categories`, `products` and `promo` sections. Product/category sections read the existing `StoreCategory` and `StoreItem` records instead of maintaining a duplicate catalog.
+- The editor includes desktop/mobile live preview; when the Store has no catalog yet, preview-only placeholder data is used and is never persisted.
+- `store-manage` now accepts `save_template_draft` and `publish_template`. Both validate and normalize the template server-side before writing it under `Store.settings.templateEngine`.
+- Draft and published snapshots are separate. Publish increments a version and records `publishedAt`; this creates the stable configuration boundary for a future public storefront renderer.
+- No database migration is required because the existing `Store.settings JSONB` column is the configuration envelope. Checkout, cart and order ownership remain in Commerce Core.
+- First-time users are supported: the editor can call the existing `ensure_store` action before the first save/publish.
 
 ## Analytics v1 checkpoint
 
