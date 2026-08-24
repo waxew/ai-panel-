@@ -9,6 +9,13 @@ const corsHeaders = {
 
 const templateSectionTypes = new Set(["hero", "categories", "products", "promo"]);
 const templateKeys = new Set(["minimal", "showcase", "catalog"]);
+const itemTypes = new Set(["DIGITAL", "PHYSICAL", "SERVICE"]);
+
+const defaultProductTypes = [
+  { id: "digital", title: "محصول دیجیتال", itemType: "DIGITAL", sortOrder: 10 },
+  { id: "physical", title: "محصول فیزیکی", itemType: "PHYSICAL", sortOrder: 20 },
+  { id: "service", title: "خدمت", itemType: "SERVICE", sortOrder: 30 },
+] as const;
 
 function json(data: unknown, status = 200) {
   return Response.json(data, { status, headers: corsHeaders });
@@ -34,6 +41,24 @@ function numberValue(value: unknown, fallback: number, min: number, max: number)
 
 function colorValue(value: unknown, fallback: string) {
   return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value) ? value : fallback;
+}
+
+function normalizeProductTypes(settingsValue: unknown) {
+  const settings = objectValue(settingsValue) ?? {};
+  if (!Array.isArray(settings.productTypes)) return defaultProductTypes.map((item) => ({ ...item }));
+
+  return settings.productTypes.slice(0, 50).flatMap((entry: unknown, index: number) => {
+    const row = objectValue(entry);
+    const id = typeof row?.id === "string" && row.id.trim() ? row.id.trim().slice(0, 80) : "";
+    const title = typeof row?.title === "string" ? row.title.trim().slice(0, 80) : "";
+    if (!id || !title) return [];
+    return [{
+      id,
+      title,
+      itemType: itemTypes.has(String(row?.itemType)) ? String(row?.itemType) : "DIGITAL",
+      sortOrder: numberValue(row?.sortOrder, (index + 1) * 10, 0, 100000),
+    }];
+  }).sort((a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title));
 }
 
 function normalizeTemplate(value: unknown) {
@@ -97,9 +122,19 @@ async function ownedStore(admin: any, workspaceId: string) {
   return data ?? null;
 }
 
+async function saveStoreSettings(admin: any, workspaceId: string, store: any, patch: Record<string, unknown>) {
+  const current = objectValue(store.settings) ?? {};
+  const next = { ...current, ...patch };
+  const now = new Date().toISOString();
+  const { error } = await admin.from("Store").update({ settings: next, updatedAt: now }).eq("id", store.id).eq("workspaceId", workspaceId);
+  if (error) throw new Error(`store_settings:${error.message}`);
+  store.settings = next;
+  store.updatedAt = now;
+}
+
 async function readDashboard(admin: any, workspaceId: string) {
   const store = await ownedStore(admin, workspaceId);
-  if (!store) return { ok: true, store: null, categories: [], items: [], orders: [], summary: { itemCount: 0, categoryCount: 0, orderCount: 0, paidOrderCount: 0, customerCount: 0 } };
+  if (!store) return { ok: true, store: null, productTypes: [], categories: [], items: [], orders: [], summary: { itemCount: 0, categoryCount: 0, orderCount: 0, paidOrderCount: 0, customerCount: 0 } };
 
   const [categoriesResult, itemsResult, ordersResult, customersResult, orderCountResult, paidOrderCountResult] = await Promise.all([
     admin.from("StoreCategory").select("id,title,slug,sortOrder,isActive,createdAt,updatedAt").eq("storeId", store.id).order("sortOrder", { ascending: true }),
@@ -118,6 +153,7 @@ async function readDashboard(admin: any, workspaceId: string) {
   return {
     ok: true,
     store,
+    productTypes: normalizeProductTypes(store.settings),
     categories,
     items,
     orders: ordersResult.data ?? [],
@@ -201,6 +237,53 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
     }
   }
 
+  if (action === "create_product_type") {
+    const title = typeof body.title === "string" ? body.title.trim().slice(0, 80) : "";
+    if (!title) return json({ ok: false, message: "نام نوع محصول الزامی است." }, 400);
+    try {
+      const productTypes = normalizeProductTypes(store.settings);
+      if (productTypes.some((item) => item.title.localeCompare(title, "fa", { sensitivity: "base" }) === 0)) return json({ ok: false, message: "این نوع محصول قبلاً وجود دارد." }, 409);
+      const maxSort = Math.max(0, ...productTypes.map((item) => item.sortOrder));
+      const next = [...productTypes, { id: crypto.randomUUID(), title, itemType: itemTypes.has(String(body.itemType)) ? String(body.itemType) : "DIGITAL", sortOrder: maxSort + 10 }];
+      await saveStoreSettings(admin, workspaceId, store, { productTypes: next });
+      return json(await readDashboard(admin, workspaceId), 201);
+    } catch (error) {
+      console.error("product type create failed", error);
+      return json({ ok: false, message: "ساخت نوع محصول انجام نشد." }, 500);
+    }
+  }
+
+  if (action === "update_product_type") {
+    const productTypeId = typeof body.productTypeId === "string" ? body.productTypeId.trim() : "";
+    const title = typeof body.title === "string" ? body.title.trim().slice(0, 80) : "";
+    if (!productTypeId || !title) return json({ ok: false, message: "نوع محصول و نام جدید الزامی است." }, 400);
+    try {
+      const productTypes = normalizeProductTypes(store.settings);
+      if (!productTypes.some((item) => item.id === productTypeId)) return json({ ok: false, message: "نوع محصول پیدا نشد." }, 404);
+      if (productTypes.some((item) => item.id !== productTypeId && item.title.localeCompare(title, "fa", { sensitivity: "base" }) === 0)) return json({ ok: false, message: "نوع دیگری با این نام وجود دارد." }, 409);
+      const next = productTypes.map((item) => item.id === productTypeId ? { ...item, title } : item);
+      await saveStoreSettings(admin, workspaceId, store, { productTypes: next });
+      return json(await readDashboard(admin, workspaceId));
+    } catch (error) {
+      console.error("product type update failed", error);
+      return json({ ok: false, message: "ویرایش نوع محصول انجام نشد." }, 500);
+    }
+  }
+
+  if (action === "delete_product_type") {
+    const productTypeId = typeof body.productTypeId === "string" ? body.productTypeId.trim() : "";
+    if (!productTypeId) return json({ ok: false, message: "نوع محصول مشخص نیست." }, 400);
+    try {
+      const productTypes = normalizeProductTypes(store.settings);
+      if (!productTypes.some((item) => item.id === productTypeId)) return json({ ok: false, message: "نوع محصول پیدا نشد." }, 404);
+      await saveStoreSettings(admin, workspaceId, store, { productTypes: productTypes.filter((item) => item.id !== productTypeId) });
+      return json(await readDashboard(admin, workspaceId));
+    } catch (error) {
+      console.error("product type delete failed", error);
+      return json({ ok: false, message: "حذف نوع محصول انجام نشد." }, 500);
+    }
+  }
+
   if (action === "create_category") {
     const title = typeof body.title === "string" ? body.title.trim().slice(0, 100) : "";
     if (!title) return json({ ok: false, message: "نام دسته‌بندی الزامی است." }, 400);
@@ -218,13 +301,52 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
     }
   }
 
+  if (action === "update_category") {
+    const categoryId = typeof body.categoryId === "string" ? body.categoryId.trim() : "";
+    const title = typeof body.title === "string" ? body.title.trim().slice(0, 100) : "";
+    if (!categoryId || !title) return json({ ok: false, message: "دسته‌بندی و نام جدید الزامی است." }, 400);
+    try {
+      const { data: category, error: categoryError } = await admin.from("StoreCategory").select("id").eq("id", categoryId).eq("storeId", store.id).maybeSingle();
+      if (categoryError) throw categoryError;
+      if (!category) return json({ ok: false, message: "دسته‌بندی پیدا نشد." }, 404);
+      let slug = slugify(title);
+      const { data: duplicate, error: duplicateError } = await admin.from("StoreCategory").select("id").eq("storeId", store.id).eq("slug", slug).neq("id", categoryId).limit(1);
+      if (duplicateError) throw duplicateError;
+      if (duplicate?.length) slug = `${slug}-${crypto.randomUUID().slice(0, 5)}`;
+      const { error } = await admin.from("StoreCategory").update({ title, slug }).eq("id", categoryId).eq("storeId", store.id);
+      if (error) throw error;
+      return json(await readDashboard(admin, workspaceId));
+    } catch (error) {
+      console.error("category update failed", error);
+      return json({ ok: false, message: "ویرایش دسته‌بندی انجام نشد." }, 500);
+    }
+  }
+
+  if (action === "delete_category") {
+    const categoryId = typeof body.categoryId === "string" ? body.categoryId.trim() : "";
+    if (!categoryId) return json({ ok: false, message: "دسته‌بندی مشخص نیست." }, 400);
+    try {
+      const { data: category, error: categoryError } = await admin.from("StoreCategory").select("id").eq("id", categoryId).eq("storeId", store.id).maybeSingle();
+      if (categoryError) throw categoryError;
+      if (!category) return json({ ok: false, message: "دسته‌بندی پیدا نشد." }, 404);
+      const { error: unassignError } = await admin.from("StoreItem").update({ categoryId: null }).eq("storeId", store.id).eq("categoryId", categoryId);
+      if (unassignError) throw unassignError;
+      const { error } = await admin.from("StoreCategory").delete().eq("id", categoryId).eq("storeId", store.id);
+      if (error) throw error;
+      return json(await readDashboard(admin, workspaceId));
+    } catch (error) {
+      console.error("category delete failed", error);
+      return json({ ok: false, message: "حذف دسته‌بندی انجام نشد." }, 500);
+    }
+  }
+
   if (action === "create_item") {
     const title = typeof body.title === "string" ? body.title.trim().slice(0, 160) : "";
     const priceAmount = Number(body.priceAmount);
-    const itemType = ["DIGITAL", "PHYSICAL", "SERVICE"].includes(body.itemType) ? body.itemType : "DIGITAL";
     const inventoryRaw = body.inventoryCount;
     const inventoryCount = inventoryRaw === "" || inventoryRaw === null || inventoryRaw === undefined ? null : Number(inventoryRaw);
     const categoryId = typeof body.categoryId === "string" && body.categoryId ? body.categoryId : null;
+    const productTypeId = typeof body.productTypeId === "string" && body.productTypeId ? body.productTypeId : null;
 
     if (!title) return json({ ok: false, message: "نام محصول الزامی است." }, 400);
     if (!Number.isSafeInteger(priceAmount) || priceAmount < 0) return json({ ok: false, message: "قیمت محصول معتبر نیست." }, 400);
@@ -235,6 +357,12 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
         const { data: category, error } = await admin.from("StoreCategory").select("id").eq("id", categoryId).eq("storeId", store.id).maybeSingle();
         if (error || !category) return json({ ok: false, message: "دسته‌بندی انتخاب‌شده معتبر نیست." }, 400);
       }
+      const productTypes = normalizeProductTypes(store.settings);
+      const productType = productTypeId ? productTypes.find((item) => item.id === productTypeId) : null;
+      if (productTypeId && !productType) return json({ ok: false, message: "نوع محصول انتخاب‌شده معتبر نیست." }, 400);
+      const itemType = productType?.itemType ?? (itemTypes.has(String(body.itemType)) ? String(body.itemType) : "DIGITAL");
+      const metadata = objectValue(body.metadata) ?? {};
+      if (productTypeId) metadata.productTypeId = productTypeId;
       const row = {
         storeId: store.id,
         categoryId,
@@ -245,6 +373,7 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
         currency: "IRR",
         inventoryCount,
         isActive: true,
+        metadata,
       };
       const { error } = await admin.from("StoreItem").insert(row);
       if (error) throw error;
