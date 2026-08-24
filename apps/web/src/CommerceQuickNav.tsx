@@ -4,6 +4,7 @@ import { useState } from 'react';
 const coreLinks = [
   ['/app', 'داشبورد'],
   ['/app/store', 'فروشگاه'],
+  ['/app/store/templates', 'قالب فروشگاه'],
   ['/app/orders', 'سفارش‌ها'],
 ] as const;
 
