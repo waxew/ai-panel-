@@ -23,6 +23,21 @@ const providerConfig = {
 
 type Provider = keyof typeof providerConfig;
 type JsonObject = Record<string, any>;
+type RuntimeTarget = { provider: Provider; botId: string; enabled: boolean };
+
+type LegacyTargetSnapshot = {
+  provider: Provider;
+  botId: string;
+  welcomeMessage: string | null;
+  buttons: Array<{
+    id: string;
+    parentId: string | null;
+    title: string;
+    actionType: string;
+    actionValue: string | null;
+    sortOrder: number;
+  }>;
+};
 
 function json(data: unknown, status = 200) {
   return Response.json(data, { status, headers: corsHeaders });
@@ -113,14 +128,15 @@ function buildOwnedTargetSet(providerBots: Record<string, any[]>) {
   return owned;
 }
 
-function validateMenuGraph(menu: any[]) {
+function validateMenuGraph(menu: any[], forPublish: boolean) {
   const ids = new Set(menu.map((node) => node.id));
+  const byId = new Map(menu.map((node) => [node.id, node]));
   for (const node of menu) {
     if (node.parentId !== null && !ids.has(node.parentId)) throw new Error("invalid_parent");
     if (node.parentId === node.id) throw new Error("menu_cycle");
+    if (forPublish && node.enabled && node.parentId && !byId.get(node.parentId)?.enabled) throw new Error("enabled_child_of_disabled_parent");
   }
 
-  const byId = new Map(menu.map((node) => [node.id, node]));
   for (const node of menu) {
     let cursor: any = node;
     const visited = new Set<string>();
@@ -169,7 +185,7 @@ function normalizeTemplate(value: unknown, ownedTargets: Set<string>, forPublish
       enabled,
     };
   });
-  validateMenuGraph(menu);
+  validateMenuGraph(menu, forPublish);
   if (!menu.some((node) => node.enabled && node.parentId === null)) throw new Error("no_root_menu");
 
   const targetsInput = Array.isArray(raw.targets) ? raw.targets.slice(0, 20) : [];
@@ -184,7 +200,7 @@ function normalizeTemplate(value: unknown, ownedTargets: Set<string>, forPublish
     if (targetKeys.has(key)) throw new Error("duplicate_target");
     targetKeys.add(key);
     if (!ownedTargets.has(key)) throw new Error("foreign_target");
-    return { provider, botId, enabled: target.enabled !== false };
+    return { provider: provider as Provider, botId, enabled: target.enabled !== false };
   });
   if (forPublish && !targets.some((target) => target.enabled)) throw new Error("no_publish_target");
 
@@ -219,6 +235,120 @@ async function readState(admin: any, workspaceId: string) {
   };
 }
 
+async function snapshotTarget(admin: any, workspaceId: string, target: RuntimeTarget): Promise<LegacyTargetSnapshot> {
+  const config = providerConfig[target.provider];
+  const { data: bot, error: botError } = await admin.from(config.table)
+    .select("id,welcomeMessage,status")
+    .eq("id", target.botId).eq("workspaceId", workspaceId).maybeSingle();
+  if (botError || !bot) throw new Error("foreign_target");
+  if (bot.status !== "ACTIVE") throw new Error("inactive_target");
+  const { data: buttons, error: buttonError } = await admin.from(config.buttonTable)
+    .select("id,parentId,title,actionType,actionValue,sortOrder")
+    .eq("botId", target.botId).order("sortOrder", { ascending: true });
+  if (buttonError) throw new Error(`snapshot_buttons:${buttonError.message}`);
+  return {
+    provider: target.provider,
+    botId: target.botId,
+    welcomeMessage: bot.welcomeMessage ?? null,
+    buttons: (buttons ?? []).map((button: any) => ({
+      id: String(button.id),
+      parentId: button.parentId ? String(button.parentId) : null,
+      title: String(button.title),
+      actionType: String(button.actionType),
+      actionValue: button.actionValue == null ? null : String(button.actionValue),
+      sortOrder: Number(button.sortOrder ?? 0),
+    })),
+  };
+}
+
+async function replaceButtons(admin: any, provider: Provider, botId: string, rows: any[]) {
+  const table = providerConfig[provider].buttonTable;
+  const { data: current, error: readError } = await admin.from(table).select("id").eq("botId", botId);
+  if (readError) throw new Error(`projection_read:${readError.message}`);
+  const nextIds = new Set(rows.map((row) => String(row.id)));
+  const staleIds = (current ?? []).map((row: any) => String(row.id)).filter((id: string) => !nextIds.has(id));
+  if (rows.length) {
+    const { error: upsertError } = await admin.from(table).upsert(rows, { onConflict: "id" });
+    if (upsertError) throw new Error(`projection_upsert:${upsertError.message}`);
+  }
+  if (staleIds.length) {
+    const { error: deleteError } = await admin.from(table).delete().in("id", staleIds);
+    if (deleteError) throw new Error(`projection_delete:${deleteError.message}`);
+  }
+}
+
+async function projectTarget(admin: any, workspaceId: string, target: RuntimeTarget, template: any) {
+  const config = providerConfig[target.provider];
+  const { data: bot, error: botError } = await admin.from(config.table)
+    .select("id,status")
+    .eq("id", target.botId).eq("workspaceId", workspaceId).maybeSingle();
+  if (botError || !bot) throw new Error("foreign_target");
+  if (bot.status !== "ACTIVE") throw new Error("inactive_target");
+
+  const enabled = template.menu.filter((node: any) => node.enabled);
+  const projectionId = (nodeId: string) => `${target.botId}:${nodeId}`;
+  const rows = enabled.map((node: any) => ({
+    id: projectionId(node.id),
+    botId: target.botId,
+    parentId: node.parentId ? projectionId(node.parentId) : null,
+    title: node.title,
+    actionType: node.actionType,
+    actionValue: node.actionValue,
+    sortOrder: node.sortOrder,
+  }));
+  await replaceButtons(admin, target.provider, target.botId, rows);
+  const { error: welcomeError } = await admin.from(config.table)
+    .update({ welcomeMessage: template.welcomeMessage })
+    .eq("id", target.botId).eq("workspaceId", workspaceId);
+  if (welcomeError) throw new Error(`projection_welcome:${welcomeError.message}`);
+}
+
+async function restoreTarget(admin: any, workspaceId: string, snapshot: LegacyTargetSnapshot) {
+  const config = providerConfig[snapshot.provider];
+  const { data: bot, error: botError } = await admin.from(config.table)
+    .select("id")
+    .eq("id", snapshot.botId).eq("workspaceId", workspaceId).maybeSingle();
+  if (botError || !bot) return;
+  const rows = snapshot.buttons.map((button) => ({ ...button, botId: snapshot.botId }));
+  await replaceButtons(admin, snapshot.provider, snapshot.botId, rows);
+  if (snapshot.welcomeMessage) {
+    const { error } = await admin.from(config.table).update({ welcomeMessage: snapshot.welcomeMessage }).eq("id", snapshot.botId);
+    if (error) throw new Error(`restore_welcome:${error.message}`);
+  }
+}
+
+function parseLegacySnapshots(value: unknown) {
+  const raw = objectValue(value) ?? {};
+  const snapshots: Record<string, LegacyTargetSnapshot> = {};
+  for (const [key, entry] of Object.entries(raw)) {
+    const item = objectValue(entry);
+    if (!item || !providers.has(String(item.provider)) || typeof item.botId !== "string" || !Array.isArray(item.buttons)) continue;
+    snapshots[key] = item as LegacyTargetSnapshot;
+  }
+  return snapshots;
+}
+
+async function syncPublishedTargets(admin: any, workspaceId: string, engine: JsonObject, template: any) {
+  const snapshots = parseLegacySnapshots(engine.legacyTargets);
+  const nextTargets = (template.targets as RuntimeTarget[]).filter((target) => target.enabled);
+  const nextKeys = new Set(nextTargets.map((target) => `${target.provider}:${target.botId}`));
+  const previousTargets = Array.isArray(engine.published?.targets)
+    ? (engine.published.targets as RuntimeTarget[]).filter((target) => target?.enabled && providers.has(String(target.provider)) && typeof target.botId === "string")
+    : [];
+
+  for (const previous of previousTargets) {
+    const key = `${previous.provider}:${previous.botId}`;
+    if (!nextKeys.has(key) && snapshots[key]) await restoreTarget(admin, workspaceId, snapshots[key]);
+  }
+
+  for (const target of nextTargets) {
+    const key = `${target.provider}:${target.botId}`;
+    if (!snapshots[key]) snapshots[key] = await snapshotTarget(admin, workspaceId, target);
+    await projectTarget(admin, workspaceId, target, template);
+  }
+  return snapshots;
+}
+
 async function saveEngine(admin: any, workspaceId: string, rawTemplate: unknown, publish: boolean) {
   const [store, providerBots] = await Promise.all([ensureStore(admin, workspaceId), listProviderBots(admin, workspaceId)]);
   const ownedTargets = buildOwnedTargetSet(providerBots);
@@ -227,11 +357,12 @@ async function saveEngine(admin: any, workspaceId: string, rawTemplate: unknown,
   const engine = objectValue(settings.botCommerce) ?? {};
   const now = new Date().toISOString();
   const version = integerValue(engine.version, 0, 0, 1_000_000);
+  const legacyTargets = publish ? await syncPublishedTargets(admin, workspaceId, engine, template) : engine.legacyTargets;
   const nextEngine = {
     ...engine,
     draft: template,
     draftSavedAt: now,
-    ...(publish ? { published: template, publishedAt: now, version: version + 1 } : {}),
+    ...(publish ? { published: template, publishedAt: now, version: version + 1, legacyTargets } : {}),
   };
   const { error } = await admin.from("Store").update({ settings: { ...settings, botCommerce: nextEngine }, updatedAt: now })
     .eq("id", store.id).eq("workspaceId", workspaceId);
@@ -268,6 +399,14 @@ async function unpublish(admin: any, workspaceId: string) {
   if (!store) return readState(admin, workspaceId);
   const settings = objectValue(store.settings) ?? {};
   const engine = objectValue(settings.botCommerce) ?? {};
+  const snapshots = parseLegacySnapshots(engine.legacyTargets);
+  const publishedTargets = Array.isArray(engine.published?.targets)
+    ? (engine.published.targets as RuntimeTarget[]).filter((target) => target?.enabled && providers.has(String(target.provider)) && typeof target.botId === "string")
+    : [];
+  for (const target of publishedTargets) {
+    const key = `${target.provider}:${target.botId}`;
+    if (snapshots[key]) await restoreTarget(admin, workspaceId, snapshots[key]);
+  }
   const now = new Date().toISOString();
   const next = { ...engine, published: null, publishedAt: null };
   const { error } = await admin.from("Store").update({ settings: { ...settings, botCommerce: next }, updatedAt: now })
@@ -280,10 +419,12 @@ function friendlyError(error: unknown) {
   const text = String(error);
   if (text.includes("action_not_live:")) return `این قابلیت هنوز Runtime نهایی ندارد: ${text.split("action_not_live:")[1] ?? ""}. آن را غیرفعال کنید یا بعد از تکمیل Runtime منتشر کنید.`;
   if (text.includes("no_publish_target")) return "برای انتشار حداقل یک ربات متصل را انتخاب کنید.";
+  if (text.includes("inactive_target")) return "برای انتشار، ربات انتخاب‌شده باید ACTIVE و متصل باشد.";
   if (text.includes("foreign_target")) return "یکی از ربات‌های انتخاب‌شده متعلق به این Workspace نیست.";
   if (text.includes("invalid_url")) return "یکی از لینک‌های منو معتبر نیست.";
   if (text.includes("menu_cycle")) return "ساختار منو حلقه دارد و معتبر نیست.";
   if (text.includes("menu_depth")) return "حداکثر عمق منو سه سطح است.";
+  if (text.includes("enabled_child_of_disabled_parent")) return "زیرگزینه فعال نمی‌تواند زیر یک گزینه غیرفعال منتشر شود.";
   if (text.includes("invalid_parent")) return "والد یکی از گزینه‌های منو معتبر نیست.";
   if (text.includes("empty_provider_menu")) return "منوی قابل انتقالی در این ربات وجود ندارد.";
   return "تنظیمات Bot Commerce معتبر نیست یا ذخیره نشد.";
