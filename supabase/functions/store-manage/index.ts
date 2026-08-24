@@ -132,6 +132,20 @@ async function saveStoreSettings(admin: any, workspaceId: string, store: any, pa
   store.updatedAt = now;
 }
 
+async function requireCategory(admin: any, storeId: string, categoryId: string | null) {
+  if (!categoryId) return null;
+  const { data, error } = await admin.from("StoreCategory").select("id").eq("id", categoryId).eq("storeId", storeId).maybeSingle();
+  if (error) throw new Error(`category_read:${error.message}`);
+  if (!data) throw new Error("invalid_category");
+  return categoryId;
+}
+
+async function itemsUsingProductType(admin: any, storeId: string, productTypeId: string) {
+  const { data, error } = await admin.from("StoreItem").select("id,metadata").eq("storeId", storeId);
+  if (error) throw new Error(`type_items:${error.message}`);
+  return (data ?? []).filter((row: any) => objectValue(row.metadata)?.productTypeId === productTypeId);
+}
+
 async function readDashboard(admin: any, workspaceId: string) {
   const store = await ownedStore(admin, workspaceId);
   if (!store) return { ok: true, store: null, productTypes: [], categories: [], items: [], orders: [], summary: { itemCount: 0, categoryCount: 0, orderCount: 0, paidOrderCount: 0, customerCount: 0 } };
@@ -259,10 +273,19 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
     if (!productTypeId || !title) return json({ ok: false, message: "نوع محصول و نام جدید الزامی است." }, 400);
     try {
       const productTypes = normalizeProductTypes(store.settings);
-      if (!productTypes.some((item) => item.id === productTypeId)) return json({ ok: false, message: "نوع محصول پیدا نشد." }, 404);
+      const current = productTypes.find((item) => item.id === productTypeId);
+      if (!current) return json({ ok: false, message: "نوع محصول پیدا نشد." }, 404);
       if (productTypes.some((item) => item.id !== productTypeId && item.title.localeCompare(title, "fa", { sensitivity: "base" }) === 0)) return json({ ok: false, message: "نوع دیگری با این نام وجود دارد." }, 409);
-      const next = productTypes.map((item) => item.id === productTypeId ? { ...item, title } : item);
+      const nextItemType = itemTypes.has(String(body.itemType)) ? String(body.itemType) : current.itemType;
+      const next = productTypes.map((item) => item.id === productTypeId ? { ...item, title, itemType: nextItemType } : item);
       await saveStoreSettings(admin, workspaceId, store, { productTypes: next });
+      if (nextItemType !== current.itemType) {
+        const usedBy = await itemsUsingProductType(admin, store.id, productTypeId);
+        if (usedBy.length) {
+          const { error } = await admin.from("StoreItem").update({ itemType: nextItemType, updatedAt: new Date().toISOString() }).in("id", usedBy.map((item: any) => item.id)).eq("storeId", store.id);
+          if (error) throw new Error(`type_sync:${error.message}`);
+        }
+      }
       return json(await readDashboard(admin, workspaceId));
     } catch (error) {
       console.error("product type update failed", error);
@@ -276,6 +299,13 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
     try {
       const productTypes = normalizeProductTypes(store.settings);
       if (!productTypes.some((item) => item.id === productTypeId)) return json({ ok: false, message: "نوع محصول پیدا نشد." }, 404);
+      const usedBy = await itemsUsingProductType(admin, store.id, productTypeId);
+      for (const item of usedBy) {
+        const metadata = objectValue(item.metadata) ?? {};
+        delete metadata.productTypeId;
+        const { error } = await admin.from("StoreItem").update({ metadata, updatedAt: new Date().toISOString() }).eq("id", item.id).eq("storeId", store.id);
+        if (error) throw new Error(`type_unlink:${error.message}`);
+      }
       await saveStoreSettings(admin, workspaceId, store, { productTypes: productTypes.filter((item) => item.id !== productTypeId) });
       return json(await readDashboard(admin, workspaceId));
     } catch (error) {
@@ -313,7 +343,7 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
       const { data: duplicate, error: duplicateError } = await admin.from("StoreCategory").select("id").eq("storeId", store.id).eq("slug", slug).neq("id", categoryId).limit(1);
       if (duplicateError) throw duplicateError;
       if (duplicate?.length) slug = `${slug}-${crypto.randomUUID().slice(0, 5)}`;
-      const { error } = await admin.from("StoreCategory").update({ title, slug }).eq("id", categoryId).eq("storeId", store.id);
+      const { error } = await admin.from("StoreCategory").update({ title, slug, updatedAt: new Date().toISOString() }).eq("id", categoryId).eq("storeId", store.id);
       if (error) throw error;
       return json(await readDashboard(admin, workspaceId));
     } catch (error) {
@@ -329,7 +359,7 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
       const { data: category, error: categoryError } = await admin.from("StoreCategory").select("id").eq("id", categoryId).eq("storeId", store.id).maybeSingle();
       if (categoryError) throw categoryError;
       if (!category) return json({ ok: false, message: "دسته‌بندی پیدا نشد." }, 404);
-      const { error: unassignError } = await admin.from("StoreItem").update({ categoryId: null }).eq("storeId", store.id).eq("categoryId", categoryId);
+      const { error: unassignError } = await admin.from("StoreItem").update({ categoryId: null, updatedAt: new Date().toISOString() }).eq("storeId", store.id).eq("categoryId", categoryId);
       if (unassignError) throw unassignError;
       const { error } = await admin.from("StoreCategory").delete().eq("id", categoryId).eq("storeId", store.id);
       if (error) throw error;
@@ -353,10 +383,7 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
     if (inventoryCount !== null && (!Number.isSafeInteger(inventoryCount) || inventoryCount < 0)) return json({ ok: false, message: "موجودی معتبر نیست." }, 400);
 
     try {
-      if (categoryId) {
-        const { data: category, error } = await admin.from("StoreCategory").select("id").eq("id", categoryId).eq("storeId", store.id).maybeSingle();
-        if (error || !category) return json({ ok: false, message: "دسته‌بندی انتخاب‌شده معتبر نیست." }, 400);
-      }
+      await requireCategory(admin, store.id, categoryId);
       const productTypes = normalizeProductTypes(store.settings);
       const productType = productTypeId ? productTypes.find((item) => item.id === productTypeId) : null;
       if (productTypeId && !productType) return json({ ok: false, message: "نوع محصول انتخاب‌شده معتبر نیست." }, 400);
@@ -380,8 +407,64 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
       return json(await readDashboard(admin, workspaceId), 201);
     } catch (error) {
       console.error("item create failed", error);
+      if (String(error).includes("invalid_category")) return json({ ok: false, message: "دسته‌بندی انتخاب‌شده معتبر نیست." }, 400);
       return json({ ok: false, message: "ساخت محصول انجام نشد." }, 500);
     }
+  }
+
+  if (action === "update_item") {
+    const itemId = typeof body.itemId === "string" ? body.itemId.trim() : "";
+    if (!itemId) return json({ ok: false, message: "محصول مشخص نیست." }, 400);
+    const { data: current, error: currentError } = await admin.from("StoreItem").select("id,title,description,itemType,priceAmount,inventoryCount,categoryId,metadata,isActive").eq("id", itemId).eq("storeId", store.id).maybeSingle();
+    if (currentError) return json({ ok: false, message: "بررسی محصول انجام نشد." }, 500);
+    if (!current) return json({ ok: false, message: "محصول پیدا نشد." }, 404);
+
+    const title = typeof body.title === "string" ? body.title.trim().slice(0, 160) : current.title;
+    const priceAmount = body.priceAmount === undefined ? Number(current.priceAmount) : Number(body.priceAmount);
+    const inventoryRaw = body.inventoryCount === undefined ? current.inventoryCount : body.inventoryCount;
+    const inventoryCount = inventoryRaw === "" || inventoryRaw === null || inventoryRaw === undefined ? null : Number(inventoryRaw);
+    const categoryId = body.categoryId === undefined ? current.categoryId : (typeof body.categoryId === "string" && body.categoryId ? body.categoryId : null);
+    const productTypeId = body.productTypeId === undefined ? objectValue(current.metadata)?.productTypeId ?? null : (typeof body.productTypeId === "string" && body.productTypeId ? body.productTypeId : null);
+    if (!title) return json({ ok: false, message: "نام محصول الزامی است." }, 400);
+    if (!Number.isSafeInteger(priceAmount) || priceAmount < 0) return json({ ok: false, message: "قیمت محصول معتبر نیست." }, 400);
+    if (inventoryCount !== null && (!Number.isSafeInteger(inventoryCount) || inventoryCount < 0)) return json({ ok: false, message: "موجودی معتبر نیست." }, 400);
+
+    try {
+      await requireCategory(admin, store.id, categoryId);
+      const productTypes = normalizeProductTypes(store.settings);
+      const productType = productTypeId ? productTypes.find((item) => item.id === productTypeId) : null;
+      if (productTypeId && !productType) return json({ ok: false, message: "نوع محصول انتخاب‌شده معتبر نیست." }, 400);
+      const metadata = objectValue(current.metadata) ?? {};
+      if (productTypeId) metadata.productTypeId = productTypeId;
+      else delete metadata.productTypeId;
+      const itemType = productType?.itemType ?? current.itemType;
+      const description = typeof body.description === "string" ? (body.description.trim().slice(0, 4000) || null) : current.description;
+      const { error } = await admin.from("StoreItem").update({ title, description, priceAmount, inventoryCount, categoryId, itemType, metadata, updatedAt: new Date().toISOString() }).eq("id", itemId).eq("storeId", store.id);
+      if (error) throw error;
+      return json(await readDashboard(admin, workspaceId));
+    } catch (error) {
+      console.error("item update failed", error);
+      if (String(error).includes("invalid_category")) return json({ ok: false, message: "دسته‌بندی انتخاب‌شده معتبر نیست." }, 400);
+      return json({ ok: false, message: "ویرایش محصول انجام نشد." }, 500);
+    }
+  }
+
+  if (action === "toggle_item") {
+    const itemId = typeof body.itemId === "string" ? body.itemId.trim() : "";
+    if (!itemId || typeof body.isActive !== "boolean") return json({ ok: false, message: "محصول یا وضعیت آن معتبر نیست." }, 400);
+    const { data: updated, error } = await admin.from("StoreItem").update({ isActive: body.isActive, updatedAt: new Date().toISOString() }).eq("id", itemId).eq("storeId", store.id).select("id").maybeSingle();
+    if (error) return json({ ok: false, message: "تغییر وضعیت محصول انجام نشد." }, 500);
+    if (!updated) return json({ ok: false, message: "محصول پیدا نشد." }, 404);
+    return json(await readDashboard(admin, workspaceId));
+  }
+
+  if (action === "delete_item") {
+    const itemId = typeof body.itemId === "string" ? body.itemId.trim() : "";
+    if (!itemId) return json({ ok: false, message: "محصول مشخص نیست." }, 400);
+    const { data: deleted, error } = await admin.from("StoreItem").delete().eq("id", itemId).eq("storeId", store.id).select("id").maybeSingle();
+    if (error) return json({ ok: false, message: "حذف محصول انجام نشد." }, 500);
+    if (!deleted) return json({ ok: false, message: "محصول پیدا نشد." }, 404);
+    return json(await readDashboard(admin, workspaceId));
   }
 
   return json({ ok: false, message: "عملیات شناخته‌شده نیست." }, 400);

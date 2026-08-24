@@ -145,8 +145,15 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
     if (!allowedTransition(order.status, nextStatus)) {
       return json({ ok: false, message: "این تغییر وضعیت مجاز نیست. وضعیت PAID و REFUNDED فقط باید توسط جریان پرداخت معتبر تغییر کنند." }, 409);
     }
-    const { error } = await admin.from("StoreOrder").update({ status: nextStatus, updatedAt: new Date().toISOString() }).eq("id", order.id).eq("storeId", store.id).eq("status", order.status);
+    const { data: transitioned, error } = await admin.from("StoreOrder")
+      .update({ status: nextStatus, updatedAt: new Date().toISOString() })
+      .eq("id", order.id)
+      .eq("storeId", store.id)
+      .eq("status", order.status)
+      .select("id,status")
+      .maybeSingle();
     if (error) return json({ ok: false, message: "تغییر وضعیت سفارش انجام نشد." }, 500);
+    if (!transitioned) return json({ ok: false, message: "وضعیت سفارش هم‌زمان تغییر کرده است. صفحه را تازه کنید و دوباره بررسی کنید." }, 409);
     return json(await readOrders(admin, store));
   }
 

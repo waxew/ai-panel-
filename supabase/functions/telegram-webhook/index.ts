@@ -15,8 +15,8 @@ const money=(v:any,c="IRR")=>`${new Intl.NumberFormat("fa-IR").format(Number(v??
 const nameOf=(u?:User)=>u?[u.first_name,u.last_name].filter(Boolean).join(" ").trim():"";
 
 async function tg(token:string,method:string,body:Record<string,unknown>){const r=await fetch(`https://api.telegram.org/bot${token}/${method}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});if(!r.ok)console.error(method,r.status);return r}
-async function sendInline(token:string,chatId:number,text:string,rows:any[][]){return tg(token,"sendMessage",{chat_id:chatId,text,reply_markup:{inline_keyboard:rows}})}
-async function sendMenu(token:string,chatId:number,text:string,buttons:Btn[]){const rows=[];for(let i=0;i<buttons.length;i+=2)rows.push(buttons.slice(i,i+2).map(b=>({text:b.title})));return tg(token,"sendMessage",{chat_id:chatId,text,reply_markup:{keyboard:rows,resize_keyboard:true,is_persistent:true}})}
+async function sendInline(token:string,chatId:number,text:string,rows:any[][]){const body:Record<string,unknown>={chat_id:chatId,text};if(rows.length)body.reply_markup={inline_keyboard:rows};return tg(token,"sendMessage",body)}
+async function sendMenu(token:string,chatId:number,text:string,buttons:Btn[]){const rows=[];for(let i=0;i<buttons.length;i+=2)rows.push(buttons.slice(i,i+2).map(b=>({text:b.title})));const body:Record<string,unknown>={chat_id:chatId,text};if(rows.length)body.reply_markup={keyboard:rows,resize_keyboard:true,is_persistent:true};return tg(token,"sendMessage",body)}
 async function ack(token:string,id?:string,text?:string){if(id)await tg(token,"answerCallbackQuery",{callback_query_id:id,...(text?{text}:{})})}
 
 async function storeFor(admin:any,workspaceId:string){const {data,error}=await admin.from("Store").select("id,name,currency,status").eq("workspaceId",workspaceId).eq("status","ACTIVE").maybeSingle();if(error)throw error;return data}
