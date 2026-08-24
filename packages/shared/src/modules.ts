@@ -33,9 +33,9 @@ export type PlatformModuleDefinition = {
 export const platformModules: readonly PlatformModuleDefinition[] = [
   {
     key: 'telegram', labelFa: 'تلگرام', labelEn: 'Telegram', shortCode: 'TG',
-    descriptionFa: 'ربات، منوساز، فروشگاه، سبد خرید و سفارش', kind: 'channel', status: 'live', phase: 1,
+    descriptionFa: 'اتصال و Runtime تلگرام با فروشگاه‌ساز مشترک چندپیام‌رسانی', kind: 'channel', status: 'live', phase: 1,
     customerRoute: '/app/telegram', apiPrefix: '/api/telegram', uiRuntime: 'react', commerceEnabled: true,
-    capabilities: ['connection', 'webhook', 'menu-builder', 'catalog', 'cart', 'orders'],
+    capabilities: ['connection', 'webhook', 'unified-bot-commerce', 'catalog', 'cart', 'orders'],
   },
   {
     key: 'instagram', labelFa: 'اینستاگرام', labelEn: 'Instagram', shortCode: 'IG',
@@ -51,15 +51,15 @@ export const platformModules: readonly PlatformModuleDefinition[] = [
   },
   {
     key: 'bale', labelFa: 'بله', labelEn: 'Bale', shortCode: 'BA',
-    descriptionFa: 'ربات، Webhook، منوساز و Commerce Core مشترک', kind: 'channel', status: 'partial', phase: 2,
+    descriptionFa: 'Adapter بله برای Webhook و Commerce Core / Bot Commerce مشترک', kind: 'channel', status: 'partial', phase: 2,
     customerRoute: '/app/bale', apiPrefix: '/api/bale', uiRuntime: 'react', commerceEnabled: true,
-    capabilities: ['connection', 'webhook', 'menu-builder', 'catalog', 'cart', 'orders'],
+    capabilities: ['connection', 'webhook', 'unified-bot-commerce', 'catalog', 'cart', 'orders'],
   },
   {
     key: 'rubika', labelFa: 'روبیکا', labelEn: 'Rubika', shortCode: 'RU',
-    descriptionFa: 'ربات، Webhook، منوساز و Commerce Core مشترک', kind: 'channel', status: 'partial', phase: 2,
+    descriptionFa: 'Adapter روبیکا برای Webhook و Commerce Core / Bot Commerce مشترک', kind: 'channel', status: 'partial', phase: 2,
     customerRoute: '/app/rubika', apiPrefix: '/api/rubika', uiRuntime: 'react', commerceEnabled: true,
-    capabilities: ['connection', 'webhook', 'menu-builder', 'catalog', 'cart', 'orders'],
+    capabilities: ['connection', 'webhook', 'unified-bot-commerce', 'catalog', 'cart', 'orders'],
   },
   {
     key: 'discord', labelFa: 'دیسکورد', labelEn: 'Discord', shortCode: 'DC',
