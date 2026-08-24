@@ -1,7 +1,7 @@
 create table if not exists public."StoreInventoryReservation" (
   id text primary key default gen_random_uuid()::text,
   "orderId" text not null references public."StoreOrder"(id) on delete cascade,
-  "itemId" text references public."StoreItem"(id) on delete set null,
+  "itemId" text not null references public."StoreItem"(id) on delete restrict,
   quantity integer not null check (quantity > 0),
   status text not null default 'RESERVED' check (status in ('RESERVED', 'CONSUMED', 'RELEASED')),
   "expiresAt" timestamptz not null,
@@ -219,16 +219,13 @@ begin
   from (
     select r."itemId", sum(r.quantity)::integer as quantity
     from public."StoreInventoryReservation" r
-    where r."orderId" = p_order_id
-      and r.status = 'RESERVED'
-      and r."itemId" is not null
+    where r."orderId" = p_order_id and r.status = 'RESERVED'
     group by r."itemId"
   ) released
   where si.id = released."itemId"
     and si."inventoryCount" is not null;
 
-  update public."StoreInventoryReservation"
-  set status = 'RELEASED', "releasedAt" = now(), "updatedAt" = now()
+  delete from public."StoreInventoryReservation"
   where "orderId" = p_order_id and status = 'RESERVED';
 
   update public."StoreOrder"
@@ -277,8 +274,7 @@ begin
     raise exception 'reservation_expired';
   end if;
 
-  update public."StoreInventoryReservation"
-  set status = 'CONSUMED', "consumedAt" = p_paid_at, "updatedAt" = now()
+  delete from public."StoreInventoryReservation"
   where "orderId" = p_order_id and status = 'RESERVED';
 
   update public."StoreOrder"
