@@ -34,7 +34,10 @@ export default function TelegramControlCenter() {
   const [success, setSuccess] = useState(false);
 
   const loadBots = useCallback(async () => {
-    const response = await fetch('/api/customer/dashboard', { headers: { accept: 'application/json' } });
+    const response = await fetch('/api/customer/dashboard', {
+      headers: { accept: 'application/json' },
+      cache: 'no-store',
+    });
     const data = await readJson<DashboardResponse>(response);
     if (response.status === 401) {
       window.location.assign('/login');
@@ -66,6 +69,7 @@ export default function TelegramControlCenter() {
       const response = await fetch('/api/telegram/connect', {
         method: 'POST',
         headers: { 'content-type': 'application/json', accept: 'application/json' },
+        cache: 'no-store',
         body: JSON.stringify({ token: token.trim() }),
       });
       const data = await readJson<ConnectResponse>(response);
@@ -88,8 +92,8 @@ export default function TelegramControlCenter() {
       setSuccess(true);
       setMessage(data.webhookConfigured === false ? 'ربات ذخیره شد، اما Webhook هنوز فعال نشده است.' : 'ربات با موفقیت متصل شد و Webhook فعال است.');
 
-      // Refreshing the dashboard is secondary. A dashboard refresh failure must never
-      // overwrite a successful Telegram connection with a fake network error.
+      // Dashboard refresh is deliberately best-effort. It must never turn a
+      // successful Telegram connection into a misleading network error.
       try {
         await loadBots();
       } catch {
@@ -99,7 +103,7 @@ export default function TelegramControlCenter() {
       }
     } catch {
       setSuccess(false);
-      setMessage('درخواست اتصال به سرور نرسید. اینترنت یا دسترسی به دامنه پروژه را بررسی کنید و دوباره تلاش کنید.');
+      setMessage('درخواست اتصال ربات به /api/telegram/connect نرسید. این خطا مربوط به مسیر شبکه یا نسخه قدیمی پنل است، نه اعتبار توکن BotFather.');
     } finally {
       setBusy(false);
     }
