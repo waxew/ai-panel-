@@ -109,7 +109,7 @@ async function ensureDefaultButtons(admin: any, botId: string) {
 }
 
 const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
-  if (request.method === "GET") return json({ ok: true, service: "telegram-connect", auth: "user", version: 3 });
+  if (request.method === "GET") return json({ ok: true, service: "telegram-connect", auth: "user", version: 4 });
   if (request.method !== "POST") return json({ ok: false, message: "Method not allowed" }, 405);
 
   const userId = ctx.userClaims?.id;
@@ -155,7 +155,7 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
     displayName: identity.result.first_name,
     tokenCiphertext,
     webhookSecretHash,
-    status: "ACTIVE",
+    status: "PENDING",
   };
 
   const { data: bot, error: saveError } = await admin.from("TelegramBot")
@@ -178,14 +178,25 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
     });
   } catch (error) {
     console.error("telegram setWebhook failed", error);
-    await admin.from("TelegramBot").update({ webhookSecretHash: null }).eq("id", bot.id);
+    await admin.from("TelegramBot").update({ webhookSecretHash: null, status: "PENDING" }).eq("id", bot.id);
     return json({ ok: false, message: "ربات ذخیره شد اما Webhook تلگرام فعال نشد. دوباره اتصال را انجام دهید." }, 502);
   }
 
   if (!webhookResult.ok) {
     console.error("telegram setWebhook rejected", webhookResult);
-    await admin.from("TelegramBot").update({ webhookSecretHash: null }).eq("id", bot.id);
+    await admin.from("TelegramBot").update({ webhookSecretHash: null, status: "PENDING" }).eq("id", bot.id);
     return json({ ok: false, message: "Telegram تنظیم Webhook را نپذیرفت. توکن و دسترسی ربات را بررسی کنید." }, 502);
+  }
+
+  const { data: activeBot, error: activateError } = await admin.from("TelegramBot")
+    .update({ status: "ACTIVE" })
+    .eq("id", bot.id)
+    .eq("workspaceId", workspaceId)
+    .select("id,telegramBotId,username,displayName,description,status,welcomeMessage")
+    .single();
+  if (activateError || !activeBot) {
+    console.error("telegram activation failed", activateError);
+    return json({ ok: false, message: "Webhook فعال شد اما ثبت وضعیت اتصال کامل نشد. دوباره اتصال را انجام دهید." }, 500);
   }
 
   return json({
@@ -194,12 +205,12 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
     persisted: true,
     webhookConfigured: true,
     bot: {
-      id: bot.id,
-      telegramBotId: bot.telegramBotId,
-      username: bot.username ?? undefined,
-      displayName: bot.displayName ?? undefined,
-      description: bot.description ?? undefined,
-      status: bot.status,
+      id: activeBot.id,
+      telegramBotId: activeBot.telegramBotId,
+      username: activeBot.username ?? undefined,
+      displayName: activeBot.displayName ?? undefined,
+      description: activeBot.description ?? undefined,
+      status: activeBot.status,
     },
   });
 });
