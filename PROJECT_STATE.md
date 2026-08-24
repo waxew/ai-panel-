@@ -32,14 +32,14 @@ This file is the cross-chat handoff for the project. It describes the current re
 | Module | Status | UI | Backend | Main remaining work |
 | --- | --- | --- | --- | --- |
 | Telegram | live | React | active | payment, subscription/referral expansion, broader bot-builder features |
-| Instagram | partial | React | active | real-account E2E, scheduled publishing, full content analytics |
+| Instagram | partial | React | active | real-account E2E, scheduled publishing, deeper post/content analytics |
 | WhatsApp | partial | React | active | Meta production setup/E2E and commerce parity |
 | Bale | partial | React | active | real-bot E2E and feature parity |
 | Rubika | partial | React | active | real-bot E2E and feature parity |
 | Discord | partial | React | active | real-bot/server E2E, moderation/community features |
 | Booking/Tiktime | partial | React | active | real SMS provider, external payment provider; loyalty/site/inbox foundations are present |
 | Scheduler | planned | none | foundation only | shared execution worker/queue and publishing adapters |
-| Analytics | partial | fragmented | partial | normalized cross-channel analytics engine |
+| Analytics | partial | React | active v1 | deeper per-post/content metrics, trends and recommendations |
 | Twitter/X | planned | none | none | next provider module after architecture/core work |
 
 ## Shared cores already present
@@ -51,6 +51,18 @@ This file is the cross-chat handoff for the project. It describes the current re
 - Booking domain: appointments, services, staff, CRM, finance, feedback, automation outbox, loyalty/lottery, business site and unified booking inbox.
 - Admin/customer dashboards.
 - Provider contract helpers derive customer route, connect/manage API routes, module manifest entries and shared status labels from the central module registry. Navigation uses these helpers instead of duplicating Instagram API paths and route-active/status logic.
+- Route-level React code splitting keeps channel, Booking and public pages in independent chunks; the primary client bundle was reduced from about 540 kB to about 242 kB at the 2026-08-24 build checkpoint.
+
+## Analytics v1 checkpoint
+
+- `/app/analytics` is a lazy-loaded React platform module and is exposed through the central module registry/navigation.
+- It reads the authenticated `/api/customer/dashboard` response rather than creating a duplicate API/auth path.
+- Production `customer-dashboard` is version 7 with `verify_jwt=true` and matching source tracked in GitHub.
+- The additive `analytics` response normalizes Telegram, Instagram, WhatsApp, Bale, Rubika and Discord connection health.
+- Instagram v1 KPIs include total followers/following/posts, average stored engagement rate, last sync, and per-account comparison.
+- Operational KPIs include pending scheduler jobs, open WhatsApp conversations, Store orders/successful orders, Booking customers and upcoming appointments.
+- Store order metrics are scoped through `Store.workspaceId -> StoreOrder.storeId`; `StoreOrder` does not have a direct `workspaceId` column.
+- Existing customer-dashboard response fields are preserved so current dashboard/session consumers remain compatible.
 
 ## Supabase ↔ GitHub sync status
 
@@ -66,8 +78,8 @@ Current rule: no Supabase deployment or schema change is complete unless matchin
 
 ## Deployment verification rule
 
-- Pull requests build shared contracts and the web app, deploy with Wrangler temporary preview, and HTTP-smoke the preview `/health` endpoint.
-- Pushes to `main` deploy production and HTTP-smoke `https://ai-panel-demo.bustling-larch.workers.dev/health`.
+- Pull requests build shared contracts and the web app, deploy with Wrangler temporary preview, and poll/smoke the preview `/health`, unauthenticated `/api/session`, and invalid adopt-session behavior during temporary-route propagation.
+- Pushes to `main` deploy production and smoke `https://ai-panel-demo.bustling-larch.workers.dev/health` plus unauthenticated session behavior.
 - Preview and production use separate concurrency groups so a PR run cannot cancel a production deploy.
 - `packages/shared/tsconfig.json` explicitly sets `rootDir: src`, fixing the TypeScript 7 CI regression discovered in the 2026-08-24 audit.
 
@@ -82,7 +94,7 @@ The standalone customer-channel HTML pattern has been retired. WhatsApp, Rubika 
 ## Next architecture milestones
 
 1. Finish provider contract adoption and extract shared provider UI primitives.
-2. Implement the generic scheduler/worker.
-3. Implement normalized cross-channel analytics.
+2. Implement the generic scheduler/worker and expose its shared queue UI.
+3. Extend Analytics v1 with historical/post-level metrics and actionable recommendations.
 4. Complete billing/payment/subscription/referral flows on top of the shared wallet core.
 5. Add Twitter/X using the unified module contract.

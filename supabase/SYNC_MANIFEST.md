@@ -46,6 +46,8 @@ This manifest records the production-to-GitHub source sync checkpoint. GitHub `m
 
 Function source is stored under `supabase/functions/<slug>/index.ts`. Per-function platform auth settings are stored in `supabase/config.toml`.
 
+Current production note: `customer-dashboard` version 7 is ACTIVE with `verify_jwt=true`; the tracked source includes the additive normalized Analytics v1 payload and corrected Store-order workspace scoping through `Store.workspaceId -> StoreOrder.storeId`.
+
 ## Migration history — 31/31 tracked
 
 1. `20260822213612_initial_ai_panel_schema.sql`
