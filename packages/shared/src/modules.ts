@@ -81,9 +81,9 @@ export const platformModules: readonly PlatformModuleDefinition[] = [
   },
   {
     key: 'analytics', labelFa: 'آنالیز', labelEn: 'Analytics', shortCode: 'AN',
-    descriptionFa: 'شاخص‌ها و گزارش‌های یکپارچه بین کانال‌ها', kind: 'platform-tool', status: 'partial', phase: 3,
-    customerRoute: null, apiPrefix: '/api/analytics', uiRuntime: 'none', commerceEnabled: false,
-    capabilities: ['normalized-metrics', 'cross-channel-reports'],
+    descriptionFa: 'شاخص‌های یکپارچه کانال‌ها، Instagram، فروشگاه و Booking', kind: 'platform-tool', status: 'partial', phase: 3,
+    customerRoute: '/app/analytics', apiPrefix: '/api/customer/dashboard', uiRuntime: 'react', commerceEnabled: false,
+    capabilities: ['normalized-metrics', 'channel-health', 'instagram-kpis', 'operations-overview', 'cross-channel-reports'],
   },
   {
     key: 'twitter', labelFa: 'توییتر / X', labelEn: 'X / Twitter', shortCode: 'X',
