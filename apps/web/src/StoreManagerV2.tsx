@@ -171,12 +171,10 @@ export default function StoreManagerV2() {
     if (await action({ action: 'create_product_type', title: typeTitle, itemType: typeDelivery }, 'نوع محصول اضافه شد.')) setTypeTitle('');
   }
 
-  async function editProductType(productType: ProductType) {
-    const title = window.prompt('نام نوع محصول:', productType.title)?.trim();
-    if (!title) return;
-    const delivery = window.prompt('روش ارائه: DIGITAL برای دیجیتال، PHYSICAL برای فیزیکی، SERVICE برای خدمت', productType.itemType)?.trim().toUpperCase();
-    if (!delivery || !['DIGITAL', 'PHYSICAL', 'SERVICE'].includes(delivery)) { setMessage('روش ارائه معتبر نیست.'); setMessageOk(false); return; }
-    await action({ action: 'update_product_type', productTypeId: productType.id, title, itemType: delivery }, 'نوع محصول ویرایش شد.');
+  async function renameProductType(productType: ProductType) {
+    const title = window.prompt('نام جدید نوع محصول:', productType.title)?.trim();
+    if (!title || title === productType.title) return;
+    await action({ action: 'update_product_type', productTypeId: productType.id, title }, 'نوع محصول ویرایش شد.');
   }
 
   async function deleteProductType(productType: ProductType) {
@@ -222,7 +220,7 @@ export default function StoreManagerV2() {
       <div className="side">
         <article className="card manager">
           <button className="manager-head" type="button" onClick={() => setShowTypes((value) => !value)}><span><b>نوع محصول</b><small>{data.productTypes.length.toLocaleString('fa-IR')} نوع</small></span><em>{showTypes ? 'بستن' : 'مدیریت'}</em></button>
-          {showTypes && <div className="manager-body"><form className="inline-add" onSubmit={createProductType}><input placeholder="مثلاً دوره آموزشی" value={typeTitle} onChange={(event) => setTypeTitle(event.target.value)} required /><select value={typeDelivery} onChange={(event) => setTypeDelivery(event.target.value as typeof typeDelivery)}><option value="DIGITAL">آنلاین</option><option value="PHYSICAL">ارسال فیزیکی</option><option value="SERVICE">خدمت</option></select><button disabled={busy}>افزودن</button></form><div className="rows">{data.productTypes.map((item) => <div key={item.id}><span><b>{item.title}</b><small>{deliveryLabels[item.itemType]}</small></span><button type="button" onClick={() => void editProductType(item)}>ویرایش</button><button className="danger" type="button" onClick={() => void deleteProductType(item)}>حذف</button></div>)}</div></div>}
+          {showTypes && <div className="manager-body"><form className="inline-add" onSubmit={createProductType}><input placeholder="مثلاً دوره آموزشی" value={typeTitle} onChange={(event) => setTypeTitle(event.target.value)} required /><select value={typeDelivery} onChange={(event) => setTypeDelivery(event.target.value as typeof typeDelivery)}><option value="DIGITAL">آنلاین</option><option value="PHYSICAL">ارسال فیزیکی</option><option value="SERVICE">خدمت</option></select><button disabled={busy}>افزودن</button></form><div className="rows">{data.productTypes.map((item) => <div key={item.id}><span><b>{item.title}</b><small>{deliveryLabels[item.itemType]}</small></span><button type="button" onClick={() => void renameProductType(item)}>ویرایش نام</button><button className="danger" type="button" onClick={() => void deleteProductType(item)}>حذف</button></div>)}</div></div>}
         </article>
 
         <article className="card manager">
