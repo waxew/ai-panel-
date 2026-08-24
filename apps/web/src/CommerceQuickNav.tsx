@@ -1,83 +1,45 @@
-import { customerNavigationModules, getProviderApiRoute, isModuleRouteActive, moduleStatusLabelFa } from '@ai-panel/shared';
 import { useState } from 'react';
 
 const coreLinks = [
-  ['/app', 'داشبورد'],
+  ['/app', 'خانه'],
   ['/app/store', 'فروشگاه'],
-  ['/app/bot-commerce', 'ربات فروشگاهی'],
-  ['/app/store/templates', 'قالب فروشگاه'],
+  ['/app/bot-commerce', 'ربات فروش'],
   ['/app/orders', 'سفارش‌ها'],
 ] as const;
 
-const bookingLinks = [
-  ['/app/booking/customers', 'مشتری‌ها'],
-  ['/app/booking/staff', 'پرسنل'],
-  ['/app/booking/staff-access', 'دسترسی'],
-  ['/app/booking/inbox', 'Inbox'],
-  ['/app/booking/feedback', 'رضایت'],
-  ['/app/booking/loyalty', 'باشگاه'],
-  ['/app/booking/site', 'سایت'],
-  ['/app/booking/finance', 'مالی'],
-  ['/app/booking/reports', 'گزارش'],
-  ['/app/booking/automations', 'اتوماسیون'],
-  ['/app/booking/tools', 'ابزارها'],
+const moreLinks = [
+  ['/app/account', 'حساب کاربری'],
+  ['/app/telegram', 'تلگرام'],
+  ['/app/instagram', 'اینستاگرام'],
+  ['/app/whatsapp', 'واتساپ'],
+  ['/app/bale', 'بله'],
+  ['/app/rubika', 'روبیکا'],
+  ['/app/discord', 'دیسکورد'],
+  ['/app/analytics', 'گزارش‌ها'],
+  ['/app/store/templates', 'قالب فروشگاه'],
+  ['/app/booking', 'رزرو و نوبت'],
 ] as const;
-
-const instagramManageRoute = getProviderApiRoute('instagram', 'manage');
-const instagramConnectRoute = getProviderApiRoute('instagram', 'connect');
-
-type ConnectResponse = { ok?: boolean; code?: string; authorizationUrl?: string; message?: string };
-type ManageResponse = { ok?: boolean; message?: string };
 
 export default function CommerceQuickNav() {
   const path = window.location.pathname;
-  const [connecting, setConnecting] = useState(false);
+  const [open, setOpen] = useState(false);
   if (!path.startsWith('/app')) return null;
 
-  async function saveMetaConfig() {
-    if (!instagramManageRoute) return false;
-    const appId = window.prompt('Meta App ID را وارد کنید:')?.trim() ?? '';
-    if (!appId) return false;
-    const appSecret = window.prompt('Meta App Secret را وارد کنید:')?.trim() ?? '';
-    if (!appSecret) return false;
-    const response = await fetch(instagramManageRoute, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'save_platform_config', appId, appSecret }) });
-    const data = (await response.json().catch(() => ({}))) as ManageResponse;
-    if (!response.ok) { window.alert(data.message || 'ذخیره تنظیمات Meta انجام نشد.'); return false; }
-    window.alert('تنظیمات Meta ذخیره شد. حالا اتصال Instagram شروع می‌شود.');
-    return true;
-  }
+  const botActive = path === '/app/bot-commerce' || path === '/app/telegram-builder';
 
-  async function startConnection() {
-    if (!instagramConnectRoute) return true;
-    const response = await fetch(instagramConnectRoute, { method: 'POST' });
-    const data = (await response.json().catch(() => ({}))) as ConnectResponse;
-    if (response.ok && data.authorizationUrl) { window.location.assign(data.authorizationUrl); return true; }
-    if (data.code === 'META_NOT_CONFIGURED') return false;
-    window.alert(data.message || 'شروع اتصال Meta انجام نشد.');
-    return true;
-  }
-
-  async function connectInstagram() {
-    if (connecting) return;
-    setConnecting(true);
-    try { const handled = await startConnection(); if (handled) return; const saved = await saveMetaConfig(); if (!saved) return; await startConnection(); }
-    catch { window.alert('ارتباط با سرویس اتصال Meta برقرار نشد.'); }
-    finally { setConnecting(false); }
-  }
-
-  const inBooking = path.startsWith('/app/booking');
-  return <nav className="commerce-quick-nav" dir="rtl" aria-label="AI Panel navigation"><style>{styles}</style>
-    {coreLinks.map(([href, label]) => <a key={href} href={href} className={path === href || (href === '/app/bot-commerce' && path === '/app/telegram-builder') ? 'active' : ''}>{label}</a>)}
-    <i className="divider" />
-    {customerNavigationModules.map((module) => <a key={module.key} href={module.customerRoute!} className={isModuleRouteActive(path, module.customerRoute) ? 'active module' : 'module'} title={module.descriptionFa}><b>{module.shortCode}</b>{module.labelFa}<em className={module.status}>{moduleStatusLabelFa(module.status)}</em></a>)}
-    {inBooking && <><i className="divider" />{bookingLinks.map(([href, label]) => <a key={href} href={href} className={path === href ? 'active' : ''}>{label}</a>)}</>}
-    {path === '/app/instagram' && <button className="meta-connect" type="button" disabled={connecting} onClick={() => void connectInstagram()}>{connecting ? 'در حال اتصال…' : 'اتصال Meta'}</button>}
-  </nav>;
+  return <div className="quick-shell" dir="rtl"><style>{styles}</style>
+    {open && <div className="quick-more">
+      <div><b>بخش‌های دیگر</b><button type="button" onClick={() => setOpen(false)}>بستن</button></div>
+      <nav>{moreLinks.map(([href, label]) => <a key={href} href={href} className={path === href || (href === '/app/booking' && path.startsWith('/app/booking')) ? 'active' : ''}>{label}</a>)}</nav>
+    </div>}
+    <nav className="quick-nav" aria-label="منوی اصلی">
+      {coreLinks.map(([href, label]) => <a key={href} href={href} className={path === href || (href === '/app/bot-commerce' && botActive) ? 'active' : ''}>{label}</a>)}
+      <button type="button" className={open ? 'active' : ''} onClick={() => setOpen((value) => !value)}>بیشتر</button>
+    </nav>
+  </div>;
 }
 
 const styles = `
-.commerce-quick-nav{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:100;display:flex;align-items:center;gap:5px;padding:6px;border:1px solid #2a3548;border-radius:14px;background:rgba(9,14,21,.96);box-shadow:0 16px 50px rgba(0,0,0,.4);backdrop-filter:blur(16px);max-width:calc(100vw - 16px);overflow:auto}
-.commerce-quick-nav a,.commerce-quick-nav button{font:700 10px/1.2 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;padding:9px 11px;border-radius:9px;white-space:nowrap}
-.commerce-quick-nav a{color:#8f9bad;text-decoration:none;display:flex;align-items:center;gap:5px}.commerce-quick-nav a:hover,.commerce-quick-nav a.active{background:#eef3f9;color:#090e15}.commerce-quick-nav a.module b{font-size:8px;border:1px solid currentColor;border-radius:5px;padding:2px 4px}.commerce-quick-nav a.module em{font-style:normal;font-size:6px;padding:3px 5px;border-radius:99px;background:#263245;color:#9aa8bc}.commerce-quick-nav a.module em.live{background:#103429;color:#70d8b1}.commerce-quick-nav a.active em{background:#dce3ec;color:#334155}.commerce-quick-nav .divider{width:1px;height:24px;background:#2a3548;flex:0 0 1px;margin:0 2px}.commerce-quick-nav .meta-connect{border:1px solid #a855f7;background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;cursor:pointer}.commerce-quick-nav .meta-connect:disabled{opacity:.6;cursor:wait}
-@media(max-width:640px){.commerce-quick-nav{left:8px;right:8px;bottom:8px;transform:none;overflow:auto;justify-content:flex-start}.commerce-quick-nav a,.commerce-quick-nav button{padding:8px 10px}.commerce-quick-nav a.module em{display:none}}
+.quick-shell{position:fixed;z-index:120;left:50%;bottom:10px;transform:translateX(-50%);font-family:Inter,Vazirmatn,system-ui,-apple-system,sans-serif}.quick-nav{display:flex;align-items:center;gap:4px;padding:5px;border:1px solid #2a3548;border-radius:14px;background:rgba(9,14,21,.97);box-shadow:0 14px 45px rgba(0,0,0,.42);backdrop-filter:blur(16px)}.quick-nav a,.quick-nav button{border:0;background:transparent;color:#8f9bad;text-decoration:none;padding:9px 12px;border-radius:9px;white-space:nowrap;font:800 10px inherit;cursor:pointer}.quick-nav a:hover,.quick-nav a.active,.quick-nav button.active{background:#eef3f9;color:#090e15}.quick-more{position:absolute;left:50%;bottom:58px;transform:translateX(-50%);width:min(460px,calc(100vw - 20px));padding:12px;border:1px solid #2a3548;border-radius:14px;background:#0b1119;box-shadow:0 20px 60px rgba(0,0,0,.55)}.quick-more>div{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;color:#dce3ed;font-size:11px}.quick-more>div button{border:0;background:#17202d;color:#aeb8c6;border-radius:8px;padding:6px 8px;font-size:9px;cursor:pointer}.quick-more nav{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.quick-more a{padding:10px;border:1px solid #222c3a;border-radius:10px;color:#aeb8c6;text-decoration:none;font-size:10px}.quick-more a.active,.quick-more a:hover{border-color:#52617a;color:#fff;background:#111923}
+@media(max-width:520px){.quick-shell{left:8px;right:8px;transform:none}.quick-nav{justify-content:space-between}.quick-nav a,.quick-nav button{padding:9px 8px;font-size:9px}.quick-more{left:0;right:0;transform:none;width:auto}.quick-more nav{grid-template-columns:1fr 1fr}}
 `;
