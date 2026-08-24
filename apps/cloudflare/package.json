@@ -8,6 +8,9 @@
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@ai-panel/shared": "workspace:*"
+  },
   "devDependencies": {
     "@cloudflare/workers-types": "latest",
     "typescript": "7.0.2",
