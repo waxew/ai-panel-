@@ -11,6 +11,7 @@ const InstagramControlCenter = lazy(() => import('./InstagramControlCenter'));
 const WhatsAppControlCenter = lazy(() => import('./WhatsAppControlCenter'));
 const RubikaControlCenter = lazy(() => import('./RubikaControlCenter'));
 const DiscordControlCenter = lazy(() => import('./DiscordControlCenter'));
+const AnalyticsDashboard = lazy(() => import('./AnalyticsDashboard'));
 const BookingManagerV2 = lazy(() => import('./BookingManagerV2'));
 const BookingBusinessTools = lazy(() => import('./BookingBusinessTools'));
 const BookingAutomations = lazy(() => import('./BookingAutomations'));
@@ -78,31 +79,33 @@ async function renderApp() {
                     ? <RubikaControlCenter />
                     : path === '/app/discord'
                       ? <DiscordControlCenter />
-                      : path === '/app/booking/inbox'
-                        ? <BookingInbox />
-                        : path === '/app/booking/automations'
-                          ? <BookingAutomations />
-                          : path === '/app/booking/finance'
-                            ? <BookingFinance />
-                            : path === '/app/booking/reports'
-                              ? <BookingReports />
-                              : path === '/app/booking/feedback'
-                                ? <BookingFeedbackManager />
-                                : path === '/app/booking/loyalty'
-                                  ? <BookingLoyalty />
-                                  : path === '/app/booking/site'
-                                    ? <BookingBusinessSiteManager />
-                                    : path === '/app/booking/staff-access'
-                                      ? <BookingStaffAccess />
-                                      : path === '/app/booking/customers'
-                                        ? <BookingCustomersCRM />
-                                        : path === '/app/booking/staff'
-                                          ? <BookingStaffManager />
-                                          : path === '/app/booking/tools'
-                                            ? <BookingBusinessTools />
-                                            : path === '/app/booking'
-                                              ? <BookingManagerV2 />
-                                              : <App />;
+                      : path === '/app/analytics'
+                        ? <AnalyticsDashboard />
+                        : path === '/app/booking/inbox'
+                          ? <BookingInbox />
+                          : path === '/app/booking/automations'
+                            ? <BookingAutomations />
+                            : path === '/app/booking/finance'
+                              ? <BookingFinance />
+                              : path === '/app/booking/reports'
+                                ? <BookingReports />
+                                : path === '/app/booking/feedback'
+                                  ? <BookingFeedbackManager />
+                                  : path === '/app/booking/loyalty'
+                                    ? <BookingLoyalty />
+                                    : path === '/app/booking/site'
+                                      ? <BookingBusinessSiteManager />
+                                      : path === '/app/booking/staff-access'
+                                        ? <BookingStaffAccess />
+                                        : path === '/app/booking/customers'
+                                          ? <BookingCustomersCRM />
+                                          : path === '/app/booking/staff'
+                                            ? <BookingStaffManager />
+                                            : path === '/app/booking/tools'
+                                              ? <BookingBusinessTools />
+                                              : path === '/app/booking'
+                                                ? <BookingManagerV2 />
+                                                : <App />;
 
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
