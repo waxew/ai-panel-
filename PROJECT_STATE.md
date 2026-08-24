@@ -29,6 +29,17 @@ This file is the cross-chat handoff for the project. It describes the current re
 - `/app/account` is the shared account/profile/wallet page. It reads/writes profile data through `account-manage` and displays the real `UserWallet` and `WalletTransaction` ledger.
 - The auth-user provisioning trigger creates the internal User, Wallet, Workspace and WorkspaceMember records for a new account.
 
+## Telegram project Mini App checkpoint
+
+- `/miniapp` is the canonical Telegram-facing shell for the whole AI Panel product; `/telegram-app` is an alias.
+- The Mini App is not a second product/database. It reuses the same React routes, Cloudflare API gateway, Supabase Auth, workspace data and provider modules as the website.
+- `TelegramProjectMiniApp.tsx` provides a Telegram-optimized mobile launcher for dashboard, account/wallet, store, orders, Bot Commerce, store templates and all currently customer-visible platform modules.
+- The official Telegram WebApp bridge is loaded by the shared web entry point and the Mini App calls `ready()`/`expand()` when available.
+- `/api/telegram-miniapp/validate` validates Telegram `initData` server-side with HMAC-SHA-256 and rejects stale/invalid payloads. It never trusts `initDataUnsafe` for authorization.
+- The dedicated AI Panel project-bot token is a Cloudflare secret named `TELEGRAM_PROJECT_BOT_TOKEN`; it must never be committed to GitHub or returned to the browser.
+- Until the project bot token is configured and Telegram identity-to-AI-Panel-account linking is implemented, the Mini App uses the existing Supabase email/password session for access to real account data. This keeps one account model and avoids creating a second auth system.
+- Next Mini App step: configure the project bot token, point BotFather's Mini App/Menu Button URL to the deployed `/miniapp` URL, then add an explicit verified Telegram identity-link table/flow for automatic sign-in.
+
 ## Module status
 
 | Module | Status | UI | Backend | Main remaining work |

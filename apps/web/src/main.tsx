@@ -28,6 +28,7 @@ const BookingInbox = lazy(() => import('./BookingInbox'));
 const PublicBookingPage = lazy(() => import('./PublicBookingPage'));
 const PublicFeedbackPage = lazy(() => import('./PublicFeedbackPage'));
 const PublicBusinessSite = lazy(() => import('./PublicBusinessSite'));
+const TelegramProjectMiniApp = lazy(() => import('./TelegramProjectMiniApp'));
 
 async function adoptImplicitAuthSession() {
   if (!window.location.hash) return;
@@ -60,60 +61,62 @@ async function renderApp() {
   await adoptImplicitAuthSession();
   const path = window.location.pathname;
 
-  const rootView = path.startsWith('/book/')
-    ? <PublicBookingPage />
-    : path.startsWith('/feedback/')
-      ? <PublicFeedbackPage />
-      : path.startsWith('/site/')
-        ? <PublicBusinessSite />
-        : path === '/app/bot-commerce' || path === '/app/telegram-builder'
-          ? <BotCommerceBuilder />
-          : path === '/app/bale'
-            ? <BaleControlCenter />
-            : path === '/app/orders'
-              ? <StoreOrders />
-              : path === '/app/store/templates'
-                ? <StoreTemplateEngine />
-                : path === '/app/instagram'
-                  ? <InstagramControlCenter />
-                  : path === '/app/whatsapp'
-                    ? <WhatsAppControlCenter />
-                    : path === '/app/rubika'
-                      ? <RubikaControlCenter />
-                      : path === '/app/discord'
-                        ? <DiscordControlCenter />
-                        : path === '/app/analytics'
-                          ? <AnalyticsDashboard />
-                          : path === '/app/booking/inbox'
-                            ? <BookingInbox />
-                            : path === '/app/booking/automations'
-                              ? <BookingAutomations />
-                              : path === '/app/booking/finance'
-                                ? <BookingFinance />
-                                : path === '/app/booking/reports'
-                                  ? <BookingReports />
-                                  : path === '/app/booking/feedback'
-                                    ? <BookingFeedbackManager />
-                                    : path === '/app/booking/loyalty'
-                                      ? <BookingLoyalty />
-                                      : path === '/app/booking/site'
-                                        ? <BookingBusinessSiteManager />
-                                        : path === '/app/booking/staff-access'
-                                          ? <BookingStaffAccess />
-                                          : path === '/app/booking/customers'
-                                            ? <BookingCustomersCRM />
-                                            : path === '/app/booking/staff'
-                                              ? <BookingStaffManager />
-                                              : path === '/app/booking/tools'
-                                                ? <BookingBusinessTools />
-                                                : path === '/app/booking'
-                                                  ? <BookingManagerV2 />
-                                                  : <App />;
+  const rootView = path === '/miniapp' || path === '/telegram-app'
+    ? <TelegramProjectMiniApp />
+    : path.startsWith('/book/')
+      ? <PublicBookingPage />
+      : path.startsWith('/feedback/')
+        ? <PublicFeedbackPage />
+        : path.startsWith('/site/')
+          ? <PublicBusinessSite />
+          : path === '/app/bot-commerce' || path === '/app/telegram-builder'
+            ? <BotCommerceBuilder />
+            : path === '/app/bale'
+              ? <BaleControlCenter />
+              : path === '/app/orders'
+                ? <StoreOrders />
+                : path === '/app/store/templates'
+                  ? <StoreTemplateEngine />
+                  : path === '/app/instagram'
+                    ? <InstagramControlCenter />
+                    : path === '/app/whatsapp'
+                      ? <WhatsAppControlCenter />
+                      : path === '/app/rubika'
+                        ? <RubikaControlCenter />
+                        : path === '/app/discord'
+                          ? <DiscordControlCenter />
+                          : path === '/app/analytics'
+                            ? <AnalyticsDashboard />
+                            : path === '/app/booking/inbox'
+                              ? <BookingInbox />
+                              : path === '/app/booking/automations'
+                                ? <BookingAutomations />
+                                : path === '/app/booking/finance'
+                                  ? <BookingFinance />
+                                  : path === '/app/booking/reports'
+                                    ? <BookingReports />
+                                    : path === '/app/booking/feedback'
+                                      ? <BookingFeedbackManager />
+                                      : path === '/app/booking/loyalty'
+                                        ? <BookingLoyalty />
+                                        : path === '/app/booking/site'
+                                          ? <BookingBusinessSiteManager />
+                                          : path === '/app/booking/staff-access'
+                                            ? <BookingStaffAccess />
+                                            : path === '/app/booking/customers'
+                                              ? <BookingCustomersCRM />
+                                              : path === '/app/booking/staff'
+                                                ? <BookingStaffManager />
+                                                : path === '/app/booking/tools'
+                                                  ? <BookingBusinessTools />
+                                                  : path === '/app/booking'
+                                                    ? <BookingManagerV2 />
+                                                    : <App />;
 
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
       <Suspense fallback={<RouteLoading />}>{rootView}</Suspense>
-      <CommerceQuickNav />
+      {!path.startsWith('/miniapp') && path !== '/telegram-app' && <CommerceQuickNav />}
     </React.StrictMode>,
   );
 }
