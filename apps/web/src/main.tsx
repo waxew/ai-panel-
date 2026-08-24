@@ -28,7 +28,7 @@ const BookingInbox = lazy(() => import('./BookingInbox'));
 const PublicBookingPage = lazy(() => import('./PublicBookingPage'));
 const PublicFeedbackPage = lazy(() => import('./PublicFeedbackPage'));
 const PublicBusinessSite = lazy(() => import('./PublicBusinessSite'));
-const TelegramProjectMiniApp = lazy(() => import('./TelegramProjectMiniApp'));
+const TelegramProjectMiniApp = lazy(() => import('./TelegramProjectMiniAppV2'));
 
 async function adoptImplicitAuthSession() {
   if (!window.location.hash) return;
@@ -36,89 +36,15 @@ async function adoptImplicitAuthSession() {
   const accessToken = params.get('access_token');
   const refreshToken = params.get('refresh_token');
   if (!accessToken || !refreshToken) return;
-
   try {
-    const response = await fetch('/api/auth/adopt-session', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ access_token: accessToken, refresh_token: refreshToken }),
-    });
-    if (response.ok) {
-      window.history.replaceState({}, '', '/app');
-    } else {
-      window.history.replaceState({}, '', '/login?confirmation_error=1');
-    }
-  } catch {
-    window.history.replaceState({}, '', '/login?confirmation_error=1');
-  }
+    const response = await fetch('/api/auth/adopt-session', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ access_token: accessToken, refresh_token: refreshToken }) });
+    window.history.replaceState({}, '', response.ok ? '/app' : '/login?confirmation_error=1');
+  } catch { window.history.replaceState({}, '', '/login?confirmation_error=1'); }
 }
-
-function RouteLoading() {
-  return <div dir="rtl" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#070a0f', color: '#dbe4ef', fontFamily: 'Inter, system-ui, sans-serif' }}>در حال بارگذاری ماژول...</div>;
+function RouteLoading(){return <div dir="rtl" style={{minHeight:'100vh',display:'grid',placeItems:'center',background:'#070a0f',color:'#dbe4ef',fontFamily:'Inter, system-ui, sans-serif'}}>در حال بارگذاری ماژول...</div>}
+async function renderApp(){
+ await adoptImplicitAuthSession(); const path=window.location.pathname;
+ const rootView=path==='/miniapp'||path==='/telegram-app'?<TelegramProjectMiniApp/>:path.startsWith('/book/')?<PublicBookingPage/>:path.startsWith('/feedback/')?<PublicFeedbackPage/>:path.startsWith('/site/')?<PublicBusinessSite/>:path==='/app/bot-commerce'||path==='/app/telegram-builder'?<BotCommerceBuilder/>:path==='/app/bale'?<BaleControlCenter/>:path==='/app/orders'?<StoreOrders/>:path==='/app/store/templates'?<StoreTemplateEngine/>:path==='/app/instagram'?<InstagramControlCenter/>:path==='/app/whatsapp'?<WhatsAppControlCenter/>:path==='/app/rubika'?<RubikaControlCenter/>:path==='/app/discord'?<DiscordControlCenter/>:path==='/app/analytics'?<AnalyticsDashboard/>:path==='/app/booking/inbox'?<BookingInbox/>:path==='/app/booking/automations'?<BookingAutomations/>:path==='/app/booking/finance'?<BookingFinance/>:path==='/app/booking/reports'?<BookingReports/>:path==='/app/booking/feedback'?<BookingFeedbackManager/>:path==='/app/booking/loyalty'?<BookingLoyalty/>:path==='/app/booking/site'?<BookingBusinessSiteManager/>:path==='/app/booking/staff-access'?<BookingStaffAccess/>:path==='/app/booking/customers'?<BookingCustomersCRM/>:path==='/app/booking/staff'?<BookingStaffManager/>:path==='/app/booking/tools'?<BookingBusinessTools/>:path==='/app/booking'?<BookingManagerV2/>:<App/>;
+ ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><Suspense fallback={<RouteLoading/>}>{rootView}</Suspense>{!path.startsWith('/miniapp')&&path!=='/telegram-app'&&<CommerceQuickNav/>}</React.StrictMode>);
 }
-
-async function renderApp() {
-  await adoptImplicitAuthSession();
-  const path = window.location.pathname;
-
-  const rootView = path === '/miniapp' || path === '/telegram-app'
-    ? <TelegramProjectMiniApp />
-    : path.startsWith('/book/')
-      ? <PublicBookingPage />
-      : path.startsWith('/feedback/')
-        ? <PublicFeedbackPage />
-        : path.startsWith('/site/')
-          ? <PublicBusinessSite />
-          : path === '/app/bot-commerce' || path === '/app/telegram-builder'
-            ? <BotCommerceBuilder />
-            : path === '/app/bale'
-              ? <BaleControlCenter />
-              : path === '/app/orders'
-                ? <StoreOrders />
-                : path === '/app/store/templates'
-                  ? <StoreTemplateEngine />
-                  : path === '/app/instagram'
-                    ? <InstagramControlCenter />
-                    : path === '/app/whatsapp'
-                      ? <WhatsAppControlCenter />
-                      : path === '/app/rubika'
-                        ? <RubikaControlCenter />
-                        : path === '/app/discord'
-                          ? <DiscordControlCenter />
-                          : path === '/app/analytics'
-                            ? <AnalyticsDashboard />
-                            : path === '/app/booking/inbox'
-                              ? <BookingInbox />
-                              : path === '/app/booking/automations'
-                                ? <BookingAutomations />
-                                : path === '/app/booking/finance'
-                                  ? <BookingFinance />
-                                  : path === '/app/booking/reports'
-                                    ? <BookingReports />
-                                    : path === '/app/booking/feedback'
-                                      ? <BookingFeedbackManager />
-                                      : path === '/app/booking/loyalty'
-                                        ? <BookingLoyalty />
-                                        : path === '/app/booking/site'
-                                          ? <BookingBusinessSiteManager />
-                                          : path === '/app/booking/staff-access'
-                                            ? <BookingStaffAccess />
-                                            : path === '/app/booking/customers'
-                                              ? <BookingCustomersCRM />
-                                              : path === '/app/booking/staff'
-                                                ? <BookingStaffManager />
-                                                : path === '/app/booking/tools'
-                                                  ? <BookingBusinessTools />
-                                                  : path === '/app/booking'
-                                                    ? <BookingManagerV2 />
-                                                    : <App />;
-
-  ReactDOM.createRoot(document.getElementById('root')!).render(
-    <React.StrictMode>
-      <Suspense fallback={<RouteLoading />}>{rootView}</Suspense>
-      {!path.startsWith('/miniapp') && path !== '/telegram-app' && <CommerceQuickNav />}
-    </React.StrictMode>,
-  );
-}
-
 void renderApp();
