@@ -50,15 +50,18 @@ async function readOrders(admin: any, store: any) {
   const orderIds = orders.map((order: any) => order.id);
   const customerIds = [...new Set(orders.map((order: any) => order.customerId).filter(Boolean))];
 
-  const [itemsResult, customersResult] = await Promise.all([
+  const [itemsResult, customersResult, reservationsResult] = await Promise.all([
     orderIds.length
       ? admin.from("StoreOrderItem").select("id,orderId,itemId,titleSnapshot,skuSnapshot,unitPriceAmount,quantity,lineTotalAmount,metadata,createdAt").in("orderId", orderIds).order("createdAt", { ascending: true })
       : Promise.resolve({ data: [], error: null }),
     customerIds.length
       ? admin.from("StoreCustomer").select("id,platform,externalUserId,username,displayName,phone,lastSeenAt,createdAt").in("id", customerIds)
       : Promise.resolve({ data: [], error: null }),
+    orderIds.length
+      ? admin.from("StoreInventoryReservation").select("orderId,status,expiresAt,quantity").in("orderId", orderIds)
+      : Promise.resolve({ data: [], error: null }),
   ]);
-  if (itemsResult.error || customersResult.error) throw new Error(`order_details:${itemsResult.error?.message ?? customersResult.error?.message}`);
+  if (itemsResult.error || customersResult.error || reservationsResult.error) throw new Error(`order_details:${itemsResult.error?.message ?? customersResult.error?.message ?? reservationsResult.error?.message}`);
 
   const itemsByOrder = new Map<string, any[]>();
   for (const item of itemsResult.data ?? []) {
@@ -67,11 +70,26 @@ async function readOrders(admin: any, store: any) {
     itemsByOrder.set(item.orderId, current);
   }
   const customersById = new Map((customersResult.data ?? []).map((customer: any) => [customer.id, customer]));
+  const reservationsByOrder = new Map<string, { status: string; expiresAt: string | null; quantity: number }>();
+  for (const reservation of reservationsResult.data ?? []) {
+    const current = reservationsByOrder.get(reservation.orderId);
+    const quantity = Number(reservation.quantity ?? 0);
+    const status = reservation.status === "RESERVED" ? "RESERVED" : current?.status ?? reservation.status;
+    const expiresAt = reservation.status === "RESERVED" && reservation.expiresAt
+      ? (!current?.expiresAt || new Date(reservation.expiresAt).getTime() < new Date(current.expiresAt).getTime() ? reservation.expiresAt : current.expiresAt)
+      : current?.expiresAt ?? null;
+    reservationsByOrder.set(reservation.orderId, { status, expiresAt, quantity: (current?.quantity ?? 0) + quantity });
+  }
 
   return {
     ok: true,
     store,
-    orders: orders.map((order: any) => ({ ...order, customer: order.customerId ? customersById.get(order.customerId) ?? null : null, items: itemsByOrder.get(order.id) ?? [] })),
+    orders: orders.map((order: any) => ({
+      ...order,
+      customer: order.customerId ? customersById.get(order.customerId) ?? null : null,
+      items: itemsByOrder.get(order.id) ?? [],
+      inventoryReservation: reservationsByOrder.get(order.id) ?? null,
+    })),
     summary: {
       total: totalResult.count ?? 0,
       awaitingPayment: awaitingResult.count ?? 0,
@@ -145,6 +163,16 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
     if (!allowedTransition(order.status, nextStatus)) {
       return json({ ok: false, message: "این تغییر وضعیت مجاز نیست. وضعیت PAID و REFUNDED فقط باید توسط جریان پرداخت معتبر تغییر کنند." }, 409);
     }
+
+    if (nextStatus === "CANCELLED") {
+      const { error: cancelError } = await admin.rpc("store_cancel_order", { p_store_id: store.id, p_order_id: order.id });
+      if (cancelError) {
+        const conflict = cancelError.message?.includes("invalid_transition");
+        return json({ ok: false, message: conflict ? "وضعیت سفارش هم‌زمان تغییر کرده است. صفحه را تازه کنید و دوباره بررسی کنید." : "لغو سفارش و آزادسازی موجودی انجام نشد." }, conflict ? 409 : 500);
+      }
+      return json(await readOrders(admin, store));
+    }
+
     const { data: transitioned, error } = await admin.from("StoreOrder")
       .update({ status: nextStatus, updatedAt: new Date().toISOString() })
       .eq("id", order.id)
