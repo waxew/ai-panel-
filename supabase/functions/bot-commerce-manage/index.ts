@@ -58,6 +58,7 @@ function integerValue(value: unknown, fallback: number, min: number, max: number
 }
 
 function normalizeActionValue(actionType: string, value: unknown) {
+  if (actionType === "SUBMENU") return null;
   if (value == null || value === "") return null;
   if (typeof value !== "string") throw new Error("invalid_action_value");
   const clean = value.trim();
@@ -235,13 +236,13 @@ async function readState(admin: any, workspaceId: string) {
   };
 }
 
-async function snapshotTarget(admin: any, workspaceId: string, target: RuntimeTarget): Promise<LegacyTargetSnapshot> {
+async function snapshotTarget(admin: any, workspaceId: string, target: RuntimeTarget, requireActive = true): Promise<LegacyTargetSnapshot> {
   const config = providerConfig[target.provider];
   const { data: bot, error: botError } = await admin.from(config.table)
     .select("id,welcomeMessage,status")
     .eq("id", target.botId).eq("workspaceId", workspaceId).maybeSingle();
   if (botError || !bot) throw new Error("foreign_target");
-  if (bot.status !== "ACTIVE") throw new Error("inactive_target");
+  if (requireActive && bot.status !== "ACTIVE") throw new Error("inactive_target");
   const { data: buttons, error: buttonError } = await admin.from(config.buttonTable)
     .select("id,parentId,title,actionType,actionValue,sortOrder")
     .eq("botId", target.botId).order("sortOrder", { ascending: true });
@@ -293,7 +294,7 @@ async function projectTarget(admin: any, workspaceId: string, target: RuntimeTar
     parentId: node.parentId ? projectionId(node.parentId) : null,
     title: node.title,
     actionType: node.actionType,
-    actionValue: node.actionValue,
+    actionValue: node.actionType === "SUBMENU" ? projectionId(node.id) : node.actionValue,
     sortOrder: node.sortOrder,
   }));
   await replaceButtons(admin, target.provider, target.botId, rows);
@@ -328,13 +329,42 @@ function parseLegacySnapshots(value: unknown) {
   return snapshots;
 }
 
+function publishedTargets(engine: JsonObject): RuntimeTarget[] {
+  return Array.isArray(engine.published?.targets)
+    ? (engine.published.targets as RuntimeTarget[]).filter((target) => target?.enabled && providers.has(String(target.provider)) && typeof target.botId === "string")
+    : [];
+}
+
+function uniqueTargets(targets: RuntimeTarget[]) {
+  const map = new Map<string, RuntimeTarget>();
+  for (const target of targets) map.set(`${target.provider}:${target.botId}`, target);
+  return Array.from(map.values());
+}
+
+async function snapshotRuntimeTargets(admin: any, workspaceId: string, targets: RuntimeTarget[]) {
+  const snapshots: LegacyTargetSnapshot[] = [];
+  for (const target of uniqueTargets(targets)) {
+    try {
+      snapshots.push(await snapshotTarget(admin, workspaceId, target, false));
+    } catch (error) {
+      if (!String(error).includes("foreign_target")) throw error;
+    }
+  }
+  return snapshots;
+}
+
+async function restoreRuntimeTargets(admin: any, workspaceId: string, snapshots: LegacyTargetSnapshot[]) {
+  for (const snapshot of snapshots) {
+    try { await restoreTarget(admin, workspaceId, snapshot); }
+    catch (error) { console.error("bot commerce rollback restore", error); }
+  }
+}
+
 async function syncPublishedTargets(admin: any, workspaceId: string, engine: JsonObject, template: any) {
   const snapshots = parseLegacySnapshots(engine.legacyTargets);
   const nextTargets = (template.targets as RuntimeTarget[]).filter((target) => target.enabled);
   const nextKeys = new Set(nextTargets.map((target) => `${target.provider}:${target.botId}`));
-  const previousTargets = Array.isArray(engine.published?.targets)
-    ? (engine.published.targets as RuntimeTarget[]).filter((target) => target?.enabled && providers.has(String(target.provider)) && typeof target.botId === "string")
-    : [];
+  const previousTargets = publishedTargets(engine);
 
   for (const previous of previousTargets) {
     const key = `${previous.provider}:${previous.botId}`;
@@ -357,7 +387,20 @@ async function saveEngine(admin: any, workspaceId: string, rawTemplate: unknown,
   const engine = objectValue(settings.botCommerce) ?? {};
   const now = new Date().toISOString();
   const version = integerValue(engine.version, 0, 0, 1_000_000);
-  const legacyTargets = publish ? await syncPublishedTargets(admin, workspaceId, engine, template) : engine.legacyTargets;
+
+  let legacyTargets = engine.legacyTargets;
+  let rollbackSnapshots: LegacyTargetSnapshot[] = [];
+  if (publish) {
+    const nextTargets = (template.targets as RuntimeTarget[]).filter((target) => target.enabled);
+    rollbackSnapshots = await snapshotRuntimeTargets(admin, workspaceId, [...publishedTargets(engine), ...nextTargets]);
+    try {
+      legacyTargets = await syncPublishedTargets(admin, workspaceId, engine, template);
+    } catch (error) {
+      await restoreRuntimeTargets(admin, workspaceId, rollbackSnapshots);
+      throw error;
+    }
+  }
+
   const nextEngine = {
     ...engine,
     draft: template,
@@ -366,7 +409,10 @@ async function saveEngine(admin: any, workspaceId: string, rawTemplate: unknown,
   };
   const { error } = await admin.from("Store").update({ settings: { ...settings, botCommerce: nextEngine }, updatedAt: now })
     .eq("id", store.id).eq("workspaceId", workspaceId);
-  if (error) throw new Error(`save:${error.message}`);
+  if (error) {
+    if (publish) await restoreRuntimeTargets(admin, workspaceId, rollbackSnapshots);
+    throw new Error(`save:${error.message}`);
+  }
   return readState(admin, workspaceId);
 }
 
@@ -387,7 +433,7 @@ async function importProvider(admin: any, workspaceId: string, provider: Provide
     presetKey: "commerce",
     name: "فروشگاه پیام‌رسان",
     welcomeMessage: bot.welcomeMessage || "سلام! از منوی زیر یکی از گزینه‌ها را انتخاب کنید.",
-    menu: (buttons ?? []).map((button: any) => ({ ...button, enabled: true })),
+    menu: (buttons ?? []).map((button: any) => ({ ...button, actionValue: button.actionType === "SUBMENU" ? null : button.actionValue, enabled: true })),
     targets: [{ provider, botId, enabled: true }],
     settings: { columns: 2, showPrices: true, showInventory: true },
   };
@@ -400,18 +446,27 @@ async function unpublish(admin: any, workspaceId: string) {
   const settings = objectValue(store.settings) ?? {};
   const engine = objectValue(settings.botCommerce) ?? {};
   const snapshots = parseLegacySnapshots(engine.legacyTargets);
-  const publishedTargets = Array.isArray(engine.published?.targets)
-    ? (engine.published.targets as RuntimeTarget[]).filter((target) => target?.enabled && providers.has(String(target.provider)) && typeof target.botId === "string")
-    : [];
-  for (const target of publishedTargets) {
-    const key = `${target.provider}:${target.botId}`;
-    if (snapshots[key]) await restoreTarget(admin, workspaceId, snapshots[key]);
+  const currentTargets = publishedTargets(engine);
+  const rollbackSnapshots = await snapshotRuntimeTargets(admin, workspaceId, currentTargets);
+
+  try {
+    for (const target of currentTargets) {
+      const key = `${target.provider}:${target.botId}`;
+      if (snapshots[key]) await restoreTarget(admin, workspaceId, snapshots[key]);
+    }
+  } catch (error) {
+    await restoreRuntimeTargets(admin, workspaceId, rollbackSnapshots);
+    throw error;
   }
+
   const now = new Date().toISOString();
   const next = { ...engine, published: null, publishedAt: null };
   const { error } = await admin.from("Store").update({ settings: { ...settings, botCommerce: next }, updatedAt: now })
     .eq("id", store.id).eq("workspaceId", workspaceId);
-  if (error) throw new Error(`unpublish:${error.message}`);
+  if (error) {
+    await restoreRuntimeTargets(admin, workspaceId, rollbackSnapshots);
+    throw new Error(`unpublish:${error.message}`);
+  }
   return readState(admin, workspaceId);
 }
 
