@@ -46,7 +46,7 @@ export const botCommerceActionDefinitions: readonly BotCommerceActionDefinition[
   { key: 'SUPPORT', labelFa: 'پشتیبانی', descriptionFa: 'راه ارتباطی یا متن پشتیبانی', runtime: 'live', valueKind: 'text' },
   { key: 'TEXT', labelFa: 'پیام متنی', descriptionFa: 'نمایش متن سفارشی', runtime: 'live', valueKind: 'text' },
   { key: 'URL', labelFa: 'لینک', descriptionFa: 'باز کردن آدرس HTTP/HTTPS', runtime: 'live', valueKind: 'url' },
-  { key: 'SUBMENU', labelFa: 'زیرمنو', descriptionFa: 'ساخت ساختار منوی چندسطحی', runtime: 'live', valueKind: 'text' },
+  { key: 'SUBMENU', labelFa: 'زیرمنو', descriptionFa: 'ساخت ساختار منوی چندسطحی؛ شناسه مسیر Runtime هنگام Publish توسط Adapter ساخته می‌شود', runtime: 'live', valueKind: 'none' },
 ] as const;
 
 export type BotCommerceMenuNode = {
