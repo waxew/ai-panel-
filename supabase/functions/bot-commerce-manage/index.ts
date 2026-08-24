@@ -14,6 +14,21 @@ const actionTypes = new Set([
   "MY_SERVICES", "PRICING", "REFERRAL", "TUTORIAL", "SUPPORT", "TEXT", "URL", "SUBMENU",
 ]);
 const liveActionTypes = new Set(["CATALOG", "CART", "ORDERS", "SUPPORT", "TEXT", "URL", "SUBMENU"]);
+const customTitleActionTypes = new Set(["TEXT", "URL", "SUBMENU"]);
+const fixedActionTitles: Record<string, string> = {
+  CATALOG: "🛍 محصولات",
+  SEARCH: "🔎 جستجوی محصول",
+  CART: "🛒 سبد خرید",
+  ORDERS: "📦 سفارش‌های من",
+  TRACK_ORDER: "🚚 پیگیری سفارش",
+  ACCOUNT: "👤 حساب کاربری",
+  WALLET: "💳 کیف پول",
+  MY_SERVICES: "📦 سرویس‌های من",
+  PRICING: "💰 تعرفه‌ها",
+  REFERRAL: "👥 زیرمجموعه‌گیری",
+  TUTORIAL: "📚 آموزش",
+  SUPPORT: "☎️ پشتیبانی",
+};
 
 const providerConfig = {
   telegram: { table: "TelegramBot", externalId: "telegramBotId", buttonTable: "TelegramButton" },
@@ -55,6 +70,20 @@ function textValue(value: unknown, fallback: string, max: number) {
 function integerValue(value: unknown, fallback: number, min: number, max: number) {
   const parsed = Number(value);
   return Number.isInteger(parsed) ? Math.min(max, Math.max(min, parsed)) : fallback;
+}
+
+function canonicalMenuTitle(value: string) {
+  return value.normalize("NFKC").replace(/[^\p{L}\p{N}]+/gu, "").toLocaleLowerCase("fa-IR");
+}
+
+const reservedMenuTitles = new Set(Object.values(fixedActionTitles).map(canonicalMenuTitle));
+
+function normalizeMenuTitle(actionType: string, requestedTitle: string) {
+  const fixedTitle = fixedActionTitles[actionType];
+  if (fixedTitle) return fixedTitle;
+  if (!customTitleActionTypes.has(actionType)) throw new Error("invalid_action_type");
+  if (reservedMenuTitles.has(canonicalMenuTitle(requestedTitle))) throw new Error("reserved_menu_title");
+  return requestedTitle;
 }
 
 function normalizeActionValue(actionType: string, value: unknown) {
@@ -169,10 +198,11 @@ function normalizeTemplate(value: unknown, ownedTargets: Set<string>, forPublish
     const id = textValue(node.id, "", 80);
     if (!id || seenIds.has(id)) throw new Error("duplicate_menu_id");
     seenIds.add(id);
-    const title = textValue(node.title, "", 64);
-    if (!title) throw new Error("invalid_menu_title");
+    const requestedTitle = textValue(node.title, "", 64);
+    if (!requestedTitle) throw new Error("invalid_menu_title");
     const actionType = String(node.actionType ?? "").trim().toUpperCase();
     if (!actionTypes.has(actionType)) throw new Error("invalid_action_type");
+    const title = normalizeMenuTitle(actionType, requestedTitle);
     const enabled = node.enabled !== false;
     if (forPublish && enabled && !liveActionTypes.has(actionType)) throw new Error(`action_not_live:${actionType}`);
     const parentId = node.parentId == null || node.parentId === "" ? null : textValue(node.parentId, "", 80);
@@ -473,6 +503,7 @@ async function unpublish(admin: any, workspaceId: string) {
 function friendlyError(error: unknown) {
   const text = String(error);
   if (text.includes("action_not_live:")) return `این قابلیت هنوز Runtime نهایی ندارد: ${text.split("action_not_live:")[1] ?? ""}. آن را غیرفعال کنید یا بعد از تکمیل Runtime منتشر کنید.`;
+  if (text.includes("reserved_menu_title")) return "عنوان انتخاب‌شده متعلق به یک عملکرد آماده است. برای دکمه سفارشی نام دیگری انتخاب کنید.";
   if (text.includes("no_publish_target")) return "برای انتشار حداقل یک ربات متصل را انتخاب کنید.";
   if (text.includes("inactive_target")) return "برای انتشار، ربات انتخاب‌شده باید ACTIVE و متصل باشد.";
   if (text.includes("foreign_target")) return "یکی از ربات‌های انتخاب‌شده متعلق به این Workspace نیست.";
