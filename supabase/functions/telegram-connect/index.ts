@@ -109,7 +109,7 @@ async function ensureDefaultButtons(admin: any, botId: string) {
 }
 
 const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
-  if (request.method === "GET") return json({ ok: true, service: "telegram-connect", auth: "user", version: 4 });
+  if (request.method === "GET") return json({ ok: true, service: "telegram-connect", auth: "user", version: 5 });
   if (request.method !== "POST") return json({ ok: false, message: "Method not allowed" }, 405);
 
   const userId = ctx.userClaims?.id;
@@ -134,7 +134,10 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
   catch (error) { console.error("workspace setup failed", error); return json({ ok: false, message: "فضای کاری مشتری آماده نشد." }, 500); }
 
   const telegramBotId = String(identity.result.id);
-  const { data: existingBots, error: existingError } = await admin.from("TelegramBot").select("id,workspaceId").eq("telegramBotId", telegramBotId).limit(1);
+  const { data: existingBots, error: existingError } = await admin.from("TelegramBot")
+    .select("id,workspaceId,status")
+    .eq("telegramBotId", telegramBotId)
+    .limit(1);
   if (existingError) return json({ ok: false, message: "بررسی وضعیت ربات انجام نشد." }, 500);
   const existingBot = existingBots?.[0];
   if (existingBot && existingBot.workspaceId !== workspaceId) return json({ ok: false, message: "این ربات قبلاً به حساب مشتری دیگری متصل شده است." }, 409);
@@ -146,27 +149,29 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
   try { tokenCiphertext = await encryptToken(token, secret.value); }
   catch { return json({ ok: false, message: "رمزنگاری توکن انجام نشد." }, 500); }
 
-  const webhookSecret = randomSecret();
-  const webhookSecretHash = await sha256(webhookSecret);
-  const row = {
-    workspaceId,
-    telegramBotId,
-    username: identity.result.username ?? null,
-    displayName: identity.result.first_name,
-    tokenCiphertext,
-    webhookSecretHash,
-    status: "PENDING",
-  };
+  let botId = existingBot?.id as string | undefined;
+  if (!botId) {
+    const { data: pendingBot, error: insertError } = await admin.from("TelegramBot")
+      .insert({
+        workspaceId,
+        telegramBotId,
+        username: identity.result.username ?? null,
+        displayName: identity.result.first_name,
+        tokenCiphertext,
+        webhookSecretHash: null,
+        status: "PENDING",
+      })
+      .select("id")
+      .single();
+    if (insertError || !pendingBot) return json({ ok: false, message: "ذخیره ربات در دیتابیس انجام نشد." }, 500);
+    botId = pendingBot.id;
+  }
 
-  const { data: bot, error: saveError } = await admin.from("TelegramBot")
-    .upsert(row, { onConflict: "telegramBotId" })
-    .select("id,telegramBotId,username,displayName,description,status,welcomeMessage")
-    .single();
-  if (saveError || !bot) return json({ ok: false, message: "ذخیره ربات در دیتابیس انجام نشد." }, 500);
-
-  try { await ensureDefaultButtons(admin, bot.id); }
+  try { await ensureDefaultButtons(admin, botId); }
   catch (error) { console.error("default buttons failed", error); }
 
+  const webhookSecret = randomSecret();
+  const webhookSecretHash = await sha256(webhookSecret);
   const webhookUrl = `https://spncmjuvnvfkrahjnyjm.supabase.co/functions/v1/telegram-webhook/${telegramBotId}`;
   let webhookResult: TelegramApiResponse<boolean>;
   try {
@@ -178,25 +183,42 @@ const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
     });
   } catch (error) {
     console.error("telegram setWebhook failed", error);
-    await admin.from("TelegramBot").update({ webhookSecretHash: null, status: "PENDING" }).eq("id", bot.id);
-    return json({ ok: false, message: "ربات ذخیره شد اما Webhook تلگرام فعال نشد. دوباره اتصال را انجام دهید." }, 502);
+    if (!existingBot) await admin.from("TelegramBot").update({ webhookSecretHash: null, status: "PENDING" }).eq("id", botId);
+    return json({ ok: false, message: existingBot ? "اتصال جدید کامل نشد؛ اتصال قبلی دست‌نخورده باقی ماند." : "ربات ذخیره شد اما Webhook تلگرام فعال نشد. دوباره اتصال را انجام دهید." }, 502);
   }
 
   if (!webhookResult.ok) {
     console.error("telegram setWebhook rejected", webhookResult);
-    await admin.from("TelegramBot").update({ webhookSecretHash: null, status: "PENDING" }).eq("id", bot.id);
-    return json({ ok: false, message: "Telegram تنظیم Webhook را نپذیرفت. توکن و دسترسی ربات را بررسی کنید." }, 502);
+    if (!existingBot) await admin.from("TelegramBot").update({ webhookSecretHash: null, status: "PENDING" }).eq("id", botId);
+    return json({ ok: false, message: existingBot ? "Telegram اتصال جدید را نپذیرفت؛ اتصال قبلی دست‌نخورده باقی ماند." : "Telegram تنظیم Webhook را نپذیرفت. توکن و دسترسی ربات را بررسی کنید." }, 502);
   }
 
-  const { data: activeBot, error: activateError } = await admin.from("TelegramBot")
-    .update({ status: "ACTIVE" })
-    .eq("id", bot.id)
+  const activationRow = {
+    username: identity.result.username ?? null,
+    displayName: identity.result.first_name,
+    tokenCiphertext,
+    webhookSecretHash,
+    status: "ACTIVE",
+  };
+  let activation = await admin.from("TelegramBot")
+    .update(activationRow)
+    .eq("id", botId)
     .eq("workspaceId", workspaceId)
     .select("id,telegramBotId,username,displayName,description,status,welcomeMessage")
     .single();
-  if (activateError || !activeBot) {
-    console.error("telegram activation failed", activateError);
-    return json({ ok: false, message: "Webhook فعال شد اما ثبت وضعیت اتصال کامل نشد. دوباره اتصال را انجام دهید." }, 500);
+  if (activation.error || !activation.data) {
+    console.error("telegram activation first attempt failed", activation.error);
+    activation = await admin.from("TelegramBot")
+      .update(activationRow)
+      .eq("id", botId)
+      .eq("workspaceId", workspaceId)
+      .select("id,telegramBotId,username,displayName,description,status,welcomeMessage")
+      .single();
+  }
+  const activeBot = activation.data;
+  if (activation.error || !activeBot) {
+    console.error("telegram activation failed", activation.error);
+    return json({ ok: false, message: "Webhook در Telegram تنظیم شد اما ذخیره نهایی اتصال کامل نشد. اتصال را دوباره انجام دهید." }, 500);
   }
 
   return json({
