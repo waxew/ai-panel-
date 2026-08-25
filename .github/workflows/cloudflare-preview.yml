@@ -1,229 +1,424 @@
+# نامی که این Workflow در تب Actions گیت‌هاب با آن نمایش داده می‌شود.
 name: AI Panel platform deploy
 
+# این بخش مشخص می‌کند Workflow در چه رویدادهایی اجرا شود.
 on:
+  # workflow_dispatch اجازه می‌دهد این Workflow را به‌صورت دستی از GitHub Actions اجرا کنیم.
   workflow_dispatch:
+  # در Pull Requestهایی که مقصد آن‌ها branch اصلی main است، Build و Preview اجرا می‌شود.
   pull_request:
+    # فقط Pull Requestهای مربوط به branch main این Workflow را فعال می‌کنند.
     branches: [main]
+  # Push مستقیم روی main نیز می‌تواند Deployment واقعی را فعال کند.
   push:
+    # فقط Push روی branch main بررسی می‌شود.
     branches: [main]
+    # برای جلوگیری از اجرای بی‌دلیل Workflow، فقط تغییر این مسیرها باعث Trigger شدن Push می‌شود.
     paths:
+      # تغییر خود فایل Workflow باید دوباره Pipeline را اجرا کند.
       - .github/workflows/cloudflare-preview.yml
+      # package.json ریشه روی ابزارها و Scriptهای کل پروژه اثر دارد.
       - package.json
+      # تعریف Workspaceهای pnpm روی نصب و Build پروژه اثر دارد.
       - pnpm-workspace.yaml
+      # هر تغییر در قراردادها و کد مشترک باید دوباره Build و Deploy را بررسی کند.
       - packages/shared/**
+      # هر تغییر در Worker و Gateway کلادفلر باید Pipeline را اجرا کند.
       - apps/cloudflare/**
+      # هر تغییر در رابط Web باید Build و Deploy را اجرا کند.
       - apps/web/**
+      # هر تغییر در Edge Functionها، Migrationها یا تنظیمات Supabase باید بررسی شود.
       - supabase/**
 
+# سطح دسترسی پیش‌فرض GitHub Token این Workflow را محدود می‌کنیم.
 permissions:
+  # Workflow فقط نیاز دارد محتوای Repository را بخواند.
   contents: read
 
+# این بخش جلوی اجرای همزمان چند Deployment ناسازگار برای یک مقصد را می‌گیرد.
 concurrency:
+  # برای PRها شماره PR وارد نام گروه می‌شود و برای Production نام ثابت production استفاده می‌شود.
   group: ai-panel-platform-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'production' }}
+  # اگر Run جدیدی برای همان گروه شروع شود، Run قدیمی لغو می‌شود تا منابع هدر نروند.
   cancel-in-progress: true
 
+# همه Jobهای Workflow زیر این کلید تعریف می‌شوند.
 jobs:
+  # این Job تمام مراحل Build، Validation و Deployment را انجام می‌دهد.
   build-and-deploy:
+    # Job روی Runner لینوکسی Ubuntu جدید گیت‌هاب اجرا می‌شود.
     runs-on: ubuntu-latest
+    # اگر کل Job بیشتر از 20 دقیقه طول بکشد GitHub آن را متوقف می‌کند.
     timeout-minutes: 20
+    # مراحل Job به ترتیب زیر اجرا می‌شوند.
     steps:
+      # مرحله اول سورس Repository را داخل Runner دریافت می‌کند.
       - name: Checkout repository
+        # Action رسمی checkout برای Clone کردن کد استفاده می‌شود.
         uses: actions/checkout@v4
+        # تنظیمات Action checkout زیر این قسمت هستند.
         with:
+          # دو Commit آخر دریافت می‌شوند تا git diff برای تشخیص فایل‌های تغییرکرده قابل استفاده باشد.
           fetch-depth: 2
 
+      # نسخه Node.js موردنیاز پروژه روی Runner نصب/فعال می‌شود.
       - name: Setup Node.js
+        # Action رسمی setup-node محیط Node را آماده می‌کند.
         uses: actions/setup-node@v4
+        # ورودی‌های setup-node در این بخش قرار می‌گیرند.
         with:
+          # پروژه با Node.js نسخه 22 Build و Deploy می‌شود.
           node-version: '22'
 
+      # pnpm مدیر پکیج اصلی Monorepo است و باید قبل از نصب Dependencyها موجود باشد.
       - name: Install pnpm
+        # این دستور نسخه مشخص pnpm را به‌صورت Global داخل Runner نصب می‌کند.
         run: npm install --global pnpm@11.22.0
 
+      # تمام Dependencyهای Workspace از روی package.jsonها و Lockfile نصب می‌شوند.
       - name: Install dependencies
+        # --no-frozen-lockfile اجازه می‌دهد نصب در صورت اختلاف جزئی Lockfile متوقف نشود.
         run: pnpm install --no-frozen-lockfile
 
+      # پکیج قراردادهای مشترک قبل از برنامه‌های مصرف‌کننده Build می‌شود.
       - name: Build shared contracts
+        # فقط Workspace با نام @ai-panel/shared Build می‌شود.
         run: pnpm --filter @ai-panel/shared build
 
+      # قبل از Deployment، TypeScript مربوط به Cloudflare Gateway بررسی می‌شود.
       - name: Typecheck Cloudflare gateway
+        # Script typecheck فقط روی پکیج Cloudflare اجرا می‌شود.
         run: pnpm --filter @ai-panel/cloudflare typecheck
 
+      # نسخه Production رابط Web که Worker باید Serve کند ساخته می‌شود.
       - name: Build web app
+        # Script ریشه build:cloudflare خروجی Web مناسب Cloudflare را تولید می‌کند.
         run: pnpm build:cloudflare
 
+      # قبل از Deploy بررسی می‌کنیم هر Supabase Function هم سورس داشته باشد و هم در config.toml تعریف شده باشد.
       - name: Validate Supabase source/config pairing
+        # Bash صریحاً به‌عنوان Shell این مرحله انتخاب می‌شود.
         shell: bash
+        # علامت | یعنی چند خط زیر به‌عنوان یک Script واحد اجرا می‌شوند.
         run: |
+          # -e روی خطا خارج می‌شود، -u متغیر تعریف‌نشده را خطا می‌کند و pipefail خطای Pipeline را حفظ می‌کند.
           set -euo pipefail
+          # صفر یعنی هنوز مشکل Validation پیدا نشده است.
           missing=0
+          # روی تمام زیرپوشه‌های supabase/functions حلقه می‌زنیم.
           for dir in supabase/functions/*; do
+            # اگر آیتم فعلی Directory نباشد از آن عبور می‌کنیم.
             [ -d "$dir" ] || continue
+            # فقط نام آخر پوشه را به‌عنوان slug تابع استخراج می‌کنیم.
             slug=$(basename "$dir")
+            # پوشه _shared کتابخانه مشترک است و Edge Function مستقل محسوب نمی‌شود.
             [ "$slug" = "_shared" ] && continue
+            # هر Function واقعی باید فایل ورودی index.ts داشته باشد.
             if [ ! -f "$dir/index.ts" ]; then
+              # در صورت نبودن index.ts نام تابع مشکل‌دار در Log چاپ می‌شود.
               echo "Missing index.ts for $slug"
+              # فلگ خطا را فعال می‌کنیم تا در انتها Step شکست بخورد.
               missing=1
             fi
+            # config.toml باید برای همان slug یک Section با نام functions.slug داشته باشد.
             if ! grep -Fq "[functions.$slug]" supabase/config.toml; then
+              # نبودن تنظیم Function در config.toml در Log گزارش می‌شود.
               echo "Missing verify_jwt config for $slug"
+              # فلگ خطا فعال می‌شود.
               missing=1
             fi
+          # پایان حلقه بررسی Functionها.
           done
+          # فقط اگر هیچ مشکل پیدا نشده باشد مقدار missing برابر صفر است و Step موفق می‌شود.
           test "$missing" = "0"
 
+      # برای Deployment واقعی Supabase، CLI رسمی Supabase روی Runner نصب می‌شود.
       - name: Setup Supabase CLI
+        # این مرحله فقط برای Push روی main یا اجرای دستی و وقتی Variable مربوط به Deploy فعال باشد اجرا می‌شود.
         if: ((github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch') && vars.SUPABASE_DEPLOY_ENABLED == 'true'
+        # Action رسمی Supabase CLI را نصب می‌کند.
         uses: supabase/setup-cli@v1
+        # تنظیم نسخه CLI در این بخش انجام می‌شود.
         with:
+          # جدیدترین نسخه CLI در زمان اجرای Workflow استفاده می‌شود.
           version: latest
 
+      # در Pushهای Production فقط Functionهایی را پیدا می‌کنیم که واقعاً نسبت به Commit قبلی تغییر کرده‌اند.
       - name: Detect changed Supabase functions
+        # id برای دسترسی مراحل بعدی به Output این Step استفاده می‌شود.
         id: changed-functions
+        # این مرحله فقط در Push main و در صورت فعال بودن Deploy Functionها اجرا می‌شود.
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.SUPABASE_DEPLOY_ENABLED == 'true'
+        # Script با Bash اجرا می‌شود.
         shell: bash
+        # Script چندخطی تشخیص Functionهای تغییرکرده از اینجا شروع می‌شود.
         run: |
+          # اجرای سخت‌گیرانه Bash برای جلوگیری از ادامه کار پس از خطا.
           set -euo pipefail
+          # SHA قبل از Push از Context گیت‌هاب خوانده می‌شود.
           before="${{ github.event.before }}"
+          # اگر Commit قبلی وجود نداشته باشد یا SHA صفر باشد، همه Functionها باید Deploy شوند.
           if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ]; then
+            # همه پوشه‌های Function به‌جز _shared جمع‌آوری، مرتب و به یک رشته Space-separated تبدیل می‌شوند.
             slugs=$(find supabase/functions -mindepth 1 -maxdepth 1 -type d ! -name _shared -printf '%f\n' | sort -u | tr '\n' ' ')
+          # در حالت عادی فقط تفاوت بین Commit قبلی و Commit فعلی بررسی می‌شود.
           else
+            # نام فایل‌های تغییرکرده گرفته می‌شود، slug Function از مسیر استخراج و فهرست یکتا ساخته می‌شود.
             slugs=$(git diff --name-only "$before" "$GITHUB_SHA" -- 'supabase/functions/**' | awk -F/ '$1=="supabase" && $2=="functions" && $3!="_shared" {print $3}' | sort -u | tr '\n' ' ')
+          # پایان شرط تشخیص Commit قبلی.
           fi
+          # فهرست slugها به Output رسمی Step نوشته می‌شود تا Step بعد بتواند آن را بخواند.
           echo "slugs=$slugs" >> "$GITHUB_OUTPUT"
+          # برای خوانایی Log، Functionهای تشخیص‌داده‌شده چاپ می‌شوند.
           echo "Changed functions: $slugs"
 
+      # فقط Functionهای تغییرکرده در Push عادی Production Deploy می‌شوند.
       - name: Deploy changed Supabase Edge Functions
+        # شرط علاوه بر فعال بودن Deploy بررسی می‌کند Output مرحله قبل خالی نباشد.
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.SUPABASE_DEPLOY_ENABLED == 'true' && steps.changed-functions.outputs.slugs != ''
+        # متغیرهای محیطی لازم برای این Step تعریف می‌شوند.
         env:
+          # Access Token محرمانه Supabase از GitHub Secrets خوانده می‌شود و در Repository ذخیره نشده است.
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          # فهرست Functionهای تغییرکرده از Output مرحله قبلی گرفته می‌شود.
           SLUGS: ${{ steps.changed-functions.outputs.slugs }}
+        # Bash برای حلقه Deployment استفاده می‌شود.
         shell: bash
+        # Script Deploy Functionهای تغییرکرده.
         run: |
+          # در اولین خطای واقعی Script متوقف می‌شود.
           set -euo pipefail
+          # روی هر slug موجود در متغیر SLUGS حلقه می‌زنیم.
           for slug in $SLUGS; do
+            # نام Function در حال Deploy برای Log چاپ می‌شود.
             echo "Deploying Supabase function: $slug"
+            # Function فعلی روی Project مشخص Supabase Deploy می‌شود.
             supabase functions deploy "$slug" --project-ref spncmjuvnvfkrahjnyjm
+          # پایان حلقه Deployment Functionها.
           done
 
+      # در Release دستی می‌توان همه Edge Functionهای Supabase را یکجا Deploy کرد.
       - name: Deploy all Supabase Edge Functions (manual release)
+        # این مرحله فقط در workflow_dispatch و وقتی Deploy Supabase فعال است اجرا می‌شود.
         if: github.event_name == 'workflow_dispatch' && vars.SUPABASE_DEPLOY_ENABLED == 'true'
+        # Secret موردنیاز Supabase CLI در محیط Step قرار می‌گیرد.
         env:
+          # Token دسترسی Supabase از GitHub Secrets خوانده می‌شود.
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        # بدون تعیین slug، تمام Functionهای محلی Project Deploy می‌شوند.
         run: supabase functions deploy --project-ref spncmjuvnvfkrahjnyjm
 
+      # Migrationهای دیتابیس Supabase در صورت فعال بودن تنظیم مربوطه روی Production اعمال می‌شوند.
       - name: Apply Supabase migrations
+        # این مرحله فقط برای Push main یا اجرای دستی و با Variable مخصوص Migration اجرا می‌شود.
         if: ((github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch') && vars.SUPABASE_DB_DEPLOY_ENABLED == 'true'
+        # متغیرها و Secretهای دیتابیس در محیط Step قرار می‌گیرند.
         env:
+          # Token حساب Supabase برای احراز هویت CLI است.
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          # Password دیتابیس برای Link کردن CLI به Project واقعی استفاده می‌شود.
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        # Script با Bash اجرا می‌شود.
         shell: bash
+        # Script اعمال Migrationها.
         run: |
+          # روی خطا یا متغیر نامعتبر فوراً متوقف می‌شویم.
           set -euo pipefail
+          # CLI محلی را به Project واقعی Supabase و دیتابیس آن متصل می‌کنیم.
           supabase link --project-ref spncmjuvnvfkrahjnyjm --password "$SUPABASE_DB_PASSWORD"
+          # تمام Migrationهای محلی که هنوز روی سرور اعمال نشده‌اند به دیتابیس Push می‌شوند.
           supabase db push
 
+      # پس از Build و Validation، Worker اصلی Cloudflare در Production Deploy می‌شود.
       - name: Deploy Cloudflare production
+        # Deploy Production فقط روی Push main یا اجرای دستی انجام می‌شود، نه روی Pull Request.
         if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+        # Credentialهای Cloudflare از Secrets به محیط Step داده می‌شوند.
         env:
+          # API Token مجاز Cloudflare برای Wrangler است.
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # شناسه Account کلادفلر مشخص می‌کند Worker متعلق به کدام Account است.
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        # Wrangler داخل Workspace Cloudflare اجرا و Worker Production Deploy می‌شود.
         run: pnpm --filter @ai-panel/cloudflare exec wrangler deploy
 
+      # بعد از Deployment واقعی، چند درخواست ساده بررسی می‌کنند سرویس قابل استفاده است.
       - name: Smoke production
+        # Smoke Test فقط پس از مسیرهای Production اجرا می‌شود.
         if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+        # تست‌ها با Bash و curl اجرا می‌شوند.
         shell: bash
+        # Script Smoke Test Production.
         run: |
+          # Script در خطاهای واقعی متوقف می‌شود.
           set -euo pipefail
+          # آدرس ثابت Worker Production در یک متغیر نگه داشته می‌شود.
           BASE_URL=https://ai-panel-demo.bustling-larch.workers.dev
 
+          # فرض اولیه این است که Health Check هنوز موفق نشده است.
           health_ok=false
+          # حداکثر 15 بار Health Endpoint را امتحان می‌کنیم تا زمان انتشار Route کلادفلر پوشش داده شود.
           for attempt in $(seq 1 15); do
+            # پاسخ /health در فایل ذخیره و فقط HTTP Status در متغیر قرار می‌گیرد؛ خطای curl موقتاً نادیده گرفته می‌شود.
             health_status=$(curl --silent --show-error --output /tmp/production-health.json --write-out '%{http_code}' \
               "$BASE_URL/health" || true)
+            # موفقیت یعنی HTTP 200 باشد و بدنه JSON شامل ok:true باشد.
             if [ "$health_status" = "200" ] && grep -q '"ok":true' /tmp/production-health.json; then
+              # فلگ موفقیت Health فعال می‌شود.
               health_ok=true
+              # از حلقه تلاش‌های Health خارج می‌شویم.
               break
+            # پایان شرط موفقیت Health.
             fi
+            # در تلاش ناموفق، شماره تلاش و Status برای عیب‌یابی چاپ می‌شود.
             echo "Production health smoke attempt $attempt returned HTTP $health_status"
+            # بدنه پاسخ نیز در Log نشان داده می‌شود؛ نبود فایل نباید Script را بشکند.
             cat /tmp/production-health.json || true
+            # دو ثانیه صبر می‌کنیم تا Deployment فرصت Propagate شدن داشته باشد.
             sleep 2
+          # پایان حلقه Health Check.
           done
+          # اگر هیچ تلاش موفق نشده باشد Step در همین نقطه Fail می‌شود.
           test "$health_ok" = "true"
 
+          # برای Session Endpoint نیز فلگ موفقیت جدا تعریف می‌شود.
           session_ok=false
+          # Session Endpoint نیز تا 15 بار بررسی می‌شود.
           for attempt in $(seq 1 15); do
+            # پاسخ /api/session ذخیره و HTTP Status جداگانه خوانده می‌شود.
             status=$(curl --silent --show-error --output /tmp/production-session.json --write-out '%{http_code}' \
               "$BASE_URL/api/session" || true)
+            # کاربر ناشناس باید 401 و authenticated:false دریافت کند؛ این رفتار درست Auth Gateway است.
             if [ "$status" = "401" ] && grep -q '"authenticated":false' /tmp/production-session.json; then
+              # فلگ Session موفق می‌شود.
               session_ok=true
+              # حلقه Session متوقف می‌شود.
               break
+            # پایان شرط موفقیت Session.
             fi
+            # وضعیت تلاش ناموفق Session در Log چاپ می‌شود.
             echo "Production session smoke attempt $attempt returned HTTP $status"
+            # بدنه پاسخ Session برای عیب‌یابی نشان داده می‌شود.
             cat /tmp/production-session.json || true
+            # قبل از تلاش بعدی دو ثانیه مکث می‌کنیم.
             sleep 2
+          # پایان حلقه Session Check.
           done
+          # اگر Session Endpoint رفتار مورد انتظار را نشان نداده باشد Step Fail می‌شود.
           test "$session_ok" = "true"
 
+      # برای Pull Request یک Worker موقت ساخته می‌شود تا قبل از Merge نسخه واقعی آزمایش شود.
       - name: Deploy temporary preview
+        # id برای ذخیره URL Preview و مصرف آن در Step بعدی لازم است.
         id: preview
+        # فقط PRهایی که Branch آن‌ها در همین Repository است اجازه Deployment Preview دارند.
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        # Script با Bash اجرا می‌شود.
         shell: bash
+        # Script ساخت Preview موقت.
         run: |
+          # اجرای سخت‌گیرانه Bash فعال می‌شود.
           set -euo pipefail
+          # Wrangler با --temporary Deploy می‌شود و همزمان Log در فایل /tmp ذخیره می‌شود.
           pnpm --filter @ai-panel/cloudflare exec wrangler deploy --temporary 2>&1 | tee /tmp/wrangler-preview.log
+          # آخرین URL workers.dev از خروجی Wrangler استخراج می‌شود.
           preview_url=$(grep -Eo 'https://[A-Za-z0-9.-]+\.workers\.dev' /tmp/wrangler-preview.log | tail -n 1)
+          # اگر URL استخراج نشده باشد Step Fail می‌شود.
           test -n "$preview_url"
+          # URL Preview به Output رسمی Step نوشته می‌شود.
           echo "url=$preview_url" >> "$GITHUB_OUTPUT"
 
+      # Worker موقت PR نیز با چند Endpoint کلیدی Smoke Test می‌شود.
       - name: Smoke temporary preview
+        # فقط وقتی PR است و Step قبلی URL معتبر تولید کرده این مرحله اجرا می‌شود.
         if: github.event_name == 'pull_request' && steps.preview.outputs.url != ''
+        # تست‌ها با Bash اجرا می‌شوند.
         shell: bash
+        # URL Worker موقت به Environment این Step منتقل می‌شود.
         env:
+          # مقدار URL از Output Step preview گرفته می‌شود.
           PREVIEW_URL: ${{ steps.preview.outputs.url }}
+        # Script Smoke Test Preview.
         run: |
+          # اجرای سخت‌گیرانه Bash فعال می‌شود.
           set -euo pipefail
 
+          # فلگ موفقیت Health Preview در ابتدا false است.
           health_ok=false
+          # تا 30 بار Health Preview بررسی می‌شود چون Route موقت ممکن است کمی دیر منتشر شود.
           for attempt in $(seq 1 30); do
+            # پاسخ Health ذخیره و Status HTTP خوانده می‌شود.
             health_status=$(curl --silent --show-error --output /tmp/preview-health.json --write-out '%{http_code}' \
               "$PREVIEW_URL/health" || true)
+            # پاسخ صحیح باید 200 و شامل ok:true باشد.
             if [ "$health_status" = "200" ] && grep -q '"ok":true' /tmp/preview-health.json; then
+              # فلگ Health موفق می‌شود.
               health_ok=true
+              # حلقه Health متوقف می‌شود.
               break
+            # پایان شرط موفقیت Health Preview.
             fi
+            # جزئیات تلاش ناموفق در Log چاپ می‌شود.
             echo "Preview health smoke attempt $attempt returned HTTP $health_status"
+            # بدنه پاسخ برای عیب‌یابی چاپ می‌شود.
             cat /tmp/preview-health.json || true
+            # سه ثانیه برای Propagation صبر می‌کنیم.
             sleep 3
+          # پایان حلقه Health Preview.
           done
+          # اگر Health هیچ‌وقت موفق نشود Step Fail می‌شود.
           test "$health_ok" = "true"
 
+          # فلگ تست Session Preview تعریف می‌شود.
           session_ok=false
+          # حداکثر 20 بار Session Endpoint بررسی می‌شود.
           for attempt in $(seq 1 20); do
+            # پاسخ Session ذخیره و HTTP Status گرفته می‌شود.
             status=$(curl --silent --show-error --output /tmp/preview-session.json --write-out '%{http_code}' \
               "$PREVIEW_URL/api/session" || true)
+            # رفتار درست برای کاربر ناشناس 401 همراه authenticated:false است.
             if [ "$status" = "401" ] && grep -q '"authenticated":false' /tmp/preview-session.json; then
+              # فلگ Session موفق می‌شود.
               session_ok=true
+              # حلقه Session متوقف می‌شود.
               break
+            # پایان شرط موفقیت Session Preview.
             fi
+            # نتیجه تلاش ناموفق Session در Log ثبت می‌شود.
             echo "Preview session smoke attempt $attempt returned HTTP $status"
+            # بدنه پاسخ نیز برای تشخیص مشکل چاپ می‌شود.
             cat /tmp/preview-session.json || true
+            # سه ثانیه مکث پیش از تلاش بعدی.
             sleep 3
+          # پایان حلقه Session Preview.
           done
+          # اگر رفتار Session درست نبوده باشد Step Fail می‌شود.
           test "$session_ok" = "true"
 
+          # تست سوم بررسی می‌کند Endpoint پذیرش Session، Token نامعتبر را قبول نکند.
           adopt_ok=false
+          # Endpoint تا 20 بار امتحان می‌شود تا تأخیر انتشار Route پوشش داده شود.
           for attempt in $(seq 1 20); do
+            # یک POST با access_token و refresh_token عمداً نامعتبر ارسال و Status ذخیره می‌شود.
             adopt_status=$(curl --silent --show-error --output /tmp/preview-adopt.json --write-out '%{http_code}' \
               -X POST "$PREVIEW_URL/api/auth/adopt-session" \
               -H 'content-type: application/json' \
               --data '{"access_token":"invalid","refresh_token":"invalid"}' || true)
+            # پاسخ مورد انتظار برای Token نامعتبر HTTP 401 است.
             if [ "$adopt_status" = "401" ]; then
+              # فلگ تست امنیتی adopt-session موفق می‌شود.
               adopt_ok=true
+              # حلقه تست متوقف می‌شود.
               break
+            # پایان شرط موفقیت adopt-session.
             fi
+            # وضعیت تلاش ناموفق برای عیب‌یابی چاپ می‌شود.
             echo "Preview adopt-session smoke attempt $attempt returned HTTP $adopt_status"
+            # بدنه پاسخ ناموفق نیز چاپ می‌شود.
             cat /tmp/preview-adopt.json || true
+            # سه ثانیه تا تلاش بعدی صبر می‌کنیم.
             sleep 3
+          # پایان حلقه adopt-session.
           done
+          # اگر Endpoint در هیچ تلاش Token نامعتبر را با 401 رد نکرده باشد Step Fail می‌شود.
           test "$adopt_ok" = "true"
