@@ -1,0 +1,68 @@
+# راهنمای خط‌به‌خط `20260823140406_booking_business_site_and_inbox_v1.sql`
+
+> SQL می‌تواند شامل Function body و رشته‌های چندخطی باشد؛ تزریق کامنت خودکار بین همه خطوط ممکن است معنی Migration را عوض کند. برای حفظ دیتابیس، توضیح خط‌به‌خط در این فایل کنار Migration ذخیره می‌شود.
+
+- خط 1: `create table if not exists public."BookingBusinessSite" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 2: `"workspaceId" text primary key references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 3: `slug text not null unique,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 4: `enabled boolean not null default true,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 5: `"brandName" text not null default 'کسب‌وکار من',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 6: `tagline text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 7: `"aboutText" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 8: `phone text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 9: `email text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 10: `address text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 11: `"instagramUrl" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 12: `"whatsappUrl" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 13: `"websiteUrl" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 14: `"logoUrl" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 15: `"coverUrl" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 16: `"accentColor" text not null default '#6659e5',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 17: `theme text not null default 'LIGHT' check (theme in ('LIGHT','DARK')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 18: `"showServices" boolean not null default true,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 19: `"showStaff" boolean not null default true,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 20: `"showBooking" boolean not null default true,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 21: `"showContact" boolean not null default true,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 22: `"showLoyalty" boolean not null default true,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 23: `"metaTitle" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 24: `"metaDescription" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 25: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 26: `"updatedAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 27: `check (slug ~ '^[a-z0-9][a-z0-9-]{2,63}$'),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 28: `check ("accentColor" ~ '^#[0-9A-Fa-f]{6}$')` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 29: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 31: `create table if not exists public."BookingInboxMessage" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 32: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 33: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 34: `source text not null default 'WEBSITE' check (source in ('WEBSITE','BOOKING','FEEDBACK','MANUAL','WHATSAPP','INSTAGRAM','TELEGRAM','OTHER')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 35: `"customerId" text references public."BookingCustomer"(id) on delete set null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 36: `name text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 37: `phone text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 38: `email text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 39: `subject text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 40: `body text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 41: `status text not null default 'NEW' check (status in ('NEW','OPEN','DONE','ARCHIVED','SPAM')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 42: `priority text not null default 'NORMAL' check (priority in ('LOW','NORMAL','HIGH','URGENT')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 43: `"handledByUserId" text references public."User"(id) on delete set null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 44: `"handledAt" timestamptz,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 45: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 46: `"updatedAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 47: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 49: `create index if not exists "BookingBusinessSite_enabled_slug_idx" on public."BookingBusinessSite"(enabled,slug);` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 50: `create index if not exists "BookingInboxMessage_workspace_status_created_idx" on public."BookingInboxMessage"("workspaceId",status,"createdAt" desc);` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 51: `create index if not exists "BookingInboxMessage_customer_idx" on public."BookingInboxMessage"("customerId","createdAt" desc);` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 52: `create index if not exists "BookingInboxMessage_handler_idx" on public."BookingInboxMessage"("handledByUserId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 54: `alter table public."BookingBusinessSite" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 55: `alter table public."BookingInboxMessage" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 56: `revoke all on public."BookingBusinessSite" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 57: `revoke all on public."BookingInboxMessage" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 58: `grant select, insert, update, delete on public."BookingBusinessSite" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 59: `grant select, insert, update, delete on public."BookingInboxMessage" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 61: `insert into public."BookingBusinessSite"("workspaceId",slug,"brandName")` — این دستور داده جدید در جدول درج می‌کند.
+- خط 62: `select w.id,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 63: `coalesce(bs."publicSlug", lower(substr(replace(w.id,':','-'),1,40))),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 64: `w.name` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 65: `from public."Workspace" w` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 66: `left join public."BookingSettings" bs on bs."workspaceId"=w.id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 67: `where not exists(select 1 from public."BookingBusinessSite" s where s."workspaceId"=w.id)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 68: `on conflict do nothing;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.

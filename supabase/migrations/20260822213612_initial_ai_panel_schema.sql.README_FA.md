@@ -1,0 +1,104 @@
+# راهنمای خط‌به‌خط `20260822213612_initial_ai_panel_schema.sql`
+
+> SQL می‌تواند شامل Function body و رشته‌های چندخطی باشد؛ تزریق کامنت خودکار بین همه خطوط ممکن است معنی Migration را عوض کند. برای حفظ دیتابیس، توضیح خط‌به‌خط در این فایل کنار Migration ذخیره می‌شود.
+
+- خط 1: `create type public."UserRole" as enum ('CUSTOMER', 'ADMIN', 'SUPER_ADMIN');` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 2: `create type public."BotStatus" as enum ('PENDING', 'ACTIVE', 'INVALID', 'DISABLED');` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 3: `create type public."ScheduledJobStatus" as enum ('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'CANCELLED');` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 5: `create table public."User" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 6: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 7: `email text not null unique,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 8: `"displayName" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 9: `role public."UserRole" not null default 'CUSTOMER',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 10: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 11: `"updatedAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 12: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 14: `create table public."Workspace" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 15: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 16: `name text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 17: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 18: `"updatedAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 19: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 21: `create table public."WorkspaceMember" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 22: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 23: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 24: `"userId" text not null references public."User"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 25: `role public."UserRole" not null default 'CUSTOMER',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 26: `unique ("workspaceId", "userId")` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 27: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 29: `create table public."TelegramBot" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 30: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 31: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 32: `"telegramBotId" text not null unique,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 33: `username text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 34: `"displayName" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 35: `description text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 36: `"tokenCiphertext" text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 37: `status public."BotStatus" not null default 'PENDING',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 38: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 39: `"updatedAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 40: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 42: `create table public."TelegramButton" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 43: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 44: `"botId" text not null references public."TelegramBot"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 45: `"parentId" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 46: `title text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 47: `"actionType" text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 48: `"actionValue" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 49: `"sortOrder" integer not null default 0,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 50: `"createdAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 51: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 53: `create table public."ScheduledJob" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 54: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 55: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 56: `platform text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 57: `"jobType" text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 58: `payload jsonb not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 59: `"runAt" timestamptz not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 60: `status public."ScheduledJobStatus" not null default 'PENDING',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 61: `attempts integer not null default 0,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 62: `"lastError" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 63: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 64: `"updatedAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 65: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 67: `create index "ScheduledJob_status_runAt_idx" on public."ScheduledJob" (status, "runAt");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 69: `create or replace function public.set_updated_at()` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 70: `returns trigger` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 71: `language plpgsql` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 72: `set search_path = ''` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 73: `as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 74: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 75: `new."updatedAt" = now();` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 76: `return new;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 77: `end;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 78: `$$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 80: `create trigger user_set_updated_at before update on public."User"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 81: `for each row execute function public.set_updated_at();` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 82: `create trigger workspace_set_updated_at before update on public."Workspace"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 83: `for each row execute function public.set_updated_at();` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 84: `create trigger telegram_bot_set_updated_at before update on public."TelegramBot"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 85: `for each row execute function public.set_updated_at();` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 86: `create trigger scheduled_job_set_updated_at before update on public."ScheduledJob"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 87: `for each row execute function public.set_updated_at();` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 89: `alter table public."User" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 90: `alter table public."Workspace" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 91: `alter table public."WorkspaceMember" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 92: `alter table public."TelegramBot" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 93: `alter table public."TelegramButton" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 94: `alter table public."ScheduledJob" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 96: `revoke all on table public."User" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 97: `revoke all on table public."Workspace" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 98: `revoke all on table public."WorkspaceMember" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 99: `revoke all on table public."TelegramBot" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 100: `revoke all on table public."TelegramButton" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 101: `revoke all on table public."ScheduledJob" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 103: `grant usage on schema public to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 104: `grant select, insert, update, delete on table public."User" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 105: `grant select, insert, update, delete on table public."Workspace" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 106: `grant select, insert, update, delete on table public."WorkspaceMember" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 107: `grant select, insert, update, delete on table public."TelegramBot" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 108: `grant select, insert, update, delete on table public."TelegramButton" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 109: `grant select, insert, update, delete on table public."ScheduledJob" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 111: `insert into public."Workspace" (id, name)` — این دستور داده جدید در جدول درج می‌کند.
+- خط 112: `values ('local-workspace', 'AI Panel MVP Workspace')` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 113: `on conflict (id) do nothing;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.

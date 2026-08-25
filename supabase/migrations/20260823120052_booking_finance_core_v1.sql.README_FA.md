@@ -1,0 +1,103 @@
+# راهنمای خط‌به‌خط `20260823120052_booking_finance_core_v1.sql`
+
+> SQL می‌تواند شامل Function body و رشته‌های چندخطی باشد؛ تزریق کامنت خودکار بین همه خطوط ممکن است معنی Migration را عوض کند. برای حفظ دیتابیس، توضیح خط‌به‌خط در این فایل کنار Migration ذخیره می‌شود.
+
+- خط 1: `create table if not exists public."BookingPayment" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 2: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 3: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 4: `"appointmentId" text not null references public."BookingAppointment"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 5: `"customerId" text not null references public."BookingCustomer"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 6: `type text not null default 'PAYMENT' check (type in ('PAYMENT','REFUND')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 7: `method text not null default 'CASH' check (method in ('CASH','CARD','POS','TRANSFER','OTHER')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 8: `amount bigint not null check (amount > 0),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 9: `currency text not null default 'IRR',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 10: `reference text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 11: `note text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 12: `status text not null default 'POSTED' check (status in ('POSTED','VOID')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 13: `"paidAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 14: `"createdByUserId" text references public."User"(id) on delete set null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 15: `"createdAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 16: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 18: `create table if not exists public."BookingExpense" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 19: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 20: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 21: `category text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 22: `amount bigint not null check (amount > 0),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 23: `currency text not null default 'IRR',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 24: `vendor text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 25: `note text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 26: `status text not null default 'POSTED' check (status in ('POSTED','VOID')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 27: `"occurredAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 28: `"createdByUserId" text references public."User"(id) on delete set null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 29: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 30: `"updatedAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 31: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 33: `create index if not exists "BookingPayment_workspace_paidAt_idx" on public."BookingPayment"("workspaceId", "paidAt" desc);` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 34: `create index if not exists "BookingPayment_appointment_idx" on public."BookingPayment"("appointmentId", "paidAt" desc);` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 35: `create index if not exists "BookingPayment_customer_idx" on public."BookingPayment"("customerId", "paidAt" desc);` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 36: `create index if not exists "BookingPayment_createdBy_idx" on public."BookingPayment"("createdByUserId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 37: `create index if not exists "BookingExpense_workspace_occurredAt_idx" on public."BookingExpense"("workspaceId", "occurredAt" desc);` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 38: `create index if not exists "BookingExpense_createdBy_idx" on public."BookingExpense"("createdByUserId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 40: `alter table public."BookingPayment" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 41: `alter table public."BookingExpense" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 42: `revoke all on public."BookingPayment" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 43: `revoke all on public."BookingExpense" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 44: `grant select, insert, update, delete on public."BookingPayment" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 45: `grant select, insert, update, delete on public."BookingExpense" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 47: `create schema if not exists private;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 49: `create or replace function private.booking_payment_fill_context()` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 50: `returns trigger` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 51: `language plpgsql` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 52: `set search_path = ''` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 53: `as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 54: `declare` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 55: `ap_workspace text;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 56: `ap_customer text;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 57: `ap_currency text;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 58: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 59: `select a."workspaceId", a."customerId", a.currency` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 60: `into ap_workspace, ap_customer, ap_currency` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 61: `from public."BookingAppointment" a` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 62: `where a.id = new."appointmentId";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 64: `if ap_workspace is null then` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 65: `raise exception 'Appointment not found';` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 66: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 68: `new."workspaceId" := ap_workspace;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 69: `new."customerId" := ap_customer;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 70: `new.currency := ap_currency;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 71: `return new;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 72: `end;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 73: `$$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 75: `create or replace function private.booking_payment_sync_appointment()` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 76: `returns trigger` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 77: `language plpgsql` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 78: `set search_path = ''` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 79: `as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 80: `declare` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 81: `target_id text;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 82: `total bigint;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 83: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 84: `target_id := coalesce(new."appointmentId", old."appointmentId");` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 85: `select greatest(0, coalesce(sum(` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 86: `case when p.type = 'PAYMENT' then p.amount else -p.amount end` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 87: `) filter (where p.status = 'POSTED'), 0))::bigint` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 88: `into total` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 89: `from public."BookingPayment" p` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 90: `where p."appointmentId" = target_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 92: `update public."BookingAppointment"` — این دستور داده‌های موجود را به‌روزرسانی می‌کند.
+- خط 93: `set "paidAmount" = total,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 94: `"updatedAt" = now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 95: `where id = target_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 97: `return coalesce(new, old);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 98: `end;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 99: `$$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 101: `revoke all on function private.booking_payment_fill_context() from public, anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 102: `revoke all on function private.booking_payment_sync_appointment() from public, anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 104: `drop trigger if exists booking_payment_fill_context on public."BookingPayment";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 105: `create trigger booking_payment_fill_context` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 106: `before insert or update of "appointmentId" on public."BookingPayment"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 107: `for each row execute function private.booking_payment_fill_context();` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 109: `drop trigger if exists booking_payment_sync_appointment on public."BookingPayment";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 110: `create trigger booking_payment_sync_appointment` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 111: `after insert or update of amount, type, status or delete on public."BookingPayment"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 112: `for each row execute function private.booking_payment_sync_appointment();` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.

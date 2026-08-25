@@ -1,0 +1,110 @@
+# راهنمای خط‌به‌خط `20260823121433_add_whatsapp_core.sql`
+
+> SQL می‌تواند شامل Function body و رشته‌های چندخطی باشد؛ تزریق کامنت خودکار بین همه خطوط ممکن است معنی Migration را عوض کند. برای حفظ دیتابیس، توضیح خط‌به‌خط در این فایل کنار Migration ذخیره می‌شود.
+
+- خط 1: `create table if not exists public."WhatsAppAccount" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 2: `id text primary key default (gen_random_uuid())::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 3: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 4: `"wabaId" text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 5: `"phoneNumberId" text not null unique,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 6: `"displayPhoneNumber" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 7: `"verifiedName" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 8: `"accessTokenCiphertext" text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 9: `"tokenType" text not null default 'SYSTEM_USER',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 10: `status public."BotStatus" not null default 'PENDING',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 11: `"webhookSubscribed" boolean not null default false,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 12: `"qualityRating" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 13: `"messagingLimit" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 14: `"lastSyncedAt" timestamptz,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 15: `"connectionMeta" jsonb not null default '{}'::jsonb,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 16: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 17: `"updatedAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 18: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 20: `create index if not exists "WhatsAppAccount_workspaceId_idx" on public."WhatsAppAccount"("workspaceId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 21: `create index if not exists "WhatsAppAccount_wabaId_idx" on public."WhatsAppAccount"("wabaId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 23: `create table if not exists public."WhatsAppConversation" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 24: `id text primary key default (gen_random_uuid())::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 25: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 26: `"whatsappAccountId" text not null references public."WhatsAppAccount"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 27: `"waUserId" text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 28: `"customerPhone" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 29: `"customerName" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 30: `status text not null default 'OPEN',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 31: `"lastMessageAt" timestamptz,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 32: `"customerServiceWindowExpiresAt" timestamptz,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 33: `"unreadCount" integer not null default 0,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 34: `metadata jsonb not null default '{}'::jsonb,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 35: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 36: `"updatedAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 37: `unique ("whatsappAccountId", "waUserId")` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 38: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 40: `create index if not exists "WhatsAppConversation_workspace_last_idx" on public."WhatsAppConversation"("workspaceId", "lastMessageAt" desc);` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 42: `create table if not exists public."WhatsAppMessage" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 43: `id text primary key default (gen_random_uuid())::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 44: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 45: `"whatsappAccountId" text not null references public."WhatsAppAccount"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 46: `"conversationId" text not null references public."WhatsAppConversation"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 47: `"providerMessageId" text unique,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 48: `direction text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 49: `"messageType" text not null default 'text',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 50: `body text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 51: `"templateName" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 52: `status text not null default 'RECEIVED',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 53: `"pricingCategory" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 54: `"isTemplate" boolean not null default false,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 55: `"providerTimestamp" timestamptz,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 56: `metadata jsonb not null default '{}'::jsonb,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 57: `"createdAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 58: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 60: `create index if not exists "WhatsAppMessage_conversation_created_idx" on public."WhatsAppMessage"("conversationId", "createdAt" desc);` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 61: `create index if not exists "WhatsAppMessage_workspace_created_idx" on public."WhatsAppMessage"("workspaceId", "createdAt" desc);` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 63: `create table if not exists public."WhatsAppAutomationRule" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 64: `id text primary key default (gen_random_uuid())::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 65: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 66: `"whatsappAccountId" text references public."WhatsAppAccount"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 67: `name text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 68: `"triggerType" text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 69: `"triggerConfig" jsonb not null default '{}'::jsonb,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 70: `"actionType" text not null default 'SEND_MESSAGE',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 71: `"actionConfig" jsonb not null default '{}'::jsonb,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 72: `"isActive" boolean not null default false,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 73: `executions integer not null default 0,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 74: `"lastTriggeredAt" timestamptz,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 75: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 76: `"updatedAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 77: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 79: `create index if not exists "WhatsAppAutomationRule_workspace_idx" on public."WhatsAppAutomationRule"("workspaceId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 80: `create index if not exists "WhatsAppAutomationRule_account_active_idx" on public."WhatsAppAutomationRule"("whatsappAccountId", "isActive");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 82: `create table if not exists public."WhatsAppTemplate" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 83: `id text primary key default (gen_random_uuid())::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 84: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 85: `"whatsappAccountId" text not null references public."WhatsAppAccount"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 86: `"metaTemplateId" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 87: `name text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 88: `language text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 89: `category text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 90: `status text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 91: `components jsonb not null default '[]'::jsonb,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 92: `"qualityScore" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 93: `"lastSyncedAt" timestamptz,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 94: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 95: `"updatedAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 96: `unique ("whatsappAccountId", name, language)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 97: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 99: `create index if not exists "WhatsAppTemplate_workspace_idx" on public."WhatsAppTemplate"("workspaceId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 101: `alter table public."WhatsAppAccount" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 102: `alter table public."WhatsAppConversation" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 103: `alter table public."WhatsAppMessage" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 104: `alter table public."WhatsAppAutomationRule" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 105: `alter table public."WhatsAppTemplate" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 107: `revoke all on table public."WhatsAppAccount" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 108: `revoke all on table public."WhatsAppConversation" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 109: `revoke all on table public."WhatsAppMessage" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 110: `revoke all on table public."WhatsAppAutomationRule" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 111: `revoke all on table public."WhatsAppTemplate" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 113: `insert into public."AppSecret" (id, value)` — این دستور داده جدید در جدول درج می‌کند.
+- خط 114: `values ('whatsapp_token_encryption', replace(gen_random_uuid()::text, '-', '') || replace(gen_random_uuid()::text, '-', ''))` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 115: `on conflict (id) do nothing;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 117: `insert into public."AppSecret" (id, value)` — این دستور داده جدید در جدول درج می‌کند.
+- خط 118: `values ('whatsapp_webhook_verify_token', replace(gen_random_uuid()::text, '-', '') || replace(gen_random_uuid()::text, '-', ''))` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 119: `on conflict (id) do nothing;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.

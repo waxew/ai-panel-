@@ -1,0 +1,45 @@
+# راهنمای خط‌به‌خط `20260823114121_booking_staff_availability_v1.sql`
+
+> SQL می‌تواند شامل Function body و رشته‌های چندخطی باشد؛ تزریق کامنت خودکار بین همه خطوط ممکن است معنی Migration را عوض کند. برای حفظ دیتابیس، توضیح خط‌به‌خط در این فایل کنار Migration ذخیره می‌شود.
+
+- خط 1: `create extension if not exists btree_gist;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 3: `create table if not exists public."BookingTimeOff" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 4: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 5: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 6: `"staffId" text not null references public."BookingStaff"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 7: `"startsAt" timestamptz not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 8: `"endsAt" timestamptz not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 9: `type text not null default 'LEAVE' check (type in ('LEAVE','BLOCK','SICK','OTHER')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 10: `note text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 11: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 12: `check ("endsAt" > "startsAt")` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 13: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 15: `create index if not exists "BookingTimeOff_workspace_staff_starts_idx"` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 16: `on public."BookingTimeOff"("workspaceId", "staffId", "startsAt");` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 17: `create index if not exists "BookingTimeOff_staff_ends_idx"` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 18: `on public."BookingTimeOff"("staffId", "endsAt");` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 19: `create index if not exists "BookingStaffService_serviceId_idx"` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 20: `on public."BookingStaffService"("serviceId");` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 22: `alter table public."BookingTimeOff" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 23: `revoke all on public."BookingTimeOff" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 25: `do $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 26: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 27: `if not exists (` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 28: `select 1 from pg_constraint` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 29: `where conname = 'BookingAppointment_no_staff_overlap'` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 30: `and conrelid = 'public."BookingAppointment"'::regclass` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 31: `) then` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 32: `alter table public."BookingAppointment"` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 33: `add constraint "BookingAppointment_no_staff_overlap"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 34: `exclude using gist (` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 35: `"staffId" with =,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 36: `tstzrange("startsAt", "endsAt", '[)') with &&` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 37: `) where (status in ('PENDING','CONFIRMED'));` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 38: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 39: `end $$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 41: `insert into public."BookingStaffService"("staffId","serviceId")` — این دستور داده جدید در جدول درج می‌کند.
+- خط 42: `select st.id, sv.id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 43: `from public."BookingStaff" st` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 44: `join public."BookingService" sv on sv."workspaceId" = st."workspaceId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 45: `where st."isActive" = true and sv."isActive" = true` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 46: `on conflict ("staffId","serviceId") do nothing;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.

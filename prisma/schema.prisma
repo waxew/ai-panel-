@@ -1,358 +1,685 @@
+// AI-PANEL-FA-INLINE-GUIDE
+// راهنما: این فایل ساختار دیتابیس Prisma را تعریف می‌کند و کامنت هر خط نقش دستور بعدی را توضیح می‌دهد.
+// راهنما: این بلوک تنظیم می‌کند Prisma چه Client یا خروجی‌ای تولید کند.
 generator client {
+  // راهنما: این گزینه نوع Provider را مشخص می‌کند؛ برای مثال PostgreSQL یا Prisma Client.
   provider = "prisma-client"
+  // راهنما: این خط فیلد «output» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   output   = "../apps/api/src/generated/prisma"
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این بلوک منبع دیتابیس و Provider مورد استفاده Prisma را تعریف می‌کند.
 datasource db {
+  // راهنما: این گزینه نوع Provider را مشخص می‌کند؛ برای مثال PostgreSQL یا Prisma Client.
   provider = "postgresql"
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Enum فهرست مقدارهای مجاز برای یک وضعیت/نوع را تعریف می‌کند.
 enum UserRole {
+  // راهنما: این خط بخشی از تنظیم یا Schema دیتابیس Prisma است.
   CUSTOMER
+  // راهنما: این خط بخشی از تنظیم یا Schema دیتابیس Prisma است.
   ADMIN
+  // راهنما: این خط بخشی از تنظیم یا Schema دیتابیس Prisma است.
   SUPER_ADMIN
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Enum فهرست مقدارهای مجاز برای یک وضعیت/نوع را تعریف می‌کند.
 enum BotStatus {
+  // راهنما: این خط بخشی از تنظیم یا Schema دیتابیس Prisma است.
   PENDING
+  // راهنما: این خط بخشی از تنظیم یا Schema دیتابیس Prisma است.
   ACTIVE
+  // راهنما: این خط بخشی از تنظیم یا Schema دیتابیس Prisma است.
   INVALID
+  // راهنما: این خط بخشی از تنظیم یا Schema دیتابیس Prisma است.
   DISABLED
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Enum فهرست مقدارهای مجاز برای یک وضعیت/نوع را تعریف می‌کند.
 enum ScheduledJobStatus {
+  // راهنما: این خط بخشی از تنظیم یا Schema دیتابیس Prisma است.
   PENDING
+  // راهنما: این خط بخشی از تنظیم یا Schema دیتابیس Prisma است.
   PROCESSING
+  // راهنما: این خط بخشی از تنظیم یا Schema دیتابیس Prisma است.
   COMPLETED
+  // راهنما: این خط بخشی از تنظیم یا Schema دیتابیس Prisma است.
   FAILED
+  // راهنما: این خط بخشی از تنظیم یا Schema دیتابیس Prisma است.
   CANCELLED
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Model یک موجودیت اصلی دیتابیس و مجموعه فیلدهای آن را تعریف می‌کند.
 model User {
+  // راهنما: این خط فیلد «id» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   id                   String                @id @default(cuid())
+  // راهنما: این خط فیلد «email» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   email                String                @unique
+  // راهنما: این خط فیلد «displayName» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   displayName          String?
+  // راهنما: این خط فیلد «role» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   role                 UserRole              @default(CUSTOMER)
+  // راهنما: این خط فیلد «createdAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   createdAt            DateTime              @default(now())
+  // راهنما: این خط فیلد «updatedAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   updatedAt            DateTime              @updatedAt
+  // راهنما: این خط فیلد «workspaces» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspaces           WorkspaceMember[]
+  // راهنما: این خط فیلد «instagramOAuthStates» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   instagramOAuthStates InstagramOAuthState[]
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Model یک موجودیت اصلی دیتابیس و مجموعه فیلدهای آن را تعریف می‌کند.
 model Workspace {
+  // راهنما: این خط فیلد «id» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   id                      String                       @id @default(cuid())
+  // راهنما: این خط فیلد «name» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   name                    String
+  // راهنما: این خط فیلد «createdAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   createdAt               DateTime                     @default(now())
+  // راهنما: این خط فیلد «updatedAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   updatedAt               DateTime                     @updatedAt
+  // راهنما: این خط فیلد «members» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   members                 WorkspaceMember[]
+  // راهنما: این خط فیلد «telegramBots» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   telegramBots            TelegramBot[]
+  // راهنما: این خط فیلد «discordBots» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   discordBots             DiscordBot[]
+  // راهنما: این خط فیلد «instagramAccounts» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   instagramAccounts       InstagramAccount[]
+  // راهنما: این خط فیلد «instagramRules» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   instagramRules          InstagramAutomationRule[]
+  // راهنما: این خط فیلد «instagramEvents» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   instagramEvents         InstagramAutomationEvent[]
+  // راهنما: این خط فیلد «instagramOAuthStates» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   instagramOAuthStates    InstagramOAuthState[]
+  // راهنما: این خط فیلد «whatsappAccounts» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   whatsappAccounts        WhatsAppAccount[]
+  // راهنما: این خط فیلد «whatsappConversations» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   whatsappConversations   WhatsAppConversation[]
+  // راهنما: این خط فیلد «whatsappMessages» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   whatsappMessages        WhatsAppMessage[]
+  // راهنما: این خط فیلد «whatsappAutomationRules» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   whatsappAutomationRules WhatsAppAutomationRule[]
+  // راهنما: این خط فیلد «whatsappTemplates» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   whatsappTemplates       WhatsAppTemplate[]
+  // راهنما: این خط فیلد «scheduledJobs» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   scheduledJobs           ScheduledJob[]
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Model یک موجودیت اصلی دیتابیس و مجموعه فیلدهای آن را تعریف می‌کند.
 model WorkspaceMember {
+  // راهنما: این خط فیلد «id» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   id          String    @id @default(cuid())
+  // راهنما: این خط فیلد «workspaceId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspaceId String
+  // راهنما: این خط فیلد «userId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   userId      String
+  // راهنما: این خط فیلد «role» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   role        UserRole  @default(CUSTOMER)
+  // راهنما: این خط فیلد «workspace» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  // راهنما: این خط فیلد «user» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@unique([workspaceId, userId])
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Model یک موجودیت اصلی دیتابیس و مجموعه فیلدهای آن را تعریف می‌کند.
 model TelegramBot {
+  // راهنما: این خط فیلد «id» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   id              String           @id @default(cuid())
+  // راهنما: این خط فیلد «workspaceId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspaceId     String
+  // راهنما: این خط فیلد «telegramBotId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   telegramBotId   String           @unique
+  // راهنما: این خط فیلد «username» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   username        String?
+  // راهنما: این خط فیلد «displayName» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   displayName     String?
+  // راهنما: این خط فیلد «description» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   description     String?
+  // راهنما: این خط فیلد «tokenCiphertext» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   tokenCiphertext String
+  // راهنما: این خط فیلد «status» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   status          BotStatus        @default(PENDING)
+  // راهنما: این خط فیلد «createdAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   createdAt       DateTime         @default(now())
+  // راهنما: این خط فیلد «updatedAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   updatedAt       DateTime         @updatedAt
+  // راهنما: این خط فیلد «workspace» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspace       Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  // راهنما: این خط فیلد «buttons» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   buttons         TelegramButton[]
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Model یک موجودیت اصلی دیتابیس و مجموعه فیلدهای آن را تعریف می‌کند.
 model TelegramButton {
+  // راهنما: این خط فیلد «id» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   id          String      @id @default(cuid())
+  // راهنما: این خط فیلد «botId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   botId       String
+  // راهنما: این خط فیلد «parentId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   parentId    String?
+  // راهنما: این خط فیلد «title» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   title       String
+  // راهنما: این خط فیلد «actionType» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   actionType  String
+  // راهنما: این خط فیلد «actionValue» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   actionValue String?
+  // راهنما: این خط فیلد «sortOrder» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   sortOrder   Int         @default(0)
+  // راهنما: این خط فیلد «createdAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   createdAt   DateTime    @default(now())
+  // راهنما: این خط فیلد «bot» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   bot         TelegramBot @relation(fields: [botId], references: [id], onDelete: Cascade)
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Model یک موجودیت اصلی دیتابیس و مجموعه فیلدهای آن را تعریف می‌کند.
 model DiscordBot {
+  // راهنما: این خط فیلد «id» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   id               String           @id @default(cuid())
+  // راهنما: این خط فیلد «workspaceId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspaceId      String
+  // راهنما: این خط فیلد «applicationId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   applicationId    String           @unique
+  // راهنما: این خط فیلد «botUserId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   botUserId        String           @unique
+  // راهنما: این خط فیلد «username» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   username         String?
+  // راهنما: این خط فیلد «displayName» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   displayName      String?
+  // راهنما: این خط فیلد «description» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   description      String?
+  // راهنما: این خط فیلد «publicKey» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   publicKey        String
+  // راهنما: این خط فیلد «tokenCiphertext» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   tokenCiphertext  String
+  // راهنما: این خط فیلد «status» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   status           BotStatus        @default(PENDING)
+  // راهنما: این خط فیلد «defaultGuildId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   defaultGuildId   String?
+  // راهنما: این خط فیلد «defaultChannelId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   defaultChannelId String?
+  // راهنما: این خط فیلد «settings» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   settings         Json             @default("{}")
+  // راهنما: این خط فیلد «createdAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   createdAt        DateTime         @default(now())
+  // راهنما: این خط فیلد «updatedAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   updatedAt        DateTime         @updatedAt
+  // راهنما: این خط فیلد «workspace» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspace        Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  // راهنما: این خط فیلد «commands» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   commands         DiscordCommand[]
 
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@index([workspaceId])
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Model یک موجودیت اصلی دیتابیس و مجموعه فیلدهای آن را تعریف می‌کند.
 model DiscordCommand {
+  // راهنما: این خط فیلد «id» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   id                String     @id @default(cuid())
+  // راهنما: این خط فیلد «botId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   botId             String
+  // راهنما: این خط فیلد «name» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   name              String
+  // راهنما: این خط فیلد «description» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   description       String     @default("")
+  // راهنما: این خط فیلد «responseText» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   responseText      String     @default("")
+  // راهنما: این خط فیلد «responseEphemeral» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   responseEphemeral Boolean    @default(false)
+  // راهنما: این خط فیلد «isActive» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   isActive          Boolean    @default(true)
+  // راهنما: این خط فیلد «executions» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   executions        Int        @default(0)
+  // راهنما: این خط فیلد «lastUsedAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   lastUsedAt        DateTime?
+  // راهنما: این خط فیلد «sortOrder» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   sortOrder         Int        @default(0)
+  // راهنما: این خط فیلد «createdAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   createdAt         DateTime   @default(now())
+  // راهنما: این خط فیلد «updatedAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   updatedAt         DateTime   @updatedAt
+  // راهنما: این خط فیلد «bot» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   bot               DiscordBot @relation(fields: [botId], references: [id], onDelete: Cascade)
 
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@unique([botId, name])
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@index([botId, sortOrder])
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Model یک موجودیت اصلی دیتابیس و مجموعه فیلدهای آن را تعریف می‌کند.
 model InstagramAccount {
+  // راهنما: این خط فیلد «id» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   id                    String                     @id @default(cuid())
+  // راهنما: این خط فیلد «workspaceId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspaceId           String
+  // راهنما: این خط فیلد «username» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   username              String
+  // راهنما: این خط فیلد «displayName» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   displayName           String?
+  // راهنما: این خط فیلد «followersCount» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   followersCount        BigInt                     @default(0)
+  // راهنما: این خط فیلد «followingCount» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   followingCount        BigInt                     @default(0)
+  // راهنما: این خط فیلد «postsCount» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   postsCount            BigInt                     @default(0)
+  // راهنما: این خط فیلد «engagementRate» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   engagementRate        Decimal?
+  // راهنما: این خط فیلد «metrics» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   metrics               Json                       @default("{}")
+  // راهنما: این خط فیلد «status» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   status                BotStatus                  @default(PENDING)
+  // راهنما: این خط فیلد «lastSyncedAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   lastSyncedAt          DateTime?
+  // راهنما: این خط فیلد «metaAccountId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   metaAccountId         String?                    @unique
+  // راهنما: این خط فیلد «pageId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   pageId                String?
+  // راهنما: این خط فیلد «accessTokenCiphertext» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   accessTokenCiphertext String?
+  // راهنما: این خط فیلد «tokenExpiresAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   tokenExpiresAt        DateTime?
+  // راهنما: این خط فیلد «tokenRefreshedAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   tokenRefreshedAt      DateTime?
+  // راهنما: این خط فیلد «permissions» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   permissions           Json                       @default("[]")
+  // راهنما: این خط فیلد «webhookSubscribed» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   webhookSubscribed     Boolean                    @default(false)
+  // راهنما: این خط فیلد «connectionMeta» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   connectionMeta        Json                       @default("{}")
+  // راهنما: این خط فیلد «createdAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   createdAt             DateTime                   @default(now())
+  // راهنما: این خط فیلد «updatedAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   updatedAt             DateTime                   @updatedAt
+  // راهنما: این خط فیلد «workspace» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspace             Workspace                  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  // راهنما: این خط فیلد «automationRules» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   automationRules       InstagramAutomationRule[]
+  // راهنما: این خط فیلد «automationEvents» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   automationEvents      InstagramAutomationEvent[]
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Model یک موجودیت اصلی دیتابیس و مجموعه فیلدهای آن را تعریف می‌کند.
 model InstagramOAuthState {
+  // راهنما: این خط فیلد «id» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   id          String    @id @default(cuid())
+  // راهنما: این خط فیلد «workspaceId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspaceId String
+  // راهنما: این خط فیلد «userId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   userId      String
+  // راهنما: این خط فیلد «stateHash» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   stateHash   String    @unique
+  // راهنما: این خط فیلد «redirectUri» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   redirectUri String
+  // راهنما: این خط فیلد «expiresAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   expiresAt   DateTime
+  // راهنما: این خط فیلد «consumedAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   consumedAt  DateTime?
+  // راهنما: این خط فیلد «createdAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   createdAt   DateTime  @default(now())
+  // راهنما: این خط فیلد «workspace» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  // راهنما: این خط فیلد «user» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@index([workspaceId, expiresAt])
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@index([userId, expiresAt])
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Model یک موجودیت اصلی دیتابیس و مجموعه فیلدهای آن را تعریف می‌کند.
 model InstagramAutomationRule {
+  // راهنما: این خط فیلد «id» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   id                 String                     @id @default(cuid())
+  // راهنما: این خط فیلد «workspaceId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspaceId        String
+  // راهنما: این خط فیلد «instagramAccountId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   instagramAccountId String?
+  // راهنما: این خط فیلد «name» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   name               String
+  // راهنما: این خط فیلد «triggerType» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   triggerType        String
+  // راهنما: این خط فیلد «triggerConfig» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   triggerConfig      Json                       @default("{}")
+  // راهنما: این خط فیلد «actionType» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   actionType         String                     @default("SEND_DM")
+  // راهنما: این خط فیلد «actionConfig» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   actionConfig       Json                       @default("{}")
+  // راهنما: این خط فیلد «isActive» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   isActive           Boolean                    @default(false)
+  // راهنما: این خط فیلد «executions» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   executions         Int                        @default(0)
+  // راهنما: این خط فیلد «lastTriggeredAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   lastTriggeredAt    DateTime?
+  // راهنما: این خط فیلد «createdAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   createdAt          DateTime                   @default(now())
+  // راهنما: این خط فیلد «updatedAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   updatedAt          DateTime                   @updatedAt
+  // راهنما: این خط فیلد «workspace» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspace          Workspace                  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  // راهنما: این خط فیلد «instagramAccount» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   instagramAccount   InstagramAccount?          @relation(fields: [instagramAccountId], references: [id], onDelete: Cascade)
+  // راهنما: این خط فیلد «events» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   events             InstagramAutomationEvent[]
 
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@index([workspaceId])
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@index([instagramAccountId, isActive])
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Model یک موجودیت اصلی دیتابیس و مجموعه فیلدهای آن را تعریف می‌کند.
 model InstagramAutomationEvent {
+  // راهنما: این خط فیلد «id» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   id                 String                    @id @default(cuid())
+  // راهنما: این خط فیلد «workspaceId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspaceId        String
+  // راهنما: این خط فیلد «instagramAccountId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   instagramAccountId String?
+  // راهنما: این خط فیلد «ruleId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   ruleId             String?
+  // راهنما: این خط فیلد «eventType» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   eventType          String
+  // راهنما: این گزینه نوع Provider را مشخص می‌کند؛ برای مثال PostgreSQL یا Prisma Client.
   providerEventId    String?                   @unique
+  // راهنما: این خط فیلد «sourceUserId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   sourceUserId       String?
+  // راهنما: این خط فیلد «sourceUsername» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   sourceUsername     String?
+  // راهنما: این خط فیلد «sourceText» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   sourceText         String?
+  // راهنما: این خط فیلد «outcome» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   outcome            String                    @default("RECEIVED")
+  // راهنما: این خط فیلد «metadata» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   metadata           Json                      @default("{}")
+  // راهنما: این خط فیلد «createdAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   createdAt          DateTime                  @default(now())
+  // راهنما: این خط فیلد «workspace» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspace          Workspace                 @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  // راهنما: این خط فیلد «instagramAccount» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   instagramAccount   InstagramAccount?         @relation(fields: [instagramAccountId], references: [id], onDelete: SetNull)
+  // راهنما: این خط فیلد «rule» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   rule               InstagramAutomationRule?  @relation(fields: [ruleId], references: [id], onDelete: SetNull)
 
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@index([workspaceId, createdAt])
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@index([instagramAccountId, createdAt])
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@index([ruleId, createdAt])
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Model یک موجودیت اصلی دیتابیس و مجموعه فیلدهای آن را تعریف می‌کند.
 model WhatsAppAccount {
+  // راهنما: این خط فیلد «id» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   id                    String                    @id @default(cuid())
+  // راهنما: این خط فیلد «workspaceId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspaceId           String
+  // راهنما: این خط فیلد «wabaId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   wabaId                 String
+  // راهنما: این خط فیلد «phoneNumberId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   phoneNumberId          String                    @unique
+  // راهنما: این خط فیلد «displayPhoneNumber» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   displayPhoneNumber     String?
+  // راهنما: این خط فیلد «verifiedName» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   verifiedName           String?
+  // راهنما: این خط فیلد «accessTokenCiphertext» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   accessTokenCiphertext  String
+  // راهنما: این خط فیلد «tokenType» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   tokenType              String                    @default("SYSTEM_USER")
+  // راهنما: این خط فیلد «status» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   status                 BotStatus                 @default(PENDING)
+  // راهنما: این خط فیلد «webhookSubscribed» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   webhookSubscribed      Boolean                   @default(false)
+  // راهنما: این خط فیلد «qualityRating» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   qualityRating          String?
+  // راهنما: این خط فیلد «messagingLimit» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   messagingLimit         String?
+  // راهنما: این خط فیلد «lastSyncedAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   lastSyncedAt           DateTime?
+  // راهنما: این خط فیلد «connectionMeta» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   connectionMeta         Json                      @default("{}")
+  // راهنما: این خط فیلد «createdAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   createdAt              DateTime                  @default(now())
+  // راهنما: این خط فیلد «updatedAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   updatedAt              DateTime                  @updatedAt
+  // راهنما: این خط فیلد «workspace» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspace              Workspace                 @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  // راهنما: این خط فیلد «conversations» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   conversations          WhatsAppConversation[]
+  // راهنما: این خط فیلد «messages» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   messages               WhatsAppMessage[]
+  // راهنما: این خط فیلد «automationRules» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   automationRules        WhatsAppAutomationRule[]
+  // راهنما: این خط فیلد «templates» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   templates              WhatsAppTemplate[]
 
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@index([workspaceId])
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@index([wabaId])
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Model یک موجودیت اصلی دیتابیس و مجموعه فیلدهای آن را تعریف می‌کند.
 model WhatsAppConversation {
+  // راهنما: این خط فیلد «id» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   id                              String           @id @default(cuid())
+  // راهنما: این خط فیلد «workspaceId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspaceId                     String
+  // راهنما: این خط فیلد «whatsappAccountId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   whatsappAccountId               String
+  // راهنما: این خط فیلد «waUserId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   waUserId                        String
+  // راهنما: این خط فیلد «customerPhone» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   customerPhone                   String?
+  // راهنما: این خط فیلد «customerName» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   customerName                    String?
+  // راهنما: این خط فیلد «status» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   status                          String           @default("OPEN")
+  // راهنما: این خط فیلد «lastMessageAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   lastMessageAt                   DateTime?
+  // راهنما: این خط فیلد «customerServiceWindowExpiresAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   customerServiceWindowExpiresAt  DateTime?
+  // راهنما: این خط فیلد «unreadCount» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   unreadCount                     Int              @default(0)
+  // راهنما: این خط فیلد «metadata» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   metadata                        Json             @default("{}")
+  // راهنما: این خط فیلد «createdAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   createdAt                       DateTime         @default(now())
+  // راهنما: این خط فیلد «updatedAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   updatedAt                       DateTime         @updatedAt
+  // راهنما: این خط فیلد «workspace» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspace                       Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  // راهنما: این خط فیلد «whatsappAccount» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   whatsappAccount                 WhatsAppAccount  @relation(fields: [whatsappAccountId], references: [id], onDelete: Cascade)
+  // راهنما: این خط فیلد «messages» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   messages                        WhatsAppMessage[]
 
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@unique([whatsappAccountId, waUserId])
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@index([workspaceId, lastMessageAt])
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Model یک موجودیت اصلی دیتابیس و مجموعه فیلدهای آن را تعریف می‌کند.
 model WhatsAppMessage {
+  // راهنما: این خط فیلد «id» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   id                  String               @id @default(cuid())
+  // راهنما: این خط فیلد «workspaceId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspaceId         String
+  // راهنما: این خط فیلد «whatsappAccountId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   whatsappAccountId   String
+  // راهنما: این خط فیلد «conversationId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   conversationId      String
+  // راهنما: این گزینه نوع Provider را مشخص می‌کند؛ برای مثال PostgreSQL یا Prisma Client.
   providerMessageId   String?              @unique
+  // راهنما: این خط فیلد «direction» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   direction           String
+  // راهنما: این خط فیلد «messageType» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   messageType         String               @default("text")
+  // راهنما: این خط فیلد «body» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   body                String?
+  // راهنما: این خط فیلد «templateName» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   templateName        String?
+  // راهنما: این خط فیلد «status» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   status              String               @default("RECEIVED")
+  // راهنما: این خط فیلد «pricingCategory» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   pricingCategory     String?
+  // راهنما: این خط فیلد «isTemplate» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   isTemplate          Boolean              @default(false)
+  // راهنما: این گزینه نوع Provider را مشخص می‌کند؛ برای مثال PostgreSQL یا Prisma Client.
   providerTimestamp   DateTime?
+  // راهنما: این خط فیلد «metadata» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   metadata            Json                 @default("{}")
+  // راهنما: این خط فیلد «createdAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   createdAt           DateTime             @default(now())
+  // راهنما: این خط فیلد «workspace» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspace           Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  // راهنما: این خط فیلد «whatsappAccount» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   whatsappAccount     WhatsAppAccount       @relation(fields: [whatsappAccountId], references: [id], onDelete: Cascade)
+  // راهنما: این خط فیلد «conversation» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   conversation        WhatsAppConversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@index([conversationId, createdAt])
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@index([workspaceId, createdAt])
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Model یک موجودیت اصلی دیتابیس و مجموعه فیلدهای آن را تعریف می‌کند.
 model WhatsAppAutomationRule {
+  // راهنما: این خط فیلد «id» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   id                  String            @id @default(cuid())
+  // راهنما: این خط فیلد «workspaceId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspaceId         String
+  // راهنما: این خط فیلد «whatsappAccountId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   whatsappAccountId   String?
+  // راهنما: این خط فیلد «name» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   name                String
+  // راهنما: این خط فیلد «triggerType» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   triggerType         String
+  // راهنما: این خط فیلد «triggerConfig» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   triggerConfig       Json              @default("{}")
+  // راهنما: این خط فیلد «actionType» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   actionType          String            @default("SEND_MESSAGE")
+  // راهنما: این خط فیلد «actionConfig» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   actionConfig        Json              @default("{}")
+  // راهنما: این خط فیلد «isActive» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   isActive            Boolean           @default(false)
+  // راهنما: این خط فیلد «executions» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   executions          Int               @default(0)
+  // راهنما: این خط فیلد «lastTriggeredAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   lastTriggeredAt     DateTime?
+  // راهنما: این خط فیلد «createdAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   createdAt           DateTime          @default(now())
+  // راهنما: این خط فیلد «updatedAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   updatedAt           DateTime          @updatedAt
+  // راهنما: این خط فیلد «workspace» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspace           Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  // راهنما: این خط فیلد «whatsappAccount» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   whatsappAccount     WhatsAppAccount?   @relation(fields: [whatsappAccountId], references: [id], onDelete: Cascade)
 
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@index([workspaceId])
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@index([whatsappAccountId, isActive])
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Model یک موجودیت اصلی دیتابیس و مجموعه فیلدهای آن را تعریف می‌کند.
 model WhatsAppTemplate {
+  // راهنما: این خط فیلد «id» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   id                  String           @id @default(cuid())
+  // راهنما: این خط فیلد «workspaceId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspaceId         String
+  // راهنما: این خط فیلد «whatsappAccountId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   whatsappAccountId   String
+  // راهنما: این خط فیلد «metaTemplateId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   metaTemplateId      String?
+  // راهنما: این خط فیلد «name» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   name                String
+  // راهنما: این خط فیلد «language» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   language            String
+  // راهنما: این خط فیلد «category» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   category            String
+  // راهنما: این خط فیلد «status» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   status              String
+  // راهنما: این خط فیلد «components» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   components          Json             @default("[]")
+  // راهنما: این خط فیلد «qualityScore» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   qualityScore        String?
+  // راهنما: این خط فیلد «lastSyncedAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   lastSyncedAt        DateTime?
+  // راهنما: این خط فیلد «createdAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   createdAt           DateTime         @default(now())
+  // راهنما: این خط فیلد «updatedAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   updatedAt           DateTime         @updatedAt
+  // راهنما: این خط فیلد «workspace» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspace           Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  // راهنما: این خط فیلد «whatsappAccount» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   whatsappAccount     WhatsAppAccount   @relation(fields: [whatsappAccountId], references: [id], onDelete: Cascade)
 
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@unique([whatsappAccountId, name, language])
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@index([workspaceId])
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }
 
+// راهنما: این Model یک موجودیت اصلی دیتابیس و مجموعه فیلدهای آن را تعریف می‌کند.
 model ScheduledJob {
+  // راهنما: این خط فیلد «id» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   id          String             @id @default(cuid())
+  // راهنما: این خط فیلد «workspaceId» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspaceId String
+  // راهنما: این خط فیلد «platform» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   platform    String
+  // راهنما: این خط فیلد «jobType» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   jobType     String
+  // راهنما: این خط فیلد «payload» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   payload     Json
+  // راهنما: این خط فیلد «runAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   runAt       DateTime
+  // راهنما: این خط فیلد «status» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   status      ScheduledJobStatus @default(PENDING)
+  // راهنما: این خط فیلد «attempts» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   attempts    Int                @default(0)
+  // راهنما: این خط فیلد «lastError» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   lastError   String?
+  // راهنما: این خط فیلد «createdAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   createdAt   DateTime           @default(now())
+  // راهنما: این خط فیلد «updatedAt» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   updatedAt   DateTime           @updatedAt
+  // راهنما: این خط فیلد «workspace» را همراه نوع، اختیاری/اجباری بودن، مقدار پیش‌فرض یا Relation آن تعریف می‌کند.
   workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
+  // راهنما: این دستور سطح Model یک Index، Unique constraint یا نگاشت دیتابیس را تعریف می‌کند.
   @@index([status, runAt])
+// راهنما: این آکولاد پایان بلوک فعلی Model/Enum/Generator/Datasource است.
 }

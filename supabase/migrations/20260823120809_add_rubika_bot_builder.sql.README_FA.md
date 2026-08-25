@@ -1,0 +1,45 @@
+# راهنمای خط‌به‌خط `20260823120809_add_rubika_bot_builder.sql`
+
+> SQL می‌تواند شامل Function body و رشته‌های چندخطی باشد؛ تزریق کامنت خودکار بین همه خطوط ممکن است معنی Migration را عوض کند. برای حفظ دیتابیس، توضیح خط‌به‌خط در این فایل کنار Migration ذخیره می‌شود.
+
+- خط 1: `create table public."RubikaBot" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 2: `id text primary key default (gen_random_uuid())::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 3: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 4: `"rubikaBotId" text not null unique,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 5: `username text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 6: `"displayName" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 7: `description text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 8: `"tokenCiphertext" text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 9: `status public."BotStatus" not null default 'PENDING'::public."BotStatus",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 10: `"welcomeMessage" text not null default 'سلام! به ربات روبیکا خوش آمدید. از منوی زیر یکی از گزینه‌ها را انتخاب کنید.'::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 11: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 12: `"updatedAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 13: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 15: `create index "RubikaBot_workspaceId_idx" on public."RubikaBot" ("workspaceId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 17: `create table public."RubikaButton" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 18: `id text primary key default (gen_random_uuid())::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 19: `"botId" text not null references public."RubikaBot"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 20: `"parentId" text references public."RubikaButton"(id) on delete set null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 21: `title text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 22: `"actionType" text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 23: `"actionValue" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 24: `"sortOrder" integer not null default 0,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 25: `"createdAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 26: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 28: `create index "RubikaButton_botId_sortOrder_idx" on public."RubikaButton" ("botId", "sortOrder");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 30: `alter table public."RubikaBot" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 31: `alter table public."RubikaButton" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 33: `create policy "Members can read own rubika bots"` — این دستور Policy مربوط به Row Level Security را تعریف می‌کند.
+- خط 34: `on public."RubikaBot"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 35: `for select` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 36: `to authenticated` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 37: `using (` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 38: `exists (` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 39: `select 1 from public."WorkspaceMember" m` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 40: `where m."workspaceId" = "RubikaBot"."workspaceId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 41: `and m."userId" = (select auth.uid())::text` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 42: `)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 43: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 45: `insert into public."AppSecret" (id, value)` — این دستور داده جدید در جدول درج می‌کند.
+- خط 46: `select 'rubika_token_encryption', encode(gen_random_bytes(32), 'hex')` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 47: `where not exists (select 1 from public."AppSecret" where id = 'rubika_token_encryption');` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.

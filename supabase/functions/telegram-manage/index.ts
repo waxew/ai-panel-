@@ -1,234 +1,394 @@
+/**
+ * AI-PANEL-FA-INLINE-GUIDE
+ * این فایل توسط راهنمای فارسی AI Panel مستندسازی شده است.
+ * کامنت‌های «راهنما» توضیح می‌دهند دستور یا بلوک بعدی چه نقشی دارد.
+ * این توضیحات بخشی از Runtime نیستند و JavaScript آن‌ها را اجرا نمی‌کند.
+ */
+// راهنما: این دستور فایل/ماژول را از ماژول «jsr:@supabase/functions-js/edge-runtime.d.ts» وارد می‌کند تا در این فایل قابل استفاده باشد.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+// راهنما: این دستور { withSupabase } را از ماژول «npm:@supabase/server@1.4.1» وارد می‌کند تا در این فایل قابل استفاده باشد.
 import { withSupabase } from "npm:@supabase/server@1.4.1";
 
+// راهنما: این دستور متغیر/ثابت «corsHeaders» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
+// راهنما: این دستور متغیر/ثابت «actionTypes» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
 const actionTypes = new Set(["CATALOG", "CART", "ORDERS", "SUPPORT", "TEXT", "URL", "SUBMENU"]);
 
+// راهنما: این تابع «json» یک بخش مستقل از منطق برنامه را تعریف می‌کند؛ ورودی‌ها را می‌گیرد و منطق داخل بدنه را اجرا می‌کند.
 function json(data: unknown, status = 200) {
+  // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «Response.json(data, { status, headers: corsHeaders })» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
   return Response.json(data, { status, headers: corsHeaders });
 }
 
+// راهنما: این تابع «cleanTitle» یک بخش مستقل از منطق برنامه را تعریف می‌کند؛ ورودی‌ها را می‌گیرد و منطق داخل بدنه را اجرا می‌کند.
 function cleanTitle(value: unknown) {
-  if (typeof value !== "string") return null;
+  // راهنما: این شرط بررسی می‌کند آیا «typeof value !== "string"» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (typeof value !== "string") /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «null» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return null;
+  // راهنما: این دستور متغیر/ثابت «title» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
   const title = value.trim();
-  if (!title || title.length > 64) return null;
+  // راهنما: این شرط بررسی می‌کند آیا «!title || title.length > 64» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (!title || title.length > 64) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «null» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return null;
+  // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «title» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
   return title;
 }
 
+// راهنما: این تابع «cleanActionType» یک بخش مستقل از منطق برنامه را تعریف می‌کند؛ ورودی‌ها را می‌گیرد و منطق داخل بدنه را اجرا می‌کند.
 function cleanActionType(value: unknown) {
-  if (typeof value !== "string") return null;
+  // راهنما: این شرط بررسی می‌کند آیا «typeof value !== "string"» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (typeof value !== "string") /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «null» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return null;
+  // راهنما: این دستور متغیر/ثابت «normalized» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
   const normalized = value.trim().toUpperCase();
+  // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «actionTypes.has(normalized) ? normalized : null» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
   return actionTypes.has(normalized) ? normalized : null;
 }
 
+// راهنما: این تابع «cleanActionValue» یک بخش مستقل از منطق برنامه را تعریف می‌کند؛ ورودی‌ها را می‌گیرد و منطق داخل بدنه را اجرا می‌کند.
 function cleanActionValue(actionType: string, value: unknown) {
-  if (actionType === "SUBMENU") return null;
+  // راهنما: این شرط بررسی می‌کند آیا «actionType === "SUBMENU"» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (actionType === "SUBMENU") /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «null» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return null;
+  // راهنما: این شرط بررسی می‌کند آیا «value == null || value === ""» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
   if (value == null || value === "") {
-    if (actionType === "URL") throw new Error("invalid_url");
+    // راهنما: این شرط بررسی می‌کند آیا «actionType === "URL"» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+    if (actionType === "URL") /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error("invalid_url");
+    // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «null» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
     return null;
   }
-  if (typeof value !== "string") throw new Error("invalid_action_value");
+  // راهنما: این شرط بررسی می‌کند آیا «typeof value !== "string"» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (typeof value !== "string") /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error("invalid_action_value");
+  // راهنما: این دستور متغیر/ثابت «text» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
   const text = value.trim();
+  // راهنما: این شرط بررسی می‌کند آیا «actionType === "URL"» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
   if (actionType === "URL") {
-    if (!text) throw new Error("invalid_url");
+    // راهنما: این شرط بررسی می‌کند آیا «!text» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+    if (!text) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error("invalid_url");
+    // راهنما: این دستور متغیر/ثابت «parsed» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
     let parsed: URL;
-    try { parsed = new URL(text); } catch { throw new Error("invalid_url"); }
-    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") throw new Error("invalid_url");
-    if (text.length > 1000) throw new Error("invalid_action_value");
+    // راهنما: این بلوک عملیات دارای احتمال خطا را اجرا می‌کند؛ اگر خطایی رخ دهد بخش catch می‌تواند آن را مدیریت کند و finally در صورت وجود همیشه اجرا می‌شود.
+    try { /* راهنما: این دستور یک عملیات اجرایی انجام می‌دهد: «parsed = new URL(text)». */ parsed = new URL(text); } catch { /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error("invalid_url"); }
+    // راهنما: این شرط بررسی می‌کند آیا «parsed.protocol !== "https:" && parsed.protocol !== "http:"» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error("invalid_url");
+    // راهنما: این شرط بررسی می‌کند آیا «text.length > 1000» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+    if (text.length > 1000) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error("invalid_action_value");
+    // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «text» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
     return text;
   }
-  if (text.length > 1500) throw new Error("invalid_action_value");
+  // راهنما: این شرط بررسی می‌کند آیا «text.length > 1500» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (text.length > 1500) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error("invalid_action_value");
+  // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «text || null» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
   return text || null;
 }
 
+// راهنما: این تابع «workspaceForUser» یک بخش مستقل از منطق برنامه را تعریف می‌کند؛ ورودی‌ها را می‌گیرد و منطق داخل بدنه را اجرا می‌کند.
 async function workspaceForUser(admin: any, userId: string) {
+  // راهنما: این دستور متغیر/ثابت «{ data, error }» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
   const { data, error } = await admin
     .from("WorkspaceMember")
     .select("workspaceId")
     .eq("userId", userId)
     .limit(1);
-  if (error) throw new Error(`membership:${error.message}`);
+  // راهنما: این شرط بررسی می‌کند آیا «error» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (error) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error(`membership:${error.message}`);
+  // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «data?.[0]?.workspaceId as string | undefined» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
   return data?.[0]?.workspaceId as string | undefined;
 }
 
+// راهنما: این تابع «ownedBot» یک بخش مستقل از منطق برنامه را تعریف می‌کند؛ ورودی‌ها را می‌گیرد و منطق داخل بدنه را اجرا می‌کند.
 async function ownedBot(admin: any, workspaceId: string, botId: string) {
+  // راهنما: این دستور متغیر/ثابت «{ data, error }» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
   const { data, error } = await admin
     .from("TelegramBot")
     .select("id,telegramBotId,username,displayName,description,status,welcomeMessage,createdAt")
     .eq("id", botId)
     .eq("workspaceId", workspaceId)
     .maybeSingle();
-  if (error) throw new Error(`bot:${error.message}`);
+  // راهنما: این شرط بررسی می‌کند آیا «error» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (error) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error(`bot:${error.message}`);
+  // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «data ?? null» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
   return data ?? null;
 }
 
+// راهنما: این تابع «loadBotBuilder» یک بخش مستقل از منطق برنامه را تعریف می‌کند؛ ورودی‌ها را می‌گیرد و منطق داخل بدنه را اجرا می‌کند.
 async function loadBotBuilder(admin: any, workspaceId: string, botId?: string | null) {
+  // راهنما: این دستور متغیر/ثابت «{ data: bots, error: botsError }» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
   const { data: bots, error: botsError } = await admin
     .from("TelegramBot")
     .select("id,telegramBotId,username,displayName,description,status,welcomeMessage,createdAt")
     .eq("workspaceId", workspaceId)
     .order("createdAt", { ascending: false });
-  if (botsError) throw new Error(`bots:${botsError.message}`);
+  // راهنما: این شرط بررسی می‌کند آیا «botsError» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (botsError) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error(`bots:${botsError.message}`);
 
+  // راهنما: این دستور متغیر/ثابت «selected» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
   const selected = botId ? (bots ?? []).find((bot: any) => bot.id === botId) : (bots ?? [])[0];
-  if (botId && !selected) return { bots: bots ?? [], bot: null, buttons: [] };
-  if (!selected) return { bots: bots ?? [], bot: null, buttons: [] };
+  // راهنما: این شرط بررسی می‌کند آیا «botId && !selected» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (botId && !selected) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «{ bots: bots ?? [], bot: null, buttons: [] }» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return { bots: bots ?? [], bot: null, buttons: [] };
+  // راهنما: این شرط بررسی می‌کند آیا «!selected» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (!selected) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «{ bots: bots ?? [], bot: null, buttons: [] }» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return { bots: bots ?? [], bot: null, buttons: [] };
 
+  // راهنما: این دستور متغیر/ثابت «{ data: buttons, error: buttonError }» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
   const { data: buttons, error: buttonError } = await admin
     .from("TelegramButton")
     .select("id,botId,parentId,title,actionType,actionValue,sortOrder,createdAt")
     .eq("botId", selected.id)
     .order("sortOrder", { ascending: true });
-  if (buttonError) throw new Error(`buttons:${buttonError.message}`);
+  // راهنما: این شرط بررسی می‌کند آیا «buttonError» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (buttonError) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error(`buttons:${buttonError.message}`);
 
+  // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «{ bots: bots ?? [], bot: selected, buttons: buttons ?? [] }» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
   return { bots: bots ?? [], bot: selected, buttons: buttons ?? [] };
 }
 
+// راهنما: این تابع «ensureParent» یک بخش مستقل از منطق برنامه را تعریف می‌کند؛ ورودی‌ها را می‌گیرد و منطق داخل بدنه را اجرا می‌کند.
 async function ensureParent(admin: any, botId: string, parentId: unknown, selfId?: string) {
-  if (parentId == null || parentId === "") return null;
-  if (typeof parentId !== "string") throw new Error("invalid_parent");
-  if (selfId && parentId === selfId) throw new Error("invalid_parent");
+  // راهنما: این شرط بررسی می‌کند آیا «parentId == null || parentId === ""» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (parentId == null || parentId === "") /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «null» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return null;
+  // راهنما: این شرط بررسی می‌کند آیا «typeof parentId !== "string"» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (typeof parentId !== "string") /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error("invalid_parent");
+  // راهنما: این شرط بررسی می‌کند آیا «selfId && parentId === selfId» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (selfId && parentId === selfId) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error("invalid_parent");
+  // راهنما: این دستور متغیر/ثابت «{ data: buttons, error }» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
   const { data: buttons, error } = await admin
     .from("TelegramButton")
     .select("id,parentId,actionType")
     .eq("botId", botId);
-  if (error) throw new Error(`parent:${error.message}`);
+  // راهنما: این شرط بررسی می‌کند آیا «error» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (error) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error(`parent:${error.message}`);
+  // راهنما: این دستور متغیر/ثابت «byId» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
   const byId = new Map((buttons ?? []).map((row: any) => [String(row.id), row]));
+  // راهنما: این دستور متغیر/ثابت «parent» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
   const parent = byId.get(parentId);
-  if (!parent || parent.actionType !== "SUBMENU") throw new Error("invalid_parent");
+  // راهنما: این شرط بررسی می‌کند آیا «!parent || parent.actionType !== "SUBMENU"» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (!parent || parent.actionType !== "SUBMENU") /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error("invalid_parent");
+  // راهنما: این شرط بررسی می‌کند آیا «selfId» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
   if (selfId) {
+    // راهنما: این دستور متغیر/ثابت «cursor» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
     let cursor: string | null = parentId;
+    // راهنما: این دستور متغیر/ثابت «visited» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
     const visited = new Set<string>();
+    // راهنما: این حلقه تا زمانی که شرط تعیین‌شده برقرار باشد، دستورات داخل بدنه را تکرار می‌کند.
     while (cursor) {
-      if (cursor === selfId || visited.has(cursor)) throw new Error("invalid_parent");
+      // راهنما: این شرط بررسی می‌کند آیا «cursor === selfId || visited.has(cursor)» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (cursor === selfId || visited.has(cursor)) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error("invalid_parent");
+      // راهنما: این دستور یک عملیات اجرایی انجام می‌دهد: «visited.add(cursor)».
       visited.add(cursor);
+      // راهنما: این دستور متغیر/ثابت «row» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const row: any = byId.get(cursor);
+      // راهنما: این دستور یک عملیات اجرایی انجام می‌دهد: «cursor = row?.parentId ? String(row.parentId) : null».
       cursor = row?.parentId ? String(row.parentId) : null;
     }
   }
+  // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «parentId» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
   return parentId;
 }
 
+// راهنما: این دستور متغیر/ثابت «authenticated» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
 const authenticated = withSupabase({ auth: "user" }, async (request, ctx) => {
+  // راهنما: این دستور متغیر/ثابت «userId» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
   const userId = ctx.userClaims?.id;
-  if (!userId) return json({ ok: false, message: "ورود به حساب الزامی است." }, 401);
+  // راهنما: این شرط بررسی می‌کند آیا «!userId» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (!userId) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "ورود به حساب الزامی است." }, 401)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "ورود به حساب الزامی است." }, 401);
 
+  // راهنما: این دستور متغیر/ثابت «admin» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
   const admin = ctx.supabaseAdmin;
+  // راهنما: این دستور متغیر/ثابت «workspaceId» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
   let workspaceId: string | undefined;
-  try { workspaceId = await workspaceForUser(admin, userId); }
-  catch (error) { console.error(error); return json({ ok: false, message: "Workspace قابل دریافت نیست." }, 500); }
-  if (!workspaceId) return json({ ok: false, message: "Workspace برای این حساب پیدا نشد." }, 404);
+  // راهنما: این بلوک عملیات دارای احتمال خطا را اجرا می‌کند؛ اگر خطایی رخ دهد بخش catch می‌تواند آن را مدیریت کند و finally در صورت وجود همیشه اجرا می‌شود.
+  try { /* راهنما: این دستور یک عملیات اجرایی انجام می‌دهد: «workspaceId = await workspaceForUser(admin, userId)». */ workspaceId = await workspaceForUser(admin, userId); }
+  catch (error) { /* راهنما: این دستور یک عملیات اجرایی انجام می‌دهد: «console.error(error)». */ console.error(error); /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "Workspace قابل دریافت نیست." }, 500)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "Workspace قابل دریافت نیست." }, 500); }
+  // راهنما: این شرط بررسی می‌کند آیا «!workspaceId» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (!workspaceId) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "Workspace برای این حساب پیدا نشد." }, 404)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "Workspace برای این حساب پیدا نشد." }, 404);
 
+  // راهنما: این شرط بررسی می‌کند آیا «request.method === "GET"» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
   if (request.method === "GET") {
+    // راهنما: این دستور متغیر/ثابت «url» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
     const url = new URL(request.url);
+    // راهنما: این بلوک عملیات دارای احتمال خطا را اجرا می‌کند؛ اگر خطایی رخ دهد بخش catch می‌تواند آن را مدیریت کند و finally در صورت وجود همیشه اجرا می‌شود.
     try {
+      // راهنما: این دستور متغیر/ثابت «result» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const result = await loadBotBuilder(admin, workspaceId, url.searchParams.get("botId"));
+      // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: true, ...result })» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
       return json({ ok: true, ...result });
     } catch (error) {
+      // راهنما: این دستور یک عملیات اجرایی انجام می‌دهد: «console.error("telegram builder read failed", error)».
       console.error("telegram builder read failed", error);
+      // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "اطلاعات منوی ربات دریافت نشد." }, 500)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
       return json({ ok: false, message: "اطلاعات منوی ربات دریافت نشد." }, 500);
     }
   }
 
-  if (request.method !== "POST") return json({ ok: false, message: "Method not allowed" }, 405);
+  // راهنما: این شرط بررسی می‌کند آیا «request.method !== "POST"» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (request.method !== "POST") /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "Method not allowed" }, 405)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "Method not allowed" }, 405);
 
+  // راهنما: این دستور متغیر/ثابت «body» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
   let body: Record<string, unknown>;
-  try { body = await request.json(); } catch { return json({ ok: false, message: "درخواست معتبر نیست." }, 400); }
+  // راهنما: این بلوک عملیات دارای احتمال خطا را اجرا می‌کند؛ اگر خطایی رخ دهد بخش catch می‌تواند آن را مدیریت کند و finally در صورت وجود همیشه اجرا می‌شود.
+  try { /* راهنما: این دستور یک عملیات اجرایی انجام می‌دهد: «body = await request.json()». */ body = await request.json(); } catch { /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "درخواست معتبر نیست." }, 400)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "درخواست معتبر نیست." }, 400); }
+  // راهنما: این دستور متغیر/ثابت «action» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
   const action = typeof body.action === "string" ? body.action : "";
+  // راهنما: این دستور متغیر/ثابت «botId» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
   const botId = typeof body.botId === "string" ? body.botId : "";
-  if (!botId) return json({ ok: false, message: "ربات مشخص نشده است." }, 400);
+  // راهنما: این شرط بررسی می‌کند آیا «!botId» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (!botId) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "ربات مشخص نشده است." }, 400)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "ربات مشخص نشده است." }, 400);
 
+  // راهنما: این دستور متغیر/ثابت «bot» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
   let bot: any;
-  try { bot = await ownedBot(admin, workspaceId, botId); }
-  catch (error) { console.error(error); return json({ ok: false, message: "بررسی مالکیت ربات انجام نشد." }, 500); }
-  if (!bot) return json({ ok: false, message: "این ربات متعلق به Workspace شما نیست." }, 403);
+  // راهنما: این بلوک عملیات دارای احتمال خطا را اجرا می‌کند؛ اگر خطایی رخ دهد بخش catch می‌تواند آن را مدیریت کند و finally در صورت وجود همیشه اجرا می‌شود.
+  try { /* راهنما: این دستور یک عملیات اجرایی انجام می‌دهد: «bot = await ownedBot(admin, workspaceId, botId)». */ bot = await ownedBot(admin, workspaceId, botId); }
+  catch (error) { /* راهنما: این دستور یک عملیات اجرایی انجام می‌دهد: «console.error(error)». */ console.error(error); /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "بررسی مالکیت ربات انجام نشد." }, 500)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "بررسی مالکیت ربات انجام نشد." }, 500); }
+  // راهنما: این شرط بررسی می‌کند آیا «!bot» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+  if (!bot) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "این ربات متعلق به Workspace شما نیست." }, 403)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "این ربات متعلق به Workspace شما نیست." }, 403);
 
+  // راهنما: این بلوک عملیات دارای احتمال خطا را اجرا می‌کند؛ اگر خطایی رخ دهد بخش catch می‌تواند آن را مدیریت کند و finally در صورت وجود همیشه اجرا می‌شود.
   try {
+    // راهنما: این شرط بررسی می‌کند آیا «action === "update_welcome"» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
     if (action === "update_welcome") {
-      if (typeof body.welcomeMessage !== "string") return json({ ok: false, message: "پیام خوش‌آمد معتبر نیست." }, 400);
+      // راهنما: این شرط بررسی می‌کند آیا «typeof body.welcomeMessage !== "string"» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (typeof body.welcomeMessage !== "string") /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "پیام خوش‌آمد معتبر نیست." }, 400)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "پیام خوش‌آمد معتبر نیست." }, 400);
+      // راهنما: این دستور متغیر/ثابت «welcomeMessage» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const welcomeMessage = body.welcomeMessage.trim();
-      if (!welcomeMessage || welcomeMessage.length > 4000) return json({ ok: false, message: "پیام خوش‌آمد باید بین ۱ تا ۴۰۰۰ کاراکتر باشد." }, 400);
+      // راهنما: این شرط بررسی می‌کند آیا «!welcomeMessage || welcomeMessage.length > 4000» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (!welcomeMessage || welcomeMessage.length > 4000) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "پیام خوش‌آمد باید بین ۱ تا ۴۰۰۰ کاراکتر باشد."…» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "پیام خوش‌آمد باید بین ۱ تا ۴۰۰۰ کاراکتر باشد." }, 400);
+      // راهنما: این دستور متغیر/ثابت «{ error }» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const { error } = await admin.from("TelegramBot").update({ welcomeMessage }).eq("id", bot.id).eq("workspaceId", workspaceId);
-      if (error) throw new Error(`welcome:${error.message}`);
-    } else if (action === "create_button") {
+      // راهنما: این شرط بررسی می‌کند آیا «error» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (error) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error(`welcome:${error.message}`);
+    } else /* راهنما: این شرط بررسی می‌کند آیا «action === "create_button"» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود. */ if (action === "create_button") {
+      // راهنما: این دستور متغیر/ثابت «title» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const title = cleanTitle(body.title);
+      // راهنما: این دستور متغیر/ثابت «actionType» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const actionType = cleanActionType(body.actionType);
-      if (!title || !actionType) return json({ ok: false, message: "عنوان یا نوع دکمه معتبر نیست." }, 400);
+      // راهنما: این شرط بررسی می‌کند آیا «!title || !actionType» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (!title || !actionType) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "عنوان یا نوع دکمه معتبر نیست." }, 400)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "عنوان یا نوع دکمه معتبر نیست." }, 400);
+      // راهنما: این دستور متغیر/ثابت «parentId» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const parentId = await ensureParent(admin, bot.id, body.parentId);
+      // راهنما: این دستور متغیر/ثابت «actionValue» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const actionValue = cleanActionValue(actionType, body.actionValue);
+      // راهنما: این دستور متغیر/ثابت «lastQuery» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       let lastQuery = admin.from("TelegramButton").select("sortOrder").eq("botId", bot.id);
+      // راهنما: این دستور یک عملیات اجرایی انجام می‌دهد: «lastQuery = parentId ? lastQuery.eq("parentId", parentId) : lastQuery.is("parentId", null)».
       lastQuery = parentId ? lastQuery.eq("parentId", parentId) : lastQuery.is("parentId", null);
+      // راهنما: این دستور متغیر/ثابت «{ data: last, error: lastError }» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const { data: last, error: lastError } = await lastQuery.order("sortOrder", { ascending: false }).limit(1);
-      if (lastError) throw new Error(`sort_read:${lastError.message}`);
+      // راهنما: این شرط بررسی می‌کند آیا «lastError» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (lastError) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error(`sort_read:${lastError.message}`);
+      // راهنما: این دستور متغیر/ثابت «sortOrder» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const sortOrder = Number(last?.[0]?.sortOrder ?? 0) + 10;
+      // راهنما: این دستور متغیر/ثابت «{ error }» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const { error } = await admin.from("TelegramButton").insert({ id: crypto.randomUUID(), botId: bot.id, parentId, title, actionType, actionValue, sortOrder });
-      if (error) throw new Error(`create_button:${error.message}`);
-    } else if (action === "update_button") {
+      // راهنما: این شرط بررسی می‌کند آیا «error» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (error) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error(`create_button:${error.message}`);
+    } else /* راهنما: این شرط بررسی می‌کند آیا «action === "update_button"» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود. */ if (action === "update_button") {
+      // راهنما: این دستور متغیر/ثابت «buttonId» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const buttonId = typeof body.buttonId === "string" ? body.buttonId : "";
-      if (!buttonId) return json({ ok: false, message: "دکمه مشخص نشده است." }, 400);
+      // راهنما: این شرط بررسی می‌کند آیا «!buttonId» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (!buttonId) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "دکمه مشخص نشده است." }, 400)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "دکمه مشخص نشده است." }, 400);
+      // راهنما: این دستور متغیر/ثابت «{ data: current, error: currentError }» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const { data: current, error: currentError } = await admin.from("TelegramButton").select("id,botId,title,actionType,actionValue,parentId,sortOrder").eq("id", buttonId).eq("botId", bot.id).maybeSingle();
-      if (currentError) throw new Error(`button:${currentError.message}`);
-      if (!current) return json({ ok: false, message: "دکمه پیدا نشد." }, 404);
+      // راهنما: این شرط بررسی می‌کند آیا «currentError» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (currentError) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error(`button:${currentError.message}`);
+      // راهنما: این شرط بررسی می‌کند آیا «!current» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (!current) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "دکمه پیدا نشد." }, 404)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "دکمه پیدا نشد." }, 404);
+      // راهنما: این دستور متغیر/ثابت «title» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const title = body.title === undefined ? current.title : cleanTitle(body.title);
+      // راهنما: این دستور متغیر/ثابت «actionType» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const actionType = body.actionType === undefined ? current.actionType : cleanActionType(body.actionType);
-      if (!title || !actionType) return json({ ok: false, message: "عنوان یا نوع دکمه معتبر نیست." }, 400);
+      // راهنما: این شرط بررسی می‌کند آیا «!title || !actionType» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (!title || !actionType) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "عنوان یا نوع دکمه معتبر نیست." }, 400)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "عنوان یا نوع دکمه معتبر نیست." }, 400);
+      // راهنما: این دستور متغیر/ثابت «parentId» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const parentId = body.parentId === undefined ? current.parentId : await ensureParent(admin, bot.id, body.parentId, buttonId);
+      // راهنما: این دستور متغیر/ثابت «actionValue» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const actionValue = cleanActionValue(actionType, body.actionValue === undefined ? current.actionValue : body.actionValue);
+      // راهنما: این دستور متغیر/ثابت «sortOrder» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const sortOrder = body.sortOrder === undefined ? Number(current.sortOrder) : Number(body.sortOrder);
-      if (!Number.isInteger(sortOrder) || sortOrder < 0 || sortOrder > 100000) return json({ ok: false, message: "ترتیب دکمه معتبر نیست." }, 400);
+      // راهنما: این شرط بررسی می‌کند آیا «!Number.isInteger(sortOrder) || sortOrder < 0 || sortOrder > 100000» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (!Number.isInteger(sortOrder) || sortOrder < 0 || sortOrder > 100000) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "ترتیب دکمه معتبر نیست." }, 400)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "ترتیب دکمه معتبر نیست." }, 400);
+      // راهنما: این دستور متغیر/ثابت «{ error }» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const { error } = await admin.from("TelegramButton").update({ title, actionType, actionValue, parentId, sortOrder }).eq("id", buttonId).eq("botId", bot.id);
-      if (error) throw new Error(`update_button:${error.message}`);
-    } else if (action === "delete_button") {
+      // راهنما: این شرط بررسی می‌کند آیا «error» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (error) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error(`update_button:${error.message}`);
+    } else /* راهنما: این شرط بررسی می‌کند آیا «action === "delete_button"» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود. */ if (action === "delete_button") {
+      // راهنما: این دستور متغیر/ثابت «buttonId» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const buttonId = typeof body.buttonId === "string" ? body.buttonId : "";
-      if (!buttonId) return json({ ok: false, message: "دکمه مشخص نشده است." }, 400);
+      // راهنما: این شرط بررسی می‌کند آیا «!buttonId» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (!buttonId) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "دکمه مشخص نشده است." }, 400)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "دکمه مشخص نشده است." }, 400);
+      // راهنما: این دستور متغیر/ثابت «{ data: current, error: currentError }» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const { data: current, error: currentError } = await admin.from("TelegramButton").select("id").eq("id", buttonId).eq("botId", bot.id).maybeSingle();
-      if (currentError) throw new Error(`button:${currentError.message}`);
-      if (!current) return json({ ok: false, message: "دکمه پیدا نشد." }, 404);
+      // راهنما: این شرط بررسی می‌کند آیا «currentError» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (currentError) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error(`button:${currentError.message}`);
+      // راهنما: این شرط بررسی می‌کند آیا «!current» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (!current) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "دکمه پیدا نشد." }, 404)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "دکمه پیدا نشد." }, 404);
+      // راهنما: این دستور متغیر/ثابت «{ error: promoteError }» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const { error: promoteError } = await admin.from("TelegramButton").update({ parentId: null }).eq("botId", bot.id).eq("parentId", buttonId);
-      if (promoteError) throw new Error(`promote_children:${promoteError.message}`);
+      // راهنما: این شرط بررسی می‌کند آیا «promoteError» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (promoteError) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error(`promote_children:${promoteError.message}`);
+      // راهنما: این دستور متغیر/ثابت «{ error }» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const { error } = await admin.from("TelegramButton").delete().eq("id", buttonId).eq("botId", bot.id);
-      if (error) throw new Error(`delete_button:${error.message}`);
-    } else if (action === "reorder") {
-      if (!Array.isArray(body.buttonIds)) return json({ ok: false, message: "لیست ترتیب معتبر نیست." }, 400);
+      // راهنما: این شرط بررسی می‌کند آیا «error» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (error) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error(`delete_button:${error.message}`);
+    } else /* راهنما: این شرط بررسی می‌کند آیا «action === "reorder"» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود. */ if (action === "reorder") {
+      // راهنما: این شرط بررسی می‌کند آیا «!Array.isArray(body.buttonIds)» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (!Array.isArray(body.buttonIds)) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "لیست ترتیب معتبر نیست." }, 400)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "لیست ترتیب معتبر نیست." }, 400);
+      // راهنما: این دستور متغیر/ثابت «ids» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const ids = body.buttonIds.filter((value): value is string => typeof value === "string");
-      if (!ids.length || ids.length > 100 || new Set(ids).size !== ids.length) return json({ ok: false, message: "لیست ترتیب معتبر نیست." }, 400);
+      // راهنما: این شرط بررسی می‌کند آیا «!ids.length || ids.length > 100 || new Set(ids).size !== ids.length» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (!ids.length || ids.length > 100 || new Set(ids).size !== ids.length) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "لیست ترتیب معتبر نیست." }, 400)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "لیست ترتیب معتبر نیست." }, 400);
+      // راهنما: این دستور متغیر/ثابت «{ data: owned, error: ownedError }» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const { data: owned, error: ownedError } = await admin.from("TelegramButton").select("id,parentId").eq("botId", bot.id).in("id", ids);
-      if (ownedError) throw new Error(`reorder_read:${ownedError.message}`);
-      if ((owned ?? []).length !== ids.length) return json({ ok: false, message: "یکی از دکمه‌ها متعلق به این ربات نیست." }, 403);
+      // راهنما: این شرط بررسی می‌کند آیا «ownedError» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (ownedError) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error(`reorder_read:${ownedError.message}`);
+      // راهنما: این شرط بررسی می‌کند آیا «(owned ?? []).length !== ids.length» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if ((owned ?? []).length !== ids.length) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "یکی از دکمه‌ها متعلق به این ربات نیست." }, 403)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "یکی از دکمه‌ها متعلق به این ربات نیست." }, 403);
+      // راهنما: این دستور متغیر/ثابت «parentKeys» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
       const parentKeys = new Set((owned ?? []).map((row: any) => row.parentId ?? "__root__"));
-      if (parentKeys.size !== 1) return json({ ok: false, message: "فقط گزینه‌های هم‌سطح را می‌توان با هم مرتب کرد." }, 400);
+      // راهنما: این شرط بررسی می‌کند آیا «parentKeys.size !== 1» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+      if (parentKeys.size !== 1) /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "فقط گزینه‌های هم‌سطح را می‌توان با هم مرتب کرد…» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return json({ ok: false, message: "فقط گزینه‌های هم‌سطح را می‌توان با هم مرتب کرد." }, 400);
+      // راهنما: این حلقه مجموعه‌ای از داده‌ها یا یک بازه را پیمایش می‌کند و منطق داخل بدنه را برای هر مرحله اجرا می‌کند.
       for (let index = 0; index < ids.length; index += 1) {
+        // راهنما: این دستور متغیر/ثابت «{ error }» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
         const { error } = await admin.from("TelegramButton").update({ sortOrder: (index + 1) * 10 }).eq("id", ids[index]).eq("botId", bot.id);
-        if (error) throw new Error(`reorder:${error.message}`);
+        // راهنما: این شرط بررسی می‌کند آیا «error» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+        if (error) /* راهنما: این دستور عمداً یک خطا ایجاد می‌کند تا اجرای مسیر فعلی متوقف و کنترل خطا به لایه بالاتر منتقل شود. */ throw new Error(`reorder:${error.message}`);
       }
     } else {
+      // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message: "عملیات پشتیبانی نمی‌شود." }, 400)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
       return json({ ok: false, message: "عملیات پشتیبانی نمی‌شود." }, 400);
     }
 
+    // راهنما: این دستور متغیر/ثابت «result» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
     const result = await loadBotBuilder(admin, workspaceId, bot.id);
+    // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: true, ...result })» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
     return json({ ok: true, ...result });
   } catch (error) {
+    // راهنما: این دستور یک عملیات اجرایی انجام می‌دهد: «console.error("telegram builder write failed", error)».
     console.error("telegram builder write failed", error);
+    // راهنما: این دستور متغیر/ثابت «message» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
     const message = String(error).includes("invalid_url")
       ? "برای عملکرد لینک، آدرس URL معتبر الزامی است."
       : String(error).includes("invalid_parent")
         ? "زیرمنوی انتخاب‌شده معتبر نیست یا باعث حلقه در منو می‌شود."
         : "ذخیره تنظیمات منو انجام نشد.";
+    // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «json({ ok: false, message }, 400)» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
     return json({ ok: false, message }, 400);
   }
 });
 
+// راهنما: این دستور از نوع ExportAssignment بخشی از کنترل جریان یا تعریف منطق این فایل است.
 export default {
   async fetch(request: Request) {
-    if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+    // راهنما: این شرط بررسی می‌کند آیا «request.method === "OPTIONS"» برقرار است؛ فقط در صورت درست بودن، شاخه مربوط اجرا می‌شود.
+    if (request.method === "OPTIONS") /* راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «new Response("ok", { headers: corsHeaders })» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد. */ return new Response("ok", { headers: corsHeaders });
+    // راهنما: این دستور متغیر/ثابت «response» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
     const response = await authenticated(request);
+    // راهنما: این دستور متغیر/ثابت «headers» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
     const headers = new Headers(response.headers);
+    // راهنما: این دستور یک عملیات اجرایی انجام می‌دهد: «Object.entries(corsHeaders).forEach(([key, value]) => headers.set(key, value))».
     Object.entries(corsHeaders).forEach(([key, value]) => headers.set(key, value));
+    // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «new Response(response.body, { status: response.status, headers })» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
     return new Response(response.body, { status: response.status, headers });
   },
 };

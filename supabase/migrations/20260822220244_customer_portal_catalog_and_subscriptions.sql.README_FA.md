@@ -1,0 +1,141 @@
+# راهنمای خط‌به‌خط `20260822220244_customer_portal_catalog_and_subscriptions.sql`
+
+> SQL می‌تواند شامل Function body و رشته‌های چندخطی باشد؛ تزریق کامنت خودکار بین همه خطوط ممکن است معنی Migration را عوض کند. برای حفظ دیتابیس، توضیح خط‌به‌خط در این فایل کنار Migration ذخیره می‌شود.
+
+- خط 1: `create type public."ProductStatus" as enum ('AVAILABLE', 'COMING_SOON', 'HIDDEN');` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 2: `create type public."SubscriptionStatus" as enum ('PENDING', 'TRIALING', 'ACTIVE', 'PAST_DUE', 'CANCELLED', 'EXPIRED');` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 3: `create type public."InstagramConnectionStatus" as enum ('PENDING', 'ACTIVE', 'ERROR', 'DISABLED');` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 4: `create type public."OrderStatus" as enum ('WAITING_PAYMENT', 'PAID', 'FAILED', 'CANCELLED', 'REFUNDED');` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 6: `create table public."Product" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 7: `id text primary key,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 8: `name text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 9: `"shortDescription" text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 10: `description text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 11: `category text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 12: `status public."ProductStatus" not null default 'COMING_SOON',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 13: `features jsonb not null default '[]'::jsonb,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 14: `"priceAmount" bigint,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 15: `currency text not null default 'IRR',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 16: `"billingPeriod" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 17: `"sortOrder" integer not null default 0,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 18: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 19: `"updatedAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 20: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 22: `create table public."Subscription" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 23: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 24: `"userId" text not null references public."User"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 25: `"productId" text not null references public."Product"(id) on delete restrict,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 26: `status public."SubscriptionStatus" not null default 'PENDING',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 27: `"startsAt" timestamptz,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 28: `"expiresAt" timestamptz,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 29: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 30: `"updatedAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 31: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 33: `create table public."Order" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 34: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 35: `"userId" text not null references public."User"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 36: `"productId" text not null references public."Product"(id) on delete restrict,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 37: `amount bigint,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 38: `currency text not null default 'IRR',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 39: `status public."OrderStatus" not null default 'WAITING_PAYMENT',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 40: `provider text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 41: `"providerRef" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 42: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 43: `"paidAt" timestamptz` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 44: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 46: `create table public."InstagramAccount" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 47: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 48: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 49: `username text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 50: `"displayName" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 51: `"followersCount" bigint not null default 0,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 52: `"followingCount" bigint not null default 0,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 53: `"postsCount" bigint not null default 0,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 54: `"engagementRate" numeric(8,4),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 55: `metrics jsonb not null default '{}'::jsonb,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 56: `status public."InstagramConnectionStatus" not null default 'PENDING',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 57: `"lastSyncedAt" timestamptz,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 58: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 59: `"updatedAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 60: `unique ("workspaceId", username)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 61: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 63: `create index "Subscription_userId_status_idx" on public."Subscription" ("userId", status);` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 64: `create index "Order_userId_createdAt_idx" on public."Order" ("userId", "createdAt" desc);` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 65: `create index "InstagramAccount_workspaceId_status_idx" on public."InstagramAccount" ("workspaceId", status);` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 67: `create trigger product_set_updated_at before update on public."Product"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 68: `for each row execute function public.set_updated_at();` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 69: `create trigger subscription_set_updated_at before update on public."Subscription"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 70: `for each row execute function public.set_updated_at();` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 71: `create trigger instagram_account_set_updated_at before update on public."InstagramAccount"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 72: `for each row execute function public.set_updated_at();` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 74: `alter table public."Product" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 75: `alter table public."Subscription" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 76: `alter table public."Order" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 77: `alter table public."InstagramAccount" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 79: `revoke all on table public."Product" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 80: `revoke all on table public."Subscription" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 81: `revoke all on table public."Order" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 82: `revoke all on table public."InstagramAccount" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 84: `grant select, insert, update, delete on table public."Product" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 85: `grant select, insert, update, delete on table public."Subscription" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 86: `grant select, insert, update, delete on table public."Order" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 87: `grant select, insert, update, delete on table public."InstagramAccount" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 89: `create schema if not exists private;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 90: `revoke all on schema private from public, anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 92: `create or replace function private.handle_new_auth_user()` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 93: `returns trigger` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 94: `language plpgsql` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 95: `security definer` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 96: `set search_path = ''` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 97: `as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 98: `declare` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 99: `v_user_id text := new.id::text;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 100: `v_workspace_id text := new.id::text || ':workspace';` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 101: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 102: `insert into public."User" (id, email, "displayName")` — این دستور داده جدید در جدول درج می‌کند.
+- خط 103: `values (v_user_id, coalesce(new.email, v_user_id || '@local.invalid'), null)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 104: `on conflict (id) do update set email = excluded.email;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 106: `insert into public."Workspace" (id, name)` — این دستور داده جدید در جدول درج می‌کند.
+- خط 107: `values (v_workspace_id, 'فضای کاری من')` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 108: `on conflict (id) do nothing;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 110: `insert into public."WorkspaceMember" (id, "workspaceId", "userId", role)` — این دستور داده جدید در جدول درج می‌کند.
+- خط 111: `values (v_user_id || ':member', v_workspace_id, v_user_id, 'CUSTOMER')` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 112: `on conflict ("workspaceId", "userId") do nothing;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 114: `return new;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 115: `end;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 116: `$$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 118: `revoke all on function private.handle_new_auth_user() from public, anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 120: `drop trigger if exists on_auth_user_created_ai_panel on auth.users;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 121: `create trigger on_auth_user_created_ai_panel` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 122: `after insert on auth.users` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 123: `for each row execute function private.handle_new_auth_user();` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 125: `insert into public."User" (id, email)` — این دستور داده جدید در جدول درج می‌کند.
+- خط 126: `select id::text, coalesce(email, id::text || '@local.invalid')` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 127: `from auth.users` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 128: `on conflict (id) do update set email = excluded.email;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 130: `insert into public."Workspace" (id, name)` — این دستور داده جدید در جدول درج می‌کند.
+- خط 131: `select id::text || ':workspace', 'فضای کاری من'` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 132: `from auth.users` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 133: `on conflict (id) do nothing;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 135: `insert into public."WorkspaceMember" (id, "workspaceId", "userId", role)` — این دستور داده جدید در جدول درج می‌کند.
+- خط 136: `select id::text || ':member', id::text || ':workspace', id::text, 'CUSTOMER'` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 137: `from auth.users` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 138: `on conflict ("workspaceId", "userId") do nothing;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 140: `insert into public."Product" (id, name, "shortDescription", description, category, status, features, "sortOrder") values` — این دستور داده جدید در جدول درج می‌کند.
+- خط 141: `('telegram-bot', 'ربات تلگرام', 'ربات آماده برای فروش، خدمات، پشتیبانی و مدیریت مشتری', 'مشتری ربات را در BotFather می‌سازد، توکن را به پنل متصل می‌کند و از داخل پنل منوها، پیام خوش‌آمدگویی، خدمات و پاسخ‌های ربات را مدیریت می‌کند.', 'automation', 'AVAILABLE', '["اتصال امن توکن BotFather","منوی قابل شخصی‌سازی","محصولات و خدمات","کیف پول و پشتیبانی","مدیریت از داشبورد"]'::jsonb, 10),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 142: `('instagram-smart-dm', 'دایرکت هوشمند اینستاگرام', 'اتوماسیون دایرکت و پاسخ به کامنت برای پیج‌های فروش و خدمات', 'پس از اتصال حساب اینستاگرام، قوانین پاسخ خودکار، تریگر کامنت، پیام‌های دایرکت و آمار عملکرد از همین پنل مدیریت می‌شوند.', 'automation', 'COMING_SOON', '["پاسخ خودکار دایرکت","تریگر کامنت به دایرکت","قوانین قابل تنظیم","نمایش آمار پیج"]'::jsonb, 20),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 143: `('scheduler', 'انتشار زمان‌بندی‌شده', 'زمان‌بندی انتشار پست، استوری و پیام در چند کانال', 'محتوا را از قبل آماده کنید و انتشار آن را برای زمان دلخواه برنامه‌ریزی کنید. این ماژول روی زیرساخت ScheduledJob پنل اجرا می‌شود.', 'publishing', 'COMING_SOON', '["تقویم محتوا","صف انتشار","زمان‌بندی پیام و پست","گزارش وضعیت اجرا"]'::jsonb, 30),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 144: `('analytics', 'آنالیز شبکه‌های اجتماعی', 'نمایش شاخص‌های کلیدی و پیشنهادهای قابل اجرا برای رشد', 'آمار حساب‌ها و کمپین‌ها در یک نمای ساده جمع می‌شود تا کاربر بدون رفتن بین چند ابزار، وضعیت رشد و تعامل را ببیند.', 'analytics', 'COMING_SOON', '["خلاصه عملکرد","رشد دنبال‌کننده","تعامل محتوا","پیشنهادهای بهبود"]'::jsonb, 40)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 145: `on conflict (id) do update set` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 146: `name = excluded.name,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 147: `"shortDescription" = excluded."shortDescription",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 148: `description = excluded.description,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 149: `category = excluded.category,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 150: `status = excluded.status,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 151: `features = excluded.features,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 152: `"sortOrder" = excluded."sortOrder";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 154: `delete from public."Workspace" w` — این دستور رکوردهای انتخاب‌شده را حذف می‌کند.
+- خط 155: `where w.id = 'local-workspace'` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 156: `and not exists (select 1 from public."WorkspaceMember" m where m."workspaceId" = w.id)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 157: `and not exists (select 1 from public."TelegramBot" b where b."workspaceId" = w.id)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 158: `and not exists (select 1 from public."ScheduledJob" j where j."workspaceId" = w.id);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.

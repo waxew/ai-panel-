@@ -1,3 +1,10 @@
+/**
+ * AI-PANEL-FA-INLINE-GUIDE
+ * این فایل توسط راهنمای فارسی AI Panel مستندسازی شده است.
+ * کامنت‌های «راهنما» توضیح می‌دهند دستور یا بلوک بعدی چه نقشی دارد.
+ * این توضیحات بخشی از Runtime نیستند و JavaScript آن‌ها را اجرا نمی‌کند.
+ */
+// راهنما: این Type با نام «PlatformModuleKey» شکل و مقادیر مجاز داده را برای TypeScript مشخص می‌کند و در زمان اجرا کد مستقلی تولید نمی‌کند.
 export type PlatformModuleKey =
   | 'telegram'
   | 'instagram'
@@ -10,10 +17,14 @@ export type PlatformModuleKey =
   | 'analytics'
   | 'twitter';
 
+// راهنما: این Type با نام «PlatformModuleStatus» شکل و مقادیر مجاز داده را برای TypeScript مشخص می‌کند و در زمان اجرا کد مستقلی تولید نمی‌کند.
 export type PlatformModuleStatus = 'live' | 'partial' | 'planned';
+// راهنما: این Type با نام «PlatformModuleKind» شکل و مقادیر مجاز داده را برای TypeScript مشخص می‌کند و در زمان اجرا کد مستقلی تولید نمی‌کند.
 export type PlatformModuleKind = 'channel' | 'business-tool' | 'platform-tool';
+// راهنما: این Type با نام «PlatformModuleUiRuntime» شکل و مقادیر مجاز داده را برای TypeScript مشخص می‌کند و در زمان اجرا کد مستقلی تولید نمی‌کند.
 export type PlatformModuleUiRuntime = 'react' | 'legacy-html' | 'none';
 
+// راهنما: این Type با نام «PlatformModuleDefinition» شکل و مقادیر مجاز داده را برای TypeScript مشخص می‌کند و در زمان اجرا کد مستقلی تولید نمی‌کند.
 export type PlatformModuleDefinition = {
   key: PlatformModuleKey;
   labelFa: string;
@@ -30,6 +41,7 @@ export type PlatformModuleDefinition = {
   capabilities: readonly string[];
 };
 
+// راهنما: این دستور متغیر/ثابت «platformModules» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
 export const platformModules: readonly PlatformModuleDefinition[] = [
   {
     key: 'telegram', labelFa: 'تلگرام', labelEn: 'Telegram', shortCode: 'TG',
@@ -93,10 +105,13 @@ export const platformModules: readonly PlatformModuleDefinition[] = [
   },
 ];
 
+// راهنما: این دستور متغیر/ثابت «customerNavigationModules» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
 export const customerNavigationModules = platformModules.filter(
   (module) => module.customerRoute !== null && module.status !== 'planned',
 );
 
+// راهنما: این تابع «getPlatformModule» یک بخش مستقل از منطق برنامه را تعریف می‌کند؛ ورودی‌ها را می‌گیرد و منطق داخل بدنه را اجرا می‌کند.
 export function getPlatformModule(key: PlatformModuleKey) {
+  // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «platformModules.find((module) => module.key === key) ?? null» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
   return platformModules.find((module) => module.key === key) ?? null;
 }

@@ -1,108 +1,180 @@
+# AI-PANEL-FA-INLINE-GUIDE
+# راهنما: کامنت‌های فارسی نقش گزینه یا دستور بعدی را توضیح می‌دهند.
 # Synced from production project spncmjuvnvfkrahjnyjm on 2026-08-24.
 # Authenticated functions keep the Supabase platform JWT check enabled.
 # Public callbacks/webhooks disable the platform check and validate their own provider state/signature/secret in code.
 
+# راهنما: این عنوان «[functions.telegram-connect]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.telegram-connect]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.telegram-webhook]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.telegram-webhook]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = false
 
+# راهنما: این عنوان «[functions.customer-dashboard]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.customer-dashboard]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.store-manage]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.store-manage]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.bot-commerce-manage]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.bot-commerce-manage]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.admin-dashboard]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.admin-dashboard]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.telegram-manage]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.telegram-manage]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.store-orders]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.store-orders]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.instagram-manage]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.instagram-manage]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.instagram-connect]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.instagram-connect]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = false
 
+# راهنما: این عنوان «[functions.instagram-webhook]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.instagram-webhook]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = false
 
+# راهنما: این عنوان «[functions.booking-manage]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.booking-manage]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.booking-automations]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.booking-automations]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.booking-public]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.booking-public]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = false
 
+# راهنما: این عنوان «[functions.booking-finance]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.booking-finance]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.booking-staff-access]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.booking-staff-access]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.booking-feedback-manage]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.booking-feedback-manage]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.booking-feedback-public]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.booking-feedback-public]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = false
 
+# راهنما: این عنوان «[functions.discord-connect]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.discord-connect]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.rubika-connect]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.rubika-connect]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.discord-manage]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.discord-manage]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.discord-interactions]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.discord-interactions]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = false
 
+# راهنما: این عنوان «[functions.whatsapp-connect]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.whatsapp-connect]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.rubika-manage]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.rubika-manage]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.whatsapp-manage]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.whatsapp-manage]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.whatsapp-webhook]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.whatsapp-webhook]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = false
 
+# راهنما: این عنوان «[functions.rubika-webhook]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.rubika-webhook]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = false
 
+# راهنما: این عنوان «[functions.bale-connect]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.bale-connect]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.bale-manage]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.bale-manage]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.bale-webhook]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.bale-webhook]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = false
 
+# راهنما: این عنوان «[functions.booking-loyalty]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.booking-loyalty]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.booking-site-manage]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.booking-site-manage]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.booking-site-public]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.booking-site-public]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = false
 
+# راهنما: این عنوان «[functions.booking-inbox]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.booking-inbox]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true
 
+# راهنما: این عنوان «[functions.account-manage]» یک بخش جدید از تنظیمات TOML را شروع می‌کند.
 [functions.account-manage]
+# راهنما: این گزینه «verify_jwt» یک مقدار تنظیماتی برای ابزار/سرویس این فایل تعیین می‌کند.
 verify_jwt = true

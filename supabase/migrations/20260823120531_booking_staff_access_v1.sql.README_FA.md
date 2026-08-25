@@ -1,0 +1,45 @@
+# راهنمای خط‌به‌خط `20260823120531_booking_staff_access_v1.sql`
+
+> SQL می‌تواند شامل Function body و رشته‌های چندخطی باشد؛ تزریق کامنت خودکار بین همه خطوط ممکن است معنی Migration را عوض کند. برای حفظ دیتابیس، توضیح خط‌به‌خط در این فایل کنار Migration ذخیره می‌شود.
+
+- خط 1: `create table if not exists public."BookingStaffAccess" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 2: `"staffId" text primary key references public."BookingStaff"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 3: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 4: `"userId" text references public."User"(id) on delete set null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 5: `"isEnabled" boolean not null default false,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 6: `"appointmentScope" text not null default 'OWN' check ("appointmentScope" in ('OWN','ALL')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 7: `permissions jsonb not null default '{"booking":true,"customers":false,"finance":false,"reports":false,"services":false,"staff":false,"settings":false,"automations":false}'::jsonb,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 8: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 9: `"updatedAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 10: `unique ("workspaceId", "userId")` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 11: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 13: `create index if not exists "BookingStaffAccess_workspace_idx" on public."BookingStaffAccess"("workspaceId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 14: `create index if not exists "BookingStaffAccess_user_idx" on public."BookingStaffAccess"("userId") where "userId" is not null;` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 16: `alter table public."BookingStaffAccess" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 17: `revoke all on public."BookingStaffAccess" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 18: `grant select, insert, update, delete on public."BookingStaffAccess" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 20: `create or replace function private.booking_staff_access_fill_workspace()` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 21: `returns trigger` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 22: `language plpgsql` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 23: `set search_path = ''` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 24: `as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 25: `declare` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 26: `staff_workspace text;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 27: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 28: `select s."workspaceId" into staff_workspace` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 29: `from public."BookingStaff" s` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 30: `where s.id = new."staffId";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 31: `if staff_workspace is null then raise exception 'Staff not found'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 32: `new."workspaceId" := staff_workspace;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 33: `new."updatedAt" := now();` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 34: `return new;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 35: `end;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 36: `$$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 37: `revoke all on function private.booking_staff_access_fill_workspace() from public, anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 39: `drop trigger if exists booking_staff_access_fill_workspace on public."BookingStaffAccess";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 40: `create trigger booking_staff_access_fill_workspace` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 41: `before insert or update of "staffId" on public."BookingStaffAccess"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 42: `for each row execute function private.booking_staff_access_fill_workspace();` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 44: `insert into public."BookingStaffAccess"("staffId","workspaceId")` — این دستور داده جدید در جدول درج می‌کند.
+- خط 45: `select s.id,s."workspaceId" from public."BookingStaff" s` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 46: `on conflict ("staffId") do nothing;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.

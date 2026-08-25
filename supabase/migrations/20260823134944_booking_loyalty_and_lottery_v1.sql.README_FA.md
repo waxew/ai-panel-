@@ -1,0 +1,366 @@
+# راهنمای خط‌به‌خط `20260823134944_booking_loyalty_and_lottery_v1.sql`
+
+> SQL می‌تواند شامل Function body و رشته‌های چندخطی باشد؛ تزریق کامنت خودکار بین همه خطوط ممکن است معنی Migration را عوض کند. برای حفظ دیتابیس، توضیح خط‌به‌خط در این فایل کنار Migration ذخیره می‌شود.
+
+- خط 1: `create table if not exists public."BookingLoyaltySettings" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 2: `"workspaceId" text primary key references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 3: `enabled boolean not null default true,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 4: `"spendUnitAmount" bigint not null default 100000 check ("spendUnitAmount" > 0),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 5: `"pointsPerUnit" integer not null default 1 check ("pointsPerUnit" > 0),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 6: `"silverThreshold" integer not null default 100 check ("silverThreshold" >= 0),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 7: `"goldThreshold" integer not null default 300 check ("goldThreshold" >= 0),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 8: `"vipThreshold" integer not null default 800 check ("vipThreshold" >= 0),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 9: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 10: `"updatedAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 11: `check ("silverThreshold" <= "goldThreshold" and "goldThreshold" <= "vipThreshold")` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 12: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 14: `create table if not exists public."BookingLoyaltyAccount" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 15: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 16: `"customerId" text not null references public."BookingCustomer"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 17: `"pointsBalance" integer not null default 0,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 18: `"qualifyingPoints" integer not null default 0,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 19: `tier text not null default 'BRONZE' check (tier in ('BRONZE','SILVER','GOLD','VIP')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 20: `"joinedAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 21: `"updatedAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 22: `primary key ("workspaceId", "customerId")` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 23: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 25: `create table if not exists public."BookingLoyaltyLedger" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 26: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 27: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 28: `"customerId" text not null references public."BookingCustomer"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 29: `"sourcePaymentId" text unique references public."BookingPayment"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 30: `type text not null check (type in ('EARN','REFUND','REDEEM','ADJUST','BONUS','EXPIRE')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 31: `"deltaPoints" integer not null default 0,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 32: `reason text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 33: `"createdByUserId" text references public."User"(id) on delete set null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 34: `"createdAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 35: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 37: `create table if not exists public."BookingLoyaltyReward" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 38: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 39: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 40: `title text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 41: `description text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 42: `"pointsCost" integer not null check ("pointsCost" > 0),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 43: `"rewardType" text not null default 'CUSTOM' check ("rewardType" in ('DISCOUNT_AMOUNT','DISCOUNT_PERCENT','FREE_SERVICE','CUSTOM')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 44: `"rewardValue" bigint,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 45: `"serviceId" text references public."BookingService"(id) on delete set null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 46: `stock integer check (stock is null or stock >= 0),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 47: `"isActive" boolean not null default true,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 48: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 49: `"updatedAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 50: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 52: `create table if not exists public."BookingLoyaltyRedemption" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 53: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 54: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 55: `"customerId" text not null references public."BookingCustomer"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 56: `"rewardId" text not null references public."BookingLoyaltyReward"(id) on delete restrict,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 57: `"pointsSpent" integer not null check ("pointsSpent" > 0),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 58: `code text not null unique,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 59: `status text not null default 'ISSUED' check (status in ('ISSUED','USED','CANCELLED')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 60: `"issuedAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 61: `"usedAt" timestamptz,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 62: `"cancelledAt" timestamptz,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 63: `"createdByUserId" text references public."User"(id) on delete set null` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 64: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 66: `create table if not exists public."BookingLotteryCampaign" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 67: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 68: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 69: `title text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 70: `prize text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 71: `status text not null default 'DRAFT' check (status in ('DRAFT','OPEN','DRAWN','CANCELLED')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 72: `"minimumPoints" integer not null default 0 check ("minimumPoints" >= 0),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 73: `"minimumVisits" integer not null default 0 check ("minimumVisits" >= 0),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 74: `"vipOnly" boolean not null default false,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 75: `"startsAt" timestamptz,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 76: `"endsAt" timestamptz,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 77: `"winnerCustomerId" text references public."BookingCustomer"(id) on delete set null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 78: `"drawnAt" timestamptz,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 79: `"createdByUserId" text references public."User"(id) on delete set null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 80: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 81: `"updatedAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 82: `check ("endsAt" is null or "startsAt" is null or "endsAt" > "startsAt")` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 83: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 85: `create table if not exists public."BookingLotteryEntry" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 86: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 87: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 88: `"campaignId" text not null references public."BookingLotteryCampaign"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 89: `"customerId" text not null references public."BookingCustomer"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 90: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 91: `unique ("campaignId", "customerId")` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 92: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 94: `create index if not exists "BookingLoyaltyAccount_customer_idx" on public."BookingLoyaltyAccount"("customerId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 95: `create index if not exists "BookingLoyaltyAccount_workspace_tier_idx" on public."BookingLoyaltyAccount"("workspaceId", tier);` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 96: `create index if not exists "BookingLoyaltyLedger_workspace_customer_created_idx" on public."BookingLoyaltyLedger"("workspaceId", "customerId", "createdAt" desc);` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 97: `create index if not exists "BookingLoyaltyLedger_createdBy_idx" on public."BookingLoyaltyLedger"("createdByUserId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 98: `create index if not exists "BookingLoyaltyReward_workspace_active_idx" on public."BookingLoyaltyReward"("workspaceId", "isActive");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 99: `create index if not exists "BookingLoyaltyReward_service_idx" on public."BookingLoyaltyReward"("serviceId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 100: `create index if not exists "BookingLoyaltyRedemption_workspace_customer_idx" on public."BookingLoyaltyRedemption"("workspaceId", "customerId", "issuedAt" desc);` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 101: `create index if not exists "BookingLoyaltyRedemption_reward_idx" on public."BookingLoyaltyRedemption"("rewardId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 102: `create index if not exists "BookingLoyaltyRedemption_createdBy_idx" on public."BookingLoyaltyRedemption"("createdByUserId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 103: `create index if not exists "BookingLotteryCampaign_workspace_status_idx" on public."BookingLotteryCampaign"("workspaceId", status, "createdAt" desc);` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 104: `create index if not exists "BookingLotteryCampaign_winner_idx" on public."BookingLotteryCampaign"("winnerCustomerId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 105: `create index if not exists "BookingLotteryCampaign_createdBy_idx" on public."BookingLotteryCampaign"("createdByUserId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 106: `create index if not exists "BookingLotteryEntry_workspace_campaign_idx" on public."BookingLotteryEntry"("workspaceId", "campaignId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 107: `create index if not exists "BookingLotteryEntry_customer_idx" on public."BookingLotteryEntry"("customerId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 109: `alter table public."BookingLoyaltySettings" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 110: `alter table public."BookingLoyaltyAccount" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 111: `alter table public."BookingLoyaltyLedger" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 112: `alter table public."BookingLoyaltyReward" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 113: `alter table public."BookingLoyaltyRedemption" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 114: `alter table public."BookingLotteryCampaign" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 115: `alter table public."BookingLotteryEntry" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 117: `revoke all on public."BookingLoyaltySettings" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 118: `revoke all on public."BookingLoyaltyAccount" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 119: `revoke all on public."BookingLoyaltyLedger" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 120: `revoke all on public."BookingLoyaltyReward" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 121: `revoke all on public."BookingLoyaltyRedemption" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 122: `revoke all on public."BookingLotteryCampaign" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 123: `revoke all on public."BookingLotteryEntry" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 125: `grant select, insert, update, delete on public."BookingLoyaltySettings" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 126: `grant select, insert, update, delete on public."BookingLoyaltyAccount" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 127: `grant select, insert, update, delete on public."BookingLoyaltyLedger" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 128: `grant select, insert, update, delete on public."BookingLoyaltyReward" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 129: `grant select, insert, update, delete on public."BookingLoyaltyRedemption" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 130: `grant select, insert, update, delete on public."BookingLotteryCampaign" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 131: `grant select, insert, update, delete on public."BookingLotteryEntry" to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 133: `create schema if not exists private;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 135: `create or replace function private.booking_loyalty_sync_account(p_workspace_id text, p_customer_id text)` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 136: `returns void` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 137: `language plpgsql` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 138: `set search_path = ''` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 139: `as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 140: `declare` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 141: `v_balance integer := 0;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 142: `v_qualifying integer := 0;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 143: `v_silver integer := 100;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 144: `v_gold integer := 300;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 145: `v_vip integer := 800;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 146: `v_tier text := 'BRONZE';` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 147: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 148: `select coalesce(sum(l."deltaPoints"), 0)::integer,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 149: `coalesce(sum(case when l.type in ('EARN','REFUND') then l."deltaPoints" else 0 end), 0)::integer` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 150: `into v_balance, v_qualifying` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 151: `from public."BookingLoyaltyLedger" l` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 152: `where l."workspaceId" = p_workspace_id and l."customerId" = p_customer_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 154: `select s."silverThreshold", s."goldThreshold", s."vipThreshold"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 155: `into v_silver, v_gold, v_vip` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 156: `from public."BookingLoyaltySettings" s` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 157: `where s."workspaceId" = p_workspace_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 159: `v_silver := coalesce(v_silver, 100);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 160: `v_gold := coalesce(v_gold, 300);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 161: `v_vip := coalesce(v_vip, 800);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 162: `v_tier := case` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 163: `when v_qualifying >= v_vip then 'VIP'` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 164: `when v_qualifying >= v_gold then 'GOLD'` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 165: `when v_qualifying >= v_silver then 'SILVER'` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 166: `else 'BRONZE'` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 167: `end;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 169: `insert into public."BookingLoyaltyAccount"("workspaceId","customerId","pointsBalance","qualifyingPoints",tier,"joinedAt","updatedAt")` — این دستور داده جدید در جدول درج می‌کند.
+- خط 170: `values (p_workspace_id,p_customer_id,v_balance,v_qualifying,v_tier,now(),now())` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 171: `on conflict ("workspaceId","customerId") do update` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 172: `set "pointsBalance" = excluded."pointsBalance",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 173: `"qualifyingPoints" = excluded."qualifyingPoints",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 174: `tier = excluded.tier,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 175: `"updatedAt" = now();` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 176: `end;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 177: `$$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 179: `create or replace function private.booking_loyalty_ledger_sync_account()` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 180: `returns trigger` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 181: `language plpgsql` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 182: `set search_path = ''` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 183: `as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 184: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 185: `if tg_op = 'DELETE' then` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 186: `perform private.booking_loyalty_sync_account(old."workspaceId", old."customerId");` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 187: `return old;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 188: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 189: `perform private.booking_loyalty_sync_account(new."workspaceId", new."customerId");` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 190: `if tg_op = 'UPDATE' and (old."workspaceId", old."customerId") is distinct from (new."workspaceId", new."customerId") then` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 191: `perform private.booking_loyalty_sync_account(old."workspaceId", old."customerId");` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 192: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 193: `return new;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 194: `end;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 195: `$$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 197: `create or replace function private.booking_loyalty_payment_sync()` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 198: `returns trigger` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 199: `language plpgsql` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 200: `set search_path = ''` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 201: `as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 202: `declare` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 203: `v_enabled boolean;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 204: `v_unit bigint;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 205: `v_per integer;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 206: `v_points integer := 0;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 207: `v_type text := 'EARN';` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 208: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 209: `select s.enabled, s."spendUnitAmount", s."pointsPerUnit"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 210: `into v_enabled, v_unit, v_per` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 211: `from public."BookingLoyaltySettings" s` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 212: `where s."workspaceId" = new."workspaceId";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 214: `if coalesce(v_enabled, false) = false then` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 215: `return new;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 216: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 218: `v_type := case when new.type = 'REFUND' then 'REFUND' else 'EARN' end;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 219: `if new.status = 'POSTED' then` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 220: `v_points := floor(new.amount::numeric / greatest(v_unit, 1))::integer * greatest(v_per, 1);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 221: `if new.type = 'REFUND' then v_points := -v_points; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 222: `else` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 223: `v_points := 0;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 224: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 226: `if v_points <> 0 or exists(select 1 from public."BookingLoyaltyLedger" where "sourcePaymentId" = new.id) then` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 227: `insert into public."BookingLoyaltyLedger"("workspaceId","customerId","sourcePaymentId",type,"deltaPoints",reason,"createdByUserId")` — این دستور داده جدید در جدول درج می‌کند.
+- خط 228: `values (new."workspaceId",new."customerId",new.id,v_type,v_points,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 229: `case when new.status = 'POSTED' then 'امتیاز خودکار از تراکنش مالی' else 'اثر تراکنش مالی ابطال شده' end,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 230: `new."createdByUserId")` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 231: `on conflict ("sourcePaymentId") do update` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 232: `set "workspaceId" = excluded."workspaceId",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 233: `"customerId" = excluded."customerId",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 234: `type = excluded.type,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 235: `"deltaPoints" = excluded."deltaPoints",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 236: `reason = excluded.reason,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 237: `"createdByUserId" = excluded."createdByUserId";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 238: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 239: `return new;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 240: `end;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 241: `$$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 243: `revoke all on function private.booking_loyalty_sync_account(text,text) from public, anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 244: `revoke all on function private.booking_loyalty_ledger_sync_account() from public, anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 245: `revoke all on function private.booking_loyalty_payment_sync() from public, anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 247: `drop trigger if exists booking_loyalty_ledger_sync_account on public."BookingLoyaltyLedger";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 248: `create trigger booking_loyalty_ledger_sync_account` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 249: `after insert or update or delete on public."BookingLoyaltyLedger"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 250: `for each row execute function private.booking_loyalty_ledger_sync_account();` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 252: `drop trigger if exists booking_loyalty_payment_sync on public."BookingPayment";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 253: `create trigger booking_loyalty_payment_sync` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 254: `after insert or update of amount, type, status, "customerId", "workspaceId" on public."BookingPayment"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 255: `for each row execute function private.booking_loyalty_payment_sync();` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 257: `create or replace function public.booking_loyalty_redeem_reward(` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 258: `p_workspace_id text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 259: `p_customer_id text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 260: `p_reward_id text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 261: `p_user_id text` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 262: `) returns text` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 263: `language plpgsql` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 264: `set search_path = ''` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 265: `as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 266: `declare` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 267: `v_reward public."BookingLoyaltyReward"%rowtype;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 268: `v_balance integer := 0;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 269: `v_redemption_id text := gen_random_uuid()::text;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 270: `v_code text := upper(substr(replace(gen_random_uuid()::text,'-',''),1,10));` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 271: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 272: `select * into v_reward` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 273: `from public."BookingLoyaltyReward"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 274: `where id = p_reward_id and "workspaceId" = p_workspace_id and "isActive" = true` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 275: `for update;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 276: `if not found then raise exception 'Reward not found or inactive'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 277: `if v_reward.stock is not null and v_reward.stock <= 0 then raise exception 'Reward is out of stock'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 279: `perform private.booking_loyalty_sync_account(p_workspace_id, p_customer_id);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 280: `select "pointsBalance" into v_balance` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 281: `from public."BookingLoyaltyAccount"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 282: `where "workspaceId" = p_workspace_id and "customerId" = p_customer_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 283: `for update;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 284: `if coalesce(v_balance,0) < v_reward."pointsCost" then raise exception 'Insufficient points'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 286: `insert into public."BookingLoyaltyRedemption"(id,"workspaceId","customerId","rewardId","pointsSpent",code,status,"createdByUserId")` — این دستور داده جدید در جدول درج می‌کند.
+- خط 287: `values (v_redemption_id,p_workspace_id,p_customer_id,p_reward_id,v_reward."pointsCost",v_code,'ISSUED',p_user_id);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 288: `insert into public."BookingLoyaltyLedger"("workspaceId","customerId",type,"deltaPoints",reason,"createdByUserId")` — این دستور داده جدید در جدول درج می‌کند.
+- خط 289: `values (p_workspace_id,p_customer_id,'REDEEM',-v_reward."pointsCost",'دریافت پاداش: ' || v_reward.title,p_user_id);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 290: `if v_reward.stock is not null then` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 291: `update public."BookingLoyaltyReward" set stock = stock - 1, "updatedAt" = now() where id = p_reward_id;` — این دستور داده‌های موجود را به‌روزرسانی می‌کند.
+- خط 292: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 293: `return v_redemption_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 294: `end;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 295: `$$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 297: `create or replace function public.booking_loyalty_cancel_redemption(` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 298: `p_workspace_id text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 299: `p_redemption_id text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 300: `p_user_id text` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 301: `) returns void` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 302: `language plpgsql` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 303: `set search_path = ''` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 304: `as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 305: `declare` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 306: `v_red public."BookingLoyaltyRedemption"%rowtype;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 307: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 308: `select * into v_red from public."BookingLoyaltyRedemption"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 309: `where id = p_redemption_id and "workspaceId" = p_workspace_id for update;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 310: `if not found then raise exception 'Redemption not found'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 311: `if v_red.status <> 'ISSUED' then raise exception 'Only issued redemptions can be cancelled'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 312: `update public."BookingLoyaltyRedemption" set status='CANCELLED', "cancelledAt"=now() where id=v_red.id;` — این دستور داده‌های موجود را به‌روزرسانی می‌کند.
+- خط 313: `insert into public."BookingLoyaltyLedger"("workspaceId","customerId",type,"deltaPoints",reason,"createdByUserId")` — این دستور داده جدید در جدول درج می‌کند.
+- خط 314: `values (p_workspace_id,v_red."customerId",'ADJUST',v_red."pointsSpent",'بازگشت امتیاز بابت لغو پاداش ' || v_red.code,p_user_id);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 315: `update public."BookingLoyaltyReward" set stock = case when stock is null then null else stock + 1 end, "updatedAt"=now() where id=v_red."rewardId";` — این دستور داده‌های موجود را به‌روزرسانی می‌کند.
+- خط 316: `end;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 317: `$$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 319: `create or replace function public.booking_lottery_rebuild_entries(` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 320: `p_workspace_id text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 321: `p_campaign_id text` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 322: `) returns integer` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 323: `language plpgsql` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 324: `set search_path = ''` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 325: `as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 326: `declare` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 327: `v_campaign public."BookingLotteryCampaign"%rowtype;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 328: `v_count integer := 0;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 329: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 330: `select * into v_campaign from public."BookingLotteryCampaign"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 331: `where id=p_campaign_id and "workspaceId"=p_workspace_id for update;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 332: `if not found then raise exception 'Campaign not found'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 333: `if v_campaign.status not in ('DRAFT','OPEN') then raise exception 'Campaign cannot be rebuilt'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 335: `delete from public."BookingLotteryEntry" where "campaignId"=p_campaign_id and "workspaceId"=p_workspace_id;` — این دستور رکوردهای انتخاب‌شده را حذف می‌کند.
+- خط 336: `insert into public."BookingLotteryEntry"("workspaceId","campaignId","customerId")` — این دستور داده جدید در جدول درج می‌کند.
+- خط 337: `select p_workspace_id,p_campaign_id,c.id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 338: `from public."BookingCustomer" c` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 339: `left join public."BookingLoyaltyAccount" la on la."workspaceId"=p_workspace_id and la."customerId"=c.id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 340: `left join lateral (` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 341: `select count(*)::integer as visits` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 342: `from public."BookingAppointment" a` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 343: `where a."workspaceId"=p_workspace_id and a."customerId"=c.id and a.status='DONE'` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 344: `) v on true` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 345: `where c."workspaceId"=p_workspace_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 346: `and coalesce(la."pointsBalance",0) >= v_campaign."minimumPoints"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 347: `and coalesce(v.visits,0) >= v_campaign."minimumVisits"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 348: `and (v_campaign."vipOnly"=false or coalesce(la.tier,'BRONZE')='VIP');` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 349: `get diagnostics v_count = row_count;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 350: `return v_count;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 351: `end;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 352: `$$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 354: `create or replace function public.booking_lottery_draw(` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 355: `p_workspace_id text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 356: `p_campaign_id text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 357: `p_user_id text` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 358: `) returns text` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 359: `language plpgsql` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 360: `set search_path = ''` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 361: `as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 362: `declare` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 363: `v_campaign public."BookingLotteryCampaign"%rowtype;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 364: `v_winner text;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 365: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 366: `select * into v_campaign from public."BookingLotteryCampaign"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 367: `where id=p_campaign_id and "workspaceId"=p_workspace_id for update;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 368: `if not found then raise exception 'Campaign not found'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 369: `if v_campaign.status <> 'OPEN' then raise exception 'Campaign must be open'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 370: `if v_campaign."winnerCustomerId" is not null then raise exception 'Campaign already drawn'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 371: `if v_campaign."startsAt" is not null and v_campaign."startsAt" > now() then raise exception 'Campaign has not started'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 372: `if v_campaign."endsAt" is not null and v_campaign."endsAt" > now() then raise exception 'Campaign has not ended'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 374: `select e."customerId" into v_winner` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 375: `from public."BookingLotteryEntry" e` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 376: `where e."workspaceId"=p_workspace_id and e."campaignId"=p_campaign_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 377: `order by random()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 378: `limit 1;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 379: `if v_winner is null then raise exception 'Campaign has no entries'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 381: `update public."BookingLotteryCampaign"` — این دستور داده‌های موجود را به‌روزرسانی می‌کند.
+- خط 382: `set status='DRAWN', "winnerCustomerId"=v_winner, "drawnAt"=now(), "updatedAt"=now(), "createdByUserId"=coalesce("createdByUserId",p_user_id)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 383: `where id=p_campaign_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 384: `return v_winner;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 385: `end;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 386: `$$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 388: `revoke all on function public.booking_loyalty_redeem_reward(text,text,text,text) from public, anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 389: `revoke all on function public.booking_loyalty_cancel_redemption(text,text,text) from public, anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 390: `revoke all on function public.booking_lottery_rebuild_entries(text,text) from public, anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 391: `revoke all on function public.booking_lottery_draw(text,text,text) from public, anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 392: `grant execute on function public.booking_loyalty_redeem_reward(text,text,text,text) to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 393: `grant execute on function public.booking_loyalty_cancel_redemption(text,text,text) to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 394: `grant execute on function public.booking_lottery_rebuild_entries(text,text) to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 395: `grant execute on function public.booking_lottery_draw(text,text,text) to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.

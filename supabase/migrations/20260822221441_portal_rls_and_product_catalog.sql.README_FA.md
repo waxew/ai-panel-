@@ -1,0 +1,72 @@
+# راهنمای خط‌به‌خط `20260822221441_portal_rls_and_product_catalog.sql`
+
+> SQL می‌تواند شامل Function body و رشته‌های چندخطی باشد؛ تزریق کامنت خودکار بین همه خطوط ممکن است معنی Migration را عوض کند. برای حفظ دیتابیس، توضیح خط‌به‌خط در این فایل کنار Migration ذخیره می‌شود.
+
+- خط 1: `drop policy if exists "Public can read visible products" on public."Product";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 2: `create policy "Public can read visible products"` — این دستور Policy مربوط به Row Level Security را تعریف می‌کند.
+- خط 3: `on public."Product" for select` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 4: `to anon, authenticated` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 5: `using (status <> 'HIDDEN');` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 6: `grant select on table public."Product" to anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 8: `drop policy if exists "Users can read own profile" on public."User";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 9: `create policy "Users can read own profile"` — این دستور Policy مربوط به Row Level Security را تعریف می‌کند.
+- خط 10: `on public."User" for select` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 11: `to authenticated` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 12: `using (id = (select auth.uid())::text);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 13: `grant select on table public."User" to authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 15: `drop policy if exists "Users can read own memberships" on public."WorkspaceMember";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 16: `create policy "Users can read own memberships"` — این دستور Policy مربوط به Row Level Security را تعریف می‌کند.
+- خط 17: `on public."WorkspaceMember" for select` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 18: `to authenticated` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 19: `using ("userId" = (select auth.uid())::text);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 20: `grant select on table public."WorkspaceMember" to authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 22: `drop policy if exists "Members can read their workspaces" on public."Workspace";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 23: `create policy "Members can read their workspaces"` — این دستور Policy مربوط به Row Level Security را تعریف می‌کند.
+- خط 24: `on public."Workspace" for select` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 25: `to authenticated` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 26: `using (exists (` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 27: `select 1 from public."WorkspaceMember" m` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 28: `where m."workspaceId" = id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 29: `and m."userId" = (select auth.uid())::text` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 30: `));` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 31: `grant select on table public."Workspace" to authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 33: `drop policy if exists "Users can read own subscriptions" on public."Subscription";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 34: `create policy "Users can read own subscriptions"` — این دستور Policy مربوط به Row Level Security را تعریف می‌کند.
+- خط 35: `on public."Subscription" for select` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 36: `to authenticated` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 37: `using ("userId" = (select auth.uid())::text);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 38: `grant select on table public."Subscription" to authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 40: `drop policy if exists "Users can read own orders" on public."Order";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 41: `create policy "Users can read own orders"` — این دستور Policy مربوط به Row Level Security را تعریف می‌کند.
+- خط 42: `on public."Order" for select` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 43: `to authenticated` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 44: `using ("userId" = (select auth.uid())::text);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 45: `grant select on table public."Order" to authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 47: `drop policy if exists "Members can read own telegram bots" on public."TelegramBot";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 48: `create policy "Members can read own telegram bots"` — این دستور Policy مربوط به Row Level Security را تعریف می‌کند.
+- خط 49: `on public."TelegramBot" for select` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 50: `to authenticated` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 51: `using (exists (` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 52: `select 1 from public."WorkspaceMember" m` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 53: `where m."workspaceId" = "TelegramBot"."workspaceId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 54: `and m."userId" = (select auth.uid())::text` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 55: `));` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 56: `revoke all on table public."TelegramBot" from authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 57: `grant select (id, "workspaceId", "telegramBotId", username, "displayName", description, status, "createdAt", "updatedAt", "welcomeMessage") on public."TelegramBot" to authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 59: `drop policy if exists "Members can read own instagram accounts" on public."InstagramAccount";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 60: `create policy "Members can read own instagram accounts"` — این دستور Policy مربوط به Row Level Security را تعریف می‌کند.
+- خط 61: `on public."InstagramAccount" for select` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 62: `to authenticated` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 63: `using (exists (` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 64: `select 1 from public."WorkspaceMember" m` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 65: `where m."workspaceId" = "InstagramAccount"."workspaceId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 66: `and m."userId" = (select auth.uid())::text` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 67: `));` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 68: `revoke all on table public."InstagramAccount" from authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 69: `grant select (id, "workspaceId", username, "displayName", "followersCount", "followingCount", "postsCount", "engagementRate", metrics, status, "lastSyncedAt", "createdAt", "updatedAt") on public."InstagramAccount" to authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 71: `revoke execute on function public.rls_auto_enable() from public, anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 73: `create index if not exists "WorkspaceMember_userId_idx" on public."WorkspaceMember" ("userId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 74: `create index if not exists "TelegramBot_workspaceId_idx" on public."TelegramBot" ("workspaceId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 75: `create index if not exists "ScheduledJob_workspaceId_idx" on public."ScheduledJob" ("workspaceId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 76: `create index if not exists "Subscription_productId_idx" on public."Subscription" ("productId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 77: `create index if not exists "Order_productId_idx" on public."Order" ("productId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.

@@ -1,0 +1,333 @@
+# راهنمای خط‌به‌خط `20260823121735_add_bale_bot_platform.sql`
+
+> SQL می‌تواند شامل Function body و رشته‌های چندخطی باشد؛ تزریق کامنت خودکار بین همه خطوط ممکن است معنی Migration را عوض کند. برای حفظ دیتابیس، توضیح خط‌به‌خط در این فایل کنار Migration ذخیره می‌شود.
+
+- خط 1: `create table if not exists public."BaleBot" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 2: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 3: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 4: `"baleBotId" text not null unique,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 5: `username text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 6: `"displayName" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 7: `description text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 8: `"tokenCiphertext" text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 9: `status public."BotStatus" not null default 'PENDING'::public."BotStatus",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 10: `"welcomeMessage" text not null default 'سلام! به ربات بله خوش آمدید. از منوی زیر یکی از گزینه‌ها را انتخاب کنید.',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 11: `"webhookSecretHash" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 12: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 13: `"updatedAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 14: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 16: `create table if not exists public."BaleButton" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 17: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 18: `"botId" text not null references public."BaleBot"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 19: `"parentId" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 20: `title text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 21: `"actionType" text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 22: `"actionValue" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 23: `"sortOrder" integer not null default 0,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 24: `"createdAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 25: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 27: `create index if not exists "BaleBot_workspaceId_idx" on public."BaleBot"("workspaceId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 28: `create index if not exists "BaleButton_botId_idx" on public."BaleButton"("botId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 29: `create index if not exists "BaleButton_parentId_idx" on public."BaleButton"("parentId");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 31: `alter table public."BaleBot" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 32: `alter table public."BaleButton" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 34: `drop policy if exists "Members can read own bale bots" on public."BaleBot";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 35: `create policy "Members can read own bale bots"` — این دستور Policy مربوط به Row Level Security را تعریف می‌کند.
+- خط 36: `on public."BaleBot" for select to authenticated` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 37: `using (` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 38: `exists (` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 39: `select 1 from public."WorkspaceMember" m` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 40: `where m."workspaceId" = "BaleBot"."workspaceId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 41: `and m."userId" = (select auth.uid())::text` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 42: `)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 43: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 45: `drop policy if exists "Members can read own bale buttons" on public."BaleButton";` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 46: `create policy "Members can read own bale buttons"` — این دستور Policy مربوط به Row Level Security را تعریف می‌کند.
+- خط 47: `on public."BaleButton" for select to authenticated` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 48: `using (` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 49: `exists (` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 50: `select 1` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 51: `from public."BaleBot" b` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 52: `join public."WorkspaceMember" m on m."workspaceId" = b."workspaceId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 53: `where b.id = "BaleButton"."botId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 54: `and m."userId" = (select auth.uid())::text` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 55: `)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 56: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 58: `insert into public."AppSecret" (id, value)` — این دستور داده جدید در جدول درج می‌کند.
+- خط 59: `select 'bale_token_encryption', encode(gen_random_bytes(32), 'hex')` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 60: `where not exists (select 1 from public."AppSecret" where id = 'bale_token_encryption');` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 62: `create or replace function public.bale_cart_snapshot(p_store_id text, p_external_user_id text)` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 63: `returns jsonb` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 64: `language plpgsql` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 65: `security definer` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 66: `set search_path = ''` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 67: `as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 68: `declare` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 69: `v_customer_id text;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 70: `v_cart_id text;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 71: `v_currency text := 'IRR';` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 72: `v_total bigint := 0;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 73: `v_count integer := 0;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 74: `v_items jsonb := '[]'::jsonb;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 75: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 76: `select id into v_customer_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 77: `from public."StoreCustomer"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 78: `where "storeId" = p_store_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 79: `and platform = 'bale'` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 80: `and "externalUserId" = p_external_user_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 81: `limit 1;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 83: `if v_customer_id is null then` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 84: `return jsonb_build_object('cartId', null, 'itemCount', 0, 'totalAmount', 0, 'currency', 'IRR', 'items', '[]'::jsonb);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 85: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 87: `select id into v_cart_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 88: `from public."StoreCart"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 89: `where "customerId" = v_customer_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 90: `and "storeId" = p_store_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 91: `and status = 'ACTIVE'::public."StoreCartStatus"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 92: `limit 1;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 94: `if v_cart_id is null then` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 95: `return jsonb_build_object('cartId', null, 'itemCount', 0, 'totalAmount', 0, 'currency', 'IRR', 'items', '[]'::jsonb);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 96: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 98: `select coalesce(sum(ci.quantity * ci."unitPriceAmount"), 0)::bigint,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 99: `coalesce(sum(ci.quantity), 0)::integer,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 100: `coalesce(max(si.currency), 'IRR'),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 101: `coalesce(jsonb_agg(` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 102: `jsonb_build_object(` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 103: `'itemId', si.id,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 104: `'title', si.title,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 105: `'quantity', ci.quantity,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 106: `'unitPriceAmount', ci."unitPriceAmount",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 107: `'lineTotalAmount', ci.quantity * ci."unitPriceAmount",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 108: `'currency', si.currency,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 109: `'inventoryCount', si."inventoryCount",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 110: `'isActive', si."isActive"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 111: `) order by ci."createdAt"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 112: `), '[]'::jsonb)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 113: `into v_total, v_count, v_currency, v_items` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 114: `from public."StoreCartItem" ci` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 115: `join public."StoreItem" si on si.id = ci."itemId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 116: `where ci."cartId" = v_cart_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 118: `return jsonb_build_object(` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 119: `'cartId', v_cart_id,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 120: `'itemCount', v_count,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 121: `'totalAmount', v_total,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 122: `'currency', v_currency,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 123: `'items', v_items` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 124: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 125: `end;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 126: `$$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 128: `create or replace function public.bale_cart_change(` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 129: `p_store_id text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 130: `p_item_id text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 131: `p_external_user_id text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 132: `p_username text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 133: `p_display_name text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 134: `p_delta integer` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 135: `)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 136: `returns jsonb` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 137: `language plpgsql` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 138: `security definer` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 139: `set search_path = ''` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 140: `as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 141: `declare` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 142: `v_item public."StoreItem"%rowtype;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 143: `v_customer_id text;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 144: `v_cart_id text;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 145: `v_existing_qty integer := 0;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 146: `v_new_qty integer;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 147: `v_total bigint := 0;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 148: `v_count integer := 0;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 149: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 150: `if p_delta = 0 or p_delta < -99 or p_delta > 99 then` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 151: `raise exception 'invalid_delta';` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 152: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 154: `perform pg_advisory_xact_lock(hashtext(p_store_id || ':bale:' || p_external_user_id));` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 156: `if not exists (` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 157: `select 1 from public."Store"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 158: `where id = p_store_id and status = 'ACTIVE'::public."StoreStatus"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 159: `) then` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 160: `raise exception 'store_unavailable';` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 161: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 163: `select * into v_item` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 164: `from public."StoreItem"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 165: `where id = p_item_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 166: `and "storeId" = p_store_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 167: `and "isActive" = true` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 168: `for update;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 170: `if not found then raise exception 'item_unavailable'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 172: `insert into public."StoreCustomer" (` — این دستور داده جدید در جدول درج می‌کند.
+- خط 173: `id, "storeId", platform, "externalUserId", username, "displayName", metadata,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 174: `"lastSeenAt", "createdAt", "updatedAt"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 175: `) values (` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 176: `gen_random_uuid()::text, p_store_id, 'bale', p_external_user_id,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 177: `nullif(p_username, ''), nullif(p_display_name, ''), '{}'::jsonb,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 178: `now(), now(), now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 179: `)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 180: `on conflict ("storeId", platform, "externalUserId")` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 181: `do update set` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 182: `username = excluded.username,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 183: `"displayName" = excluded."displayName",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 184: `"lastSeenAt" = now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 185: `"updatedAt" = now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 186: `returning id into v_customer_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 188: `select id into v_cart_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 189: `from public."StoreCart"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 190: `where "customerId" = v_customer_id and status = 'ACTIVE'::public."StoreCartStatus"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 191: `limit 1` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 192: `for update;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 194: `if v_cart_id is null then` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 195: `insert into public."StoreCart" (id, "storeId", "customerId", status, "createdAt", "updatedAt")` — این دستور داده جدید در جدول درج می‌کند.
+- خط 196: `values (gen_random_uuid()::text, p_store_id, v_customer_id, 'ACTIVE'::public."StoreCartStatus", now(), now())` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 197: `returning id into v_cart_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 198: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 200: `select quantity into v_existing_qty` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 201: `from public."StoreCartItem"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 202: `where "cartId" = v_cart_id and "itemId" = p_item_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 203: `for update;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 205: `v_existing_qty := coalesce(v_existing_qty, 0);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 206: `v_new_qty := v_existing_qty + p_delta;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 208: `if v_new_qty <= 0 then` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 209: `delete from public."StoreCartItem"` — این دستور رکوردهای انتخاب‌شده را حذف می‌کند.
+- خط 210: `where "cartId" = v_cart_id and "itemId" = p_item_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 211: `else` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 212: `if v_item."inventoryCount" is not null and v_new_qty > v_item."inventoryCount" then` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 213: `raise exception 'insufficient_stock';` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 214: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 216: `insert into public."StoreCartItem" (` — این دستور داده جدید در جدول درج می‌کند.
+- خط 217: `id, "cartId", "itemId", quantity, "unitPriceAmount", "createdAt", "updatedAt"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 218: `) values (` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 219: `gen_random_uuid()::text, v_cart_id, p_item_id, v_new_qty, v_item."priceAmount", now(), now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 220: `)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 221: `on conflict ("cartId", "itemId")` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 222: `do update set` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 223: `quantity = excluded.quantity,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 224: `"unitPriceAmount" = excluded."unitPriceAmount",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 225: `"updatedAt" = now();` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 226: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 228: `update public."StoreCart" set "updatedAt" = now() where id = v_cart_id;` — این دستور داده‌های موجود را به‌روزرسانی می‌کند.
+- خط 230: `select coalesce(sum(ci.quantity * ci."unitPriceAmount"), 0)::bigint,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 231: `coalesce(sum(ci.quantity), 0)::integer` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 232: `into v_total, v_count` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 233: `from public."StoreCartItem" ci` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 234: `where ci."cartId" = v_cart_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 236: `return jsonb_build_object(` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 237: `'cartId', v_cart_id,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 238: `'itemCount', v_count,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 239: `'totalAmount', v_total,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 240: `'currency', v_item.currency` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 241: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 242: `end;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 243: `$$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 245: `create or replace function public.bale_checkout_cart(` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 246: `p_store_id text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 247: `p_external_user_id text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 248: `p_external_conversation_id text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 249: `p_idempotency_key text` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 250: `)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 251: `returns jsonb` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 252: `language plpgsql` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 253: `security definer` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 254: `set search_path = ''` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 255: `as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 256: `declare` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 257: `v_customer_id text;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 258: `v_cart_id text;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 259: `v_order_id text;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 260: `v_existing public."StoreOrder"%rowtype;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 261: `v_total bigint := 0;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 262: `v_currency text := 'IRR';` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 263: `v_bad_count integer := 0;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 264: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 265: `perform pg_advisory_xact_lock(hashtext(p_store_id || ':bale:' || p_external_user_id));` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 267: `if p_idempotency_key is not null then` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 268: `select * into v_existing` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 269: `from public."StoreOrder"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 270: `where "storeId" = p_store_id and "idempotencyKey" = p_idempotency_key` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 271: `limit 1;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 272: `if found then` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 273: `return jsonb_build_object(` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 274: `'orderId', v_existing.id,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 275: `'status', v_existing.status,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 276: `'totalAmount', v_existing."totalAmount",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 277: `'currency', v_existing.currency,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 278: `'replayed', true` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 279: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 280: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 281: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 283: `select id into v_customer_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 284: `from public."StoreCustomer"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 285: `where "storeId" = p_store_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 286: `and platform = 'bale'` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 287: `and "externalUserId" = p_external_user_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 288: `limit 1;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 290: `if v_customer_id is null then raise exception 'cart_empty'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 292: `select id into v_cart_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 293: `from public."StoreCart"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 294: `where "customerId" = v_customer_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 295: `and "storeId" = p_store_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 296: `and status = 'ACTIVE'::public."StoreCartStatus"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 297: `limit 1` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 298: `for update;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 300: `if v_cart_id is null then raise exception 'cart_empty'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 302: `perform 1` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 303: `from public."StoreItem" si` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 304: `join public."StoreCartItem" ci on ci."itemId" = si.id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 305: `where ci."cartId" = v_cart_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 306: `order by si.id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 307: `for update of si;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 309: `select count(*)::integer into v_bad_count` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 310: `from public."StoreCartItem" ci` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 311: `join public."StoreItem" si on si.id = ci."itemId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 312: `where ci."cartId" = v_cart_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 313: `and (` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 314: `si."storeId" <> p_store_id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 315: `or si."isActive" = false` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 316: `or (si."inventoryCount" is not null and ci.quantity > si."inventoryCount")` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 317: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 319: `if v_bad_count > 0 then raise exception 'cart_items_unavailable'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 321: `select coalesce(sum(ci.quantity * si."priceAmount"), 0)::bigint,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 322: `coalesce(max(si.currency), 'IRR')` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 323: `into v_total, v_currency` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 324: `from public."StoreCartItem" ci` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 325: `join public."StoreItem" si on si.id = ci."itemId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 326: `where ci."cartId" = v_cart_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 328: `if v_total <= 0 and not exists (select 1 from public."StoreCartItem" where "cartId" = v_cart_id) then` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 329: `raise exception 'cart_empty';` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 330: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 332: `v_order_id := gen_random_uuid()::text;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 334: `insert into public."StoreOrder" (` — این دستور داده جدید در جدول درج می‌کند.
+- خط 335: `id, "storeId", "customerId", "sourcePlatform", "externalConversationId",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 336: `status, "subtotalAmount", "discountAmount", "totalAmount", currency,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 337: `note, "idempotencyKey", "createdAt", "updatedAt"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 338: `) values (` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 339: `v_order_id, p_store_id, v_customer_id, 'bale', p_external_conversation_id,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 340: `'AWAITING_PAYMENT'::public."StoreOrderStatus", v_total, 0, v_total, v_currency,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 341: `null, p_idempotency_key, now(), now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 342: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 344: `insert into public."StoreOrderItem" (` — این دستور داده جدید در جدول درج می‌کند.
+- خط 345: `id, "orderId", "itemId", "titleSnapshot", "skuSnapshot", "unitPriceAmount",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 346: `quantity, "lineTotalAmount", metadata, "createdAt"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 347: `)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 348: `select gen_random_uuid()::text, v_order_id, si.id, si.title, si.sku, si."priceAmount",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 349: `ci.quantity, ci.quantity * si."priceAmount", '{}'::jsonb, now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 350: `from public."StoreCartItem" ci` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 351: `join public."StoreItem" si on si.id = ci."itemId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 352: `where ci."cartId" = v_cart_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 354: `update public."StoreCart"` — این دستور داده‌های موجود را به‌روزرسانی می‌کند.
+- خط 355: `set status = 'CONVERTED'::public."StoreCartStatus", "updatedAt" = now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 356: `where id = v_cart_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 358: `return jsonb_build_object(` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 359: `'orderId', v_order_id,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 360: `'status', 'AWAITING_PAYMENT',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 361: `'totalAmount', v_total,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 362: `'currency', v_currency,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 363: `'replayed', false` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 364: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 365: `end;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 366: `$$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 368: `revoke all on function public.bale_cart_snapshot(text,text) from public, anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 369: `revoke all on function public.bale_cart_change(text,text,text,text,text,integer) from public, anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 370: `revoke all on function public.bale_checkout_cart(text,text,text,text) from public, anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 371: `grant execute on function public.bale_cart_snapshot(text,text) to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 372: `grant execute on function public.bale_cart_change(text,text,text,text,text,integer) to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 373: `grant execute on function public.bale_checkout_cart(text,text,text,text) to service_role;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.

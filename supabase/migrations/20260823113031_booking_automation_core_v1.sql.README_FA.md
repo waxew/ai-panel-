@@ -1,0 +1,170 @@
+# راهنمای خط‌به‌خط `20260823113031_booking_automation_core_v1.sql`
+
+> SQL می‌تواند شامل Function body و رشته‌های چندخطی باشد؛ تزریق کامنت خودکار بین همه خطوط ممکن است معنی Migration را عوض کند. برای حفظ دیتابیس، توضیح خط‌به‌خط در این فایل کنار Migration ذخیره می‌شود.
+
+- خط 1: `create extension if not exists pg_cron;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 3: `alter table public."BookingCustomer"` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 4: `add column if not exists "birthDate" date,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 5: `add column if not exists "marketingOptIn" boolean not null default true;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 7: `create table if not exists public."BookingAutomationRule" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 8: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 9: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 10: `type text not null check (type in ('APPOINTMENT_REMINDER','BIRTHDAY','WINBACK')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 11: `name text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 12: `channel text not null default 'SMS' check (channel in ('SMS','WHATSAPP')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 13: `"isActive" boolean not null default false,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 14: `template text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 15: `"leadMinutes" integer not null default 1440 check ("leadMinutes" between 0 and 43200),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 16: `"daysAfterLastVisit" integer not null default 60 check ("daysAfterLastVisit" between 1 and 3650),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 17: `"sendTime" time not null default '10:00',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 18: `settings jsonb not null default '{}'::jsonb,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 19: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 20: `"updatedAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 21: `unique ("workspaceId", type)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 22: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 24: `create table if not exists public."BookingMessageOutbox" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 25: `id text primary key default gen_random_uuid()::text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 26: `"workspaceId" text not null references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 27: `"customerId" text not null references public."BookingCustomer"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 28: `"appointmentId" text references public."BookingAppointment"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 29: `"ruleId" text references public."BookingAutomationRule"(id) on delete set null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 30: `channel text not null default 'SMS' check (channel in ('SMS','WHATSAPP')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 31: `recipient text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 32: `body text not null,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 33: `"scheduledFor" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 34: `status text not null default 'PENDING' check (status in ('PENDING','SENT','FAILED','CANCELLED','BLOCKED')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 35: `attempts integer not null default 0 check (attempts >= 0),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 36: `"providerMessageId" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 37: `"lastError" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 38: `"dedupeKey" text not null unique,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 39: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 40: `"sentAt" timestamptz` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 41: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 43: `create table if not exists public."BookingSmsAccount" (` — این دستور یک جدول جدید در PostgreSQL ایجاد می‌کند.
+- خط 44: `"workspaceId" text primary key references public."Workspace"(id) on delete cascade,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 45: `provider text not null default 'NOT_CONNECTED',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 46: `status text not null default 'DISCONNECTED' check (status in ('DISCONNECTED','CONNECTED','ERROR')),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 47: `"senderNumber" text,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 48: `"balanceMessages" integer not null default 0 check ("balanceMessages" >= 0),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 49: `"bulkBalanceMessages" integer not null default 0 check ("bulkBalanceMessages" >= 0),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 50: `"subscriptionEndsAt" timestamptz,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 51: `"createdAt" timestamptz not null default now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 52: `"updatedAt" timestamptz not null default now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 53: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 55: `create index if not exists "BookingAutomationRule_workspace_active_idx" on public."BookingAutomationRule"("workspaceId", "isActive");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 56: `create index if not exists "BookingMessageOutbox_workspace_status_schedule_idx" on public."BookingMessageOutbox"("workspaceId", status, "scheduledFor");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 57: `create index if not exists "BookingMessageOutbox_customer_idx" on public."BookingMessageOutbox"("customerId", "createdAt");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 58: `create index if not exists "BookingCustomer_birthDate_idx" on public."BookingCustomer"("workspaceId", "birthDate");` — این دستور Index ایجاد می‌کند تا جستجو/Unique constraint بهینه یا enforce شود.
+- خط 60: `alter table public."BookingAutomationRule" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 61: `alter table public."BookingMessageOutbox" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 62: `alter table public."BookingSmsAccount" enable row level security;` — این دستور ساختار یا Constraintهای یک جدول موجود را تغییر می‌دهد.
+- خط 64: `revoke all on public."BookingAutomationRule" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 65: `revoke all on public."BookingMessageOutbox" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 66: `revoke all on public."BookingSmsAccount" from anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 68: `create schema if not exists private;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 70: `create or replace function private.booking_generate_due_messages()` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 71: `returns void` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 72: `language plpgsql` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 73: `security definer` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 74: `set search_path = ''` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 75: `as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 76: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 77: `insert into public."BookingMessageOutbox" (` — این دستور داده جدید در جدول درج می‌کند.
+- خط 78: `"workspaceId", "customerId", "appointmentId", "ruleId", channel, recipient, body,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 79: `"scheduledFor", status, "dedupeKey"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 80: `)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 81: `select` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 82: `r."workspaceId",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 83: `c.id,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 84: `a.id,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 85: `r.id,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 86: `r.channel,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 87: `c.phone,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 88: `replace(` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 89: `replace(` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 90: `replace(` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 91: `replace(r.template, '{name}', c."fullName"),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 92: `'{date}', to_char(a."startsAt" at time zone coalesce(bs.timezone, 'Asia/Tehran'), 'YYYY/MM/DD')` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 93: `),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 94: `'{time}', to_char(a."startsAt" at time zone coalesce(bs.timezone, 'Asia/Tehran'), 'HH24:MI')` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 95: `),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 96: `'{service}', s.title` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 97: `),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 98: `a."startsAt" - make_interval(mins => r."leadMinutes"),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 99: `'PENDING',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 100: `'REMINDER:' || r.id || ':' || a.id` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 101: `from public."BookingAutomationRule" r` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 102: `join public."BookingAppointment" a on a."workspaceId" = r."workspaceId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 103: `join public."BookingCustomer" c on c.id = a."customerId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 104: `join public."BookingService" s on s.id = a."serviceId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 105: `left join public."BookingSettings" bs on bs."workspaceId" = r."workspaceId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 106: `where r.type = 'APPOINTMENT_REMINDER'` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 107: `and r."isActive" = true` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 108: `and a.status in ('PENDING','CONFIRMED')` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 109: `and a."startsAt" > now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 110: `and a."startsAt" - make_interval(mins => r."leadMinutes") <= now()` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 111: `on conflict ("dedupeKey") do nothing;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 113: `insert into public."BookingMessageOutbox" (` — این دستور داده جدید در جدول درج می‌کند.
+- خط 114: `"workspaceId", "customerId", "ruleId", channel, recipient, body,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 115: `"scheduledFor", status, "dedupeKey"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 116: `)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 117: `select` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 118: `r."workspaceId",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 119: `c.id,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 120: `r.id,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 121: `r.channel,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 122: `c.phone,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 123: `replace(r.template, '{name}', c."fullName"),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 124: `now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 125: `'PENDING',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 126: `'BIRTHDAY:' || r.id || ':' || c.id || ':' || extract(year from (now() at time zone coalesce(bs.timezone, 'Asia/Tehran')))::int::text` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 127: `from public."BookingAutomationRule" r` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 128: `join public."BookingCustomer" c on c."workspaceId" = r."workspaceId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 129: `left join public."BookingSettings" bs on bs."workspaceId" = r."workspaceId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 130: `where r.type = 'BIRTHDAY'` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 131: `and r."isActive" = true` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 132: `and c."marketingOptIn" = true` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 133: `and c."birthDate" is not null` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 134: `and extract(month from c."birthDate") = extract(month from (now() at time zone coalesce(bs.timezone, 'Asia/Tehran')))` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 135: `and extract(day from c."birthDate") = extract(day from (now() at time zone coalesce(bs.timezone, 'Asia/Tehran')))` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 136: `and (now() at time zone coalesce(bs.timezone, 'Asia/Tehran'))::time >= r."sendTime"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 137: `on conflict ("dedupeKey") do nothing;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 139: `insert into public."BookingMessageOutbox" (` — این دستور داده جدید در جدول درج می‌کند.
+- خط 140: `"workspaceId", "customerId", "ruleId", channel, recipient, body,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 141: `"scheduledFor", status, "dedupeKey"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 142: `)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 143: `select` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 144: `r."workspaceId",` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 145: `c.id,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 146: `r.id,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 147: `r.channel,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 148: `c.phone,` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 149: `replace(r.template, '{name}', c."fullName"),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 150: `now(),` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 151: `'PENDING',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 152: `'WINBACK:' || r.id || ':' || c.id || ':' || to_char(now() at time zone coalesce(bs.timezone, 'Asia/Tehran'), 'YYYY-MM')` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 153: `from public."BookingAutomationRule" r` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 154: `join public."BookingCustomer" c on c."workspaceId" = r."workspaceId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 155: `left join public."BookingSettings" bs on bs."workspaceId" = r."workspaceId"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 156: `join lateral (` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 157: `select max(a."startsAt") as "lastVisit"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 158: `from public."BookingAppointment" a` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 159: `where a."customerId" = c.id and a."workspaceId" = r."workspaceId" and a.status = 'DONE'` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 160: `) lv on lv."lastVisit" is not null` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 161: `where r.type = 'WINBACK'` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 162: `and r."isActive" = true` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 163: `and c."marketingOptIn" = true` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 164: `and lv."lastVisit" <= now() - make_interval(days => r."daysAfterLastVisit")` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 165: `and (now() at time zone coalesce(bs.timezone, 'Asia/Tehran'))::time >= r."sendTime"` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 166: `on conflict ("dedupeKey") do nothing;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 167: `end;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 168: `$$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 170: `revoke all on function private.booking_generate_due_messages() from public, anon, authenticated;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 172: `select cron.unschedule(jobid)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 173: `from cron.job` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 174: `where jobname = 'booking-automation-every-5-min';` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 176: `select cron.schedule(` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 177: `'booking-automation-every-5-min',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 178: `'*/5 * * * *',` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 179: `'select private.booking_generate_due_messages();'` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 180: `);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.

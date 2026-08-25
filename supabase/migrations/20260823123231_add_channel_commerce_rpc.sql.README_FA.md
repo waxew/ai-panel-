@@ -1,0 +1,68 @@
+# راهنمای خط‌به‌خط `20260823123231_add_channel_commerce_rpc.sql`
+
+> SQL می‌تواند شامل Function body و رشته‌های چندخطی باشد؛ تزریق کامنت خودکار بین همه خطوط ممکن است معنی Migration را عوض کند. برای حفظ دیتابیس، توضیح خط‌به‌خط در این فایل کنار Migration ذخیره می‌شود.
+
+- خط 1: `create or replace function public.channel_cart_snapshot(p_platform text, p_store_id text, p_external_user_id text)` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 2: `returns jsonb language plpgsql security definer set search_path to '' as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 3: `declare v_customer_id text; v_cart_id text; v_currency text := 'IRR'; v_total bigint := 0; v_count integer := 0; v_items jsonb := '[]'::jsonb;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 4: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 5: `if p_platform not in ('telegram','rubika','bale','whatsapp','discord') then raise exception 'invalid_platform'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 6: `select id into v_customer_id from public."StoreCustomer" where "storeId"=p_store_id and platform=p_platform and "externalUserId"=p_external_user_id limit 1;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 7: `if v_customer_id is null then return jsonb_build_object('cartId',null,'itemCount',0,'totalAmount',0,'currency','IRR','items','[]'::jsonb); end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 8: `select id into v_cart_id from public."StoreCart" where "customerId"=v_customer_id and "storeId"=p_store_id and status='ACTIVE'::public."StoreCartStatus" limit 1;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 9: `if v_cart_id is null then return jsonb_build_object('cartId',null,'itemCount',0,'totalAmount',0,'currency','IRR','items','[]'::jsonb); end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 10: `select coalesce(sum(ci.quantity*ci."unitPriceAmount"),0)::bigint,coalesce(sum(ci.quantity),0)::integer,coalesce(max(si.currency),'IRR'),coalesce(jsonb_agg(jsonb_build_object('itemId',si.id,'title',si.title,'quantity',ci.quantity,'unitPriceAmount',ci."unitPriceAmount",'lineTotalAmount',ci.quantity*ci."unitPriceAmount",'currency',si.currency,'inventoryCount',si."inventoryCount",'isActive',si."isActive") order by ci."createdAt"),'[]'::jsonb)` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 11: `into v_total,v_count,v_currency,v_items from public."StoreCartItem" ci join public."StoreItem" si on si.id=ci."itemId" where ci."cartId"=v_cart_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 12: `return jsonb_build_object('cartId',v_cart_id,'itemCount',v_count,'totalAmount',v_total,'currency',v_currency,'items',v_items);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 13: `end $$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 15: `create or replace function public.channel_cart_change(p_platform text,p_store_id text,p_item_id text,p_external_user_id text,p_username text,p_display_name text,p_delta integer)` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 16: `returns jsonb language plpgsql security definer set search_path to '' as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 17: `declare v_item public."StoreItem"%rowtype; v_customer_id text; v_cart_id text; v_existing_qty integer:=0; v_new_qty integer; v_total bigint:=0; v_count integer:=0;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 18: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 19: `if p_platform not in ('telegram','rubika','bale','whatsapp','discord') then raise exception 'invalid_platform'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 20: `if p_delta=0 or p_delta < -99 or p_delta > 99 then raise exception 'invalid_delta'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 21: `perform pg_advisory_xact_lock(hashtext(p_platform||':'||p_store_id||':'||p_external_user_id));` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 22: `if not exists(select 1 from public."Store" where id=p_store_id and status='ACTIVE'::public."StoreStatus") then raise exception 'store_unavailable'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 23: `select * into v_item from public."StoreItem" where id=p_item_id and "storeId"=p_store_id and "isActive"=true for update;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 24: `if not found then raise exception 'item_unavailable'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 25: `insert into public."StoreCustomer"(id,"storeId",platform,"externalUserId",username,"displayName",metadata,"lastSeenAt","createdAt","updatedAt") values(gen_random_uuid()::text,p_store_id,p_platform,p_external_user_id,nullif(p_username,''),nullif(p_display_name,''),'{}'::jsonb,now(),now(),now())` — این دستور داده جدید در جدول درج می‌کند.
+- خط 26: `on conflict("storeId",platform,"externalUserId") do update set username=excluded.username,"displayName"=excluded."displayName","lastSeenAt"=now(),"updatedAt"=now() returning id into v_customer_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 27: `select id into v_cart_id from public."StoreCart" where "customerId"=v_customer_id and status='ACTIVE'::public."StoreCartStatus" limit 1 for update;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 28: `if v_cart_id is null then insert into public."StoreCart"(id,"storeId","customerId",status,"createdAt","updatedAt") values(gen_random_uuid()::text,p_store_id,v_customer_id,'ACTIVE'::public."StoreCartStatus",now(),now()) returning id into v_cart_id; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 29: `select quantity into v_existing_qty from public."StoreCartItem" where "cartId"=v_cart_id and "itemId"=p_item_id for update;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 30: `v_existing_qty:=coalesce(v_existing_qty,0); v_new_qty:=v_existing_qty+p_delta;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 31: `if v_new_qty<=0 then delete from public."StoreCartItem" where "cartId"=v_cart_id and "itemId"=p_item_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 32: `else` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 33: `if v_item."inventoryCount" is not null and v_new_qty>v_item."inventoryCount" then raise exception 'insufficient_stock'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 34: `insert into public."StoreCartItem"(id,"cartId","itemId",quantity,"unitPriceAmount","createdAt","updatedAt") values(gen_random_uuid()::text,v_cart_id,p_item_id,v_new_qty,v_item."priceAmount",now(),now())` — این دستور داده جدید در جدول درج می‌کند.
+- خط 35: `on conflict("cartId","itemId") do update set quantity=excluded.quantity,"unitPriceAmount"=excluded."unitPriceAmount","updatedAt"=now();` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 36: `end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 37: `update public."StoreCart" set "updatedAt"=now() where id=v_cart_id;` — این دستور داده‌های موجود را به‌روزرسانی می‌کند.
+- خط 38: `select coalesce(sum(ci.quantity*ci."unitPriceAmount"),0)::bigint,coalesce(sum(ci.quantity),0)::integer into v_total,v_count from public."StoreCartItem" ci where ci."cartId"=v_cart_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 39: `return jsonb_build_object('cartId',v_cart_id,'itemCount',v_count,'totalAmount',v_total,'currency',v_item.currency);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 40: `end $$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 42: `create or replace function public.channel_checkout_cart(p_platform text,p_store_id text,p_external_user_id text,p_external_conversation_id text,p_idempotency_key text)` — این دستور یک Function سمت PostgreSQL تعریف یا جایگزین می‌کند.
+- خط 43: `returns jsonb language plpgsql security definer set search_path to '' as $$` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 44: `declare v_customer_id text; v_cart_id text; v_order_id text; v_existing public."StoreOrder"%rowtype; v_total bigint:=0; v_currency text:='IRR'; v_bad_count integer:=0;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 45: `begin` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 46: `if p_platform not in ('telegram','rubika','bale','whatsapp','discord') then raise exception 'invalid_platform'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 47: `perform pg_advisory_xact_lock(hashtext(p_platform||':'||p_store_id||':'||p_external_user_id));` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 48: `if p_idempotency_key is not null then select * into v_existing from public."StoreOrder" where "storeId"=p_store_id and "idempotencyKey"=p_idempotency_key limit 1; if found then return jsonb_build_object('orderId',v_existing.id,'status',v_existing.status,'totalAmount',v_existing."totalAmount",'currency',v_existing.currency,'replayed',true); end if; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 49: `select id into v_customer_id from public."StoreCustomer" where "storeId"=p_store_id and platform=p_platform and "externalUserId"=p_external_user_id limit 1;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 50: `if v_customer_id is null then raise exception 'cart_empty'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 51: `select id into v_cart_id from public."StoreCart" where "customerId"=v_customer_id and "storeId"=p_store_id and status='ACTIVE'::public."StoreCartStatus" limit 1 for update;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 52: `if v_cart_id is null then raise exception 'cart_empty'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 53: `perform 1 from public."StoreItem" si join public."StoreCartItem" ci on ci."itemId"=si.id where ci."cartId"=v_cart_id order by si.id for update of si;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 54: `select count(*)::integer into v_bad_count from public."StoreCartItem" ci join public."StoreItem" si on si.id=ci."itemId" where ci."cartId"=v_cart_id and (si."storeId"<>p_store_id or si."isActive"=false or (si."inventoryCount" is not null and ci.quantity>si."inventoryCount"));` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 55: `if v_bad_count>0 then raise exception 'cart_items_unavailable'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 56: `select coalesce(sum(ci.quantity*si."priceAmount"),0)::bigint,coalesce(max(si.currency),'IRR') into v_total,v_currency from public."StoreCartItem" ci join public."StoreItem" si on si.id=ci."itemId" where ci."cartId"=v_cart_id;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 57: `if v_total<=0 and not exists(select 1 from public."StoreCartItem" where "cartId"=v_cart_id) then raise exception 'cart_empty'; end if;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 58: `v_order_id:=gen_random_uuid()::text;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 59: `insert into public."StoreOrder"(id,"storeId","customerId","sourcePlatform","externalConversationId",status,"subtotalAmount","discountAmount","totalAmount",currency,note,"idempotencyKey","createdAt","updatedAt") values(v_order_id,p_store_id,v_customer_id,p_platform,p_external_conversation_id,'AWAITING_PAYMENT'::public."StoreOrderStatus",v_total,0,v_total,v_currency,null,p_idempotency_key,now(),now());` — این دستور داده جدید در جدول درج می‌کند.
+- خط 60: `insert into public."StoreOrderItem"(id,"orderId","itemId","titleSnapshot","skuSnapshot","unitPriceAmount",quantity,"lineTotalAmount",metadata,"createdAt") select gen_random_uuid()::text,v_order_id,si.id,si.title,si.sku,si."priceAmount",ci.quantity,ci.quantity*si."priceAmount",'{}'::jsonb,now() from public."StoreCartItem" ci join public."StoreItem" si on si.id=ci."itemId" where ci."cartId"=v_cart_id;` — این دستور داده جدید در جدول درج می‌کند.
+- خط 61: `update public."StoreCart" set status='CONVERTED'::public."StoreCartStatus","updatedAt"=now() where id=v_cart_id;` — این دستور داده‌های موجود را به‌روزرسانی می‌کند.
+- خط 62: `return jsonb_build_object('orderId',v_order_id,'status','AWAITING_PAYMENT','totalAmount',v_total,'currency',v_currency,'replayed',false);` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 63: `end $$;` — این خط بخشی از دستور SQL یا تعریف ساختار/داده دیتابیس است.
+- خط 65: `revoke all on function public.channel_cart_snapshot(text,text,text) from public;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 66: `revoke all on function public.channel_cart_change(text,text,text,text,text,text,integer) from public;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.
+- خط 67: `revoke all on function public.channel_checkout_cart(text,text,text,text,text) from public;` — این دستور Permission دسترسی نقش‌های دیتابیس را تنظیم می‌کند.

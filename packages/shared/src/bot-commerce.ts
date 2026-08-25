@@ -1,6 +1,15 @@
+/**
+ * AI-PANEL-FA-INLINE-GUIDE
+ * این فایل توسط راهنمای فارسی AI Panel مستندسازی شده است.
+ * کامنت‌های «راهنما» توضیح می‌دهند دستور یا بلوک بعدی چه نقشی دارد.
+ * این توضیحات بخشی از Runtime نیستند و JavaScript آن‌ها را اجرا نمی‌کند.
+ */
+// راهنما: این دستور متغیر/ثابت «botCommerceProviders» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
 export const botCommerceProviders = ['telegram', 'bale', 'rubika'] as const;
+// راهنما: این Type با نام «BotCommerceProvider» شکل و مقادیر مجاز داده را برای TypeScript مشخص می‌کند و در زمان اجرا کد مستقلی تولید نمی‌کند.
 export type BotCommerceProvider = (typeof botCommerceProviders)[number];
 
+// راهنما: این دستور متغیر/ثابت «botCommerceActionTypes» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
 export const botCommerceActionTypes = [
   'CATALOG',
   'SEARCH',
@@ -19,10 +28,14 @@ export const botCommerceActionTypes = [
   'SUBMENU',
 ] as const;
 
+// راهنما: این Type با نام «BotCommerceActionType» شکل و مقادیر مجاز داده را برای TypeScript مشخص می‌کند و در زمان اجرا کد مستقلی تولید نمی‌کند.
 export type BotCommerceActionType = (typeof botCommerceActionTypes)[number];
+// راهنما: این Type با نام «BotCommerceRuntimeStatus» شکل و مقادیر مجاز داده را برای TypeScript مشخص می‌کند و در زمان اجرا کد مستقلی تولید نمی‌کند.
 export type BotCommerceRuntimeStatus = 'live' | 'foundation';
+// راهنما: این Type با نام «BotCommerceValueKind» شکل و مقادیر مجاز داده را برای TypeScript مشخص می‌کند و در زمان اجرا کد مستقلی تولید نمی‌کند.
 export type BotCommerceValueKind = 'none' | 'text' | 'url';
 
+// راهنما: این Type با نام «BotCommerceActionDefinition» شکل و مقادیر مجاز داده را برای TypeScript مشخص می‌کند و در زمان اجرا کد مستقلی تولید نمی‌کند.
 export type BotCommerceActionDefinition = {
   key: BotCommerceActionType;
   labelFa: string;
@@ -31,6 +44,7 @@ export type BotCommerceActionDefinition = {
   valueKind: BotCommerceValueKind;
 };
 
+// راهنما: این دستور متغیر/ثابت «botCommerceActionDefinitions» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
 export const botCommerceActionDefinitions: readonly BotCommerceActionDefinition[] = [
   { key: 'CATALOG', labelFa: 'محصولات / فروشگاه', descriptionFa: 'نمایش دسته‌بندی‌ها و محصولات فعال Commerce Core', runtime: 'live', valueKind: 'none' },
   { key: 'SEARCH', labelFa: 'جستجوی محصول', descriptionFa: 'جستجو در کاتالوگ فروشگاه', runtime: 'foundation', valueKind: 'none' },
@@ -49,6 +63,7 @@ export const botCommerceActionDefinitions: readonly BotCommerceActionDefinition[
   { key: 'SUBMENU', labelFa: 'زیرمنو', descriptionFa: 'ساخت ساختار منوی چندسطحی؛ شناسه مسیر Runtime هنگام Publish توسط Adapter ساخته می‌شود', runtime: 'live', valueKind: 'none' },
 ] as const;
 
+// راهنما: این Type با نام «BotCommerceMenuNode» شکل و مقادیر مجاز داده را برای TypeScript مشخص می‌کند و در زمان اجرا کد مستقلی تولید نمی‌کند.
 export type BotCommerceMenuNode = {
   id: string;
   parentId: string | null;
@@ -59,12 +74,14 @@ export type BotCommerceMenuNode = {
   enabled: boolean;
 };
 
+// راهنما: این Type با نام «BotCommerceTarget» شکل و مقادیر مجاز داده را برای TypeScript مشخص می‌کند و در زمان اجرا کد مستقلی تولید نمی‌کند.
 export type BotCommerceTarget = {
   provider: BotCommerceProvider;
   botId: string;
   enabled: boolean;
 };
 
+// راهنما: این Type با نام «BotCommerceTemplate» شکل و مقادیر مجاز داده را برای TypeScript مشخص می‌کند و در زمان اجرا کد مستقلی تولید نمی‌کند.
 export type BotCommerceTemplate = {
   schemaVersion: 1;
   presetKey: BotCommercePresetKey;
@@ -79,8 +96,10 @@ export type BotCommerceTemplate = {
   };
 };
 
+// راهنما: این Type با نام «BotCommercePresetKey» شکل و مقادیر مجاز داده را برای TypeScript مشخص می‌کند و در زمان اجرا کد مستقلی تولید نمی‌کند.
 export type BotCommercePresetKey = 'commerce' | 'services' | 'digital';
 
+// راهنما: این Type با نام «BotCommercePreset» شکل و مقادیر مجاز داده را برای TypeScript مشخص می‌کند و در زمان اجرا کد مستقلی تولید نمی‌کند.
 export type BotCommercePreset = {
   key: BotCommercePresetKey;
   labelFa: string;
@@ -88,6 +107,7 @@ export type BotCommercePreset = {
   template: BotCommerceTemplate;
 };
 
+// راهنما: این دستور متغیر/ثابت «node» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
 const node = (
   id: string,
   title: string,
@@ -98,6 +118,7 @@ const node = (
   parentId: string | null = null,
 ): BotCommerceMenuNode => ({ id, parentId, title, actionType, actionValue, sortOrder, enabled });
 
+// راهنما: این دستور متغیر/ثابت «botCommercePresets» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
 export const botCommercePresets: readonly BotCommercePreset[] = [
   {
     key: 'commerce',
@@ -165,12 +186,17 @@ export const botCommercePresets: readonly BotCommercePreset[] = [
   },
 ] as const;
 
+// راهنما: این دستور متغیر/ثابت «defaultBotCommerceTemplate» را تعریف می‌کند و مقدار موردنیاز این بخش از برنامه را نگه می‌دارد.
 export const defaultBotCommerceTemplate: BotCommerceTemplate = JSON.parse(JSON.stringify(botCommercePresets[0].template));
 
+// راهنما: این تابع «getBotCommerceAction» یک بخش مستقل از منطق برنامه را تعریف می‌کند؛ ورودی‌ها را می‌گیرد و منطق داخل بدنه را اجرا می‌کند.
 export function getBotCommerceAction(actionType: BotCommerceActionType) {
+  // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «botCommerceActionDefinitions.find((action) => action.key === actionType) ?…» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
   return botCommerceActionDefinitions.find((action) => action.key === actionType) ?? null;
 }
 
+// راهنما: این تابع «getBotCommercePreset» یک بخش مستقل از منطق برنامه را تعریف می‌کند؛ ورودی‌ها را می‌گیرد و منطق داخل بدنه را اجرا می‌کند.
 export function getBotCommercePreset(key: BotCommercePresetKey) {
+  // راهنما: این Return اجرای تابع را در این نقطه تمام می‌کند و «botCommercePresets.find((preset) => preset.key === key) ?? null» را به فراخواننده برمی‌گرداند؛ در کامپوننت React می‌تواند UI خروجی باشد.
   return botCommercePresets.find((preset) => preset.key === key) ?? null;
 }
