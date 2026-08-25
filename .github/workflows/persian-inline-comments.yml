@@ -38,13 +38,14 @@ jobs:
         run: |
           rm -rf scripts/.fa-doc-tool scripts/node_modules
           rm -f package-lock.json
+          git restore .github/workflows/cloudflare-preview.yml
 
       - name: Commit generated documentation
         shell: bash
         run: |
           git config user.name "ai-panel-doc-bot"
           git config user.email "ai-panel-doc-bot@users.noreply.github.com"
-          git add apps packages prisma supabase .github .env.example .gitignore docker-compose.yml pnpm-workspace.yaml
+          git add apps packages prisma supabase .env.example .gitignore docker-compose.yml pnpm-workspace.yaml
           if git diff --cached --quiet; then
             echo "No documentation changes to commit."
             exit 0
