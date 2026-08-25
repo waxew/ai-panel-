@@ -1,19 +1,48 @@
+# AI-PANEL-FA-INLINE-GUIDE
+# راهنما: این فایل Blueprint سرویس AI Panel روی Render است و مشخص می‌کند سرویس چگونه Build و اجرا شود.
+
+# راهنما: تمام سرویس‌هایی که Render باید از روی این Blueprint بسازد زیر services قرار می‌گیرند.
 services:
+  # راهنما: این خط شروع تعریف اولین سرویس است.
   - type: web
+    # راهنما: نام سرویس در Dashboard و DNS داخلی Render را مشخص می‌کند.
     name: ai-panel-demo
+    # راهنما: Runtime این سرویس Node.js است.
     runtime: node
+    # راهنما: سرویس در Region فرانکفورت اجرا می‌شود تا محل دیتاسنتر مشخص باشد.
     region: frankfurt
+    # راهنما: پلن در نظر گرفته‌شده برای این Blueprint را مشخص می‌کند.
     plan: free
+    # راهنما: با رسیدن Commit جدید به Branch متصل، Render اجازه Auto Deploy دارد.
     autoDeployTrigger: commit
+
+    # راهنما: این فرمان در مرحله Build اجرا می‌شود: Corepack را فعال می‌کند، Dependencyها را نصب می‌کند، Prisma Client را می‌سازد و سپس Web و API را Build می‌کند.
     buildCommand: corepack enable && pnpm install --frozen-lockfile=false && pnpm db:generate && pnpm --filter @ai-panel/web build && pnpm --filter @ai-panel/api build
+
+    # راهنما: پس از Build، این دستور Backend API را به‌عنوان Process اصلی سرویس اجرا می‌کند.
     startCommand: pnpm --filter @ai-panel/api start
+
+    # راهنما: Render برای تشخیص سالم بودن سرویس Endpoint /health را بررسی می‌کند.
     healthCheckPath: /health
+
+    # راهنما: متغیرهای محیطی Runtime از این بخش به سرویس داده می‌شوند.
     envVars:
+      # راهنما: NODE_ENV مشخص می‌کند برنامه در حالت Production اجرا شود.
       - key: NODE_ENV
+        # راهنما: مقدار NODE_ENV برای این سرویس production است.
         value: production
+
+      # راهنما: APP_ENCRYPTION_KEY کلید رمزنگاری Secretهای برنامه است و نباید به‌صورت متن ثابت در Repository ذخیره شود.
       - key: APP_ENCRYPTION_KEY
+        # راهنما: از Render می‌خواهد یک مقدار امن به‌صورت خودکار برای این Secret تولید کند.
         generateValue: true
+
+      # راهنما: DEFAULT_WORKSPACE_ID شناسه Workspace پیش‌فرض Backend در محیط Demo/Local را تعیین می‌کند.
       - key: DEFAULT_WORKSPACE_ID
+        # راهنما: مقدار پیش‌فرض Workspace برای این Blueprint local-workspace است.
         value: local-workspace
+
+      # راهنما: متغیرهایی که با VITE_ شروع می‌شوند هنگام Build در کد Frontend قابل استفاده می‌شوند.
       - key: VITE_DEFAULT_WORKSPACE_ID
+        # راهنما: Frontend نیز همان Workspace پیش‌فرض را دریافت می‌کند.
         value: local-workspace
