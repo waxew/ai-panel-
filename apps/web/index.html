@@ -1,14 +1,22 @@
 <!doctype html>
+<!-- این فایل پوسته HTML اولیه برنامه Web است؛ Vite و React محتوای واقعی UI را داخل عنصر #root قرار می‌دهند. -->
 <html lang="fa" dir="rtl">
   <head>
+    <!-- تعیین Encoding روی UTF-8 تا متن فارسی و کاراکترهای بین‌المللی درست نمایش داده شوند. -->
     <meta charset="UTF-8" />
+    <!-- تنظیم Viewport برای نمایش Responsive روی موبایل، دسکتاپ و محیط‌های دارای Safe Area. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- رنگ پیشنهادی نوار مرورگر/محیط سیستم روی دستگاه‌های پشتیبانی‌شده. -->
     <meta name="theme-color" content="#090d16" />
+    <!-- عنوانی که روی Tab مرورگر دیده می‌شود. -->
     <title>Ai Panel</title>
+    <!-- SDK رسمی Telegram Web App را وارد می‌کند تا Mini App بتواند با محیط تلگرام ارتباط بگیرد. -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
+    <!-- React کل رابط کاربری را داخل این عنصر Render می‌کند؛ main.tsx این id را پیدا می‌کند. -->
     <div id="root"></div>
+    <!-- نقطه ورود TypeScript/React برنامه؛ Vite این فایل و Importهای بعدی آن را پردازش می‌کند. -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
