@@ -1,0 +1,46 @@
+name: Persian inline code documentation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/persian-inline-comments.yml'
+      - 'scripts/add-persian-inline-comments.mjs'
+
+permissions:
+  contents: write
+
+jobs:
+  annotate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install TypeScript parser only
+        run: npm install --no-save --ignore-scripts typescript@5.9.2
+
+      - name: Add Persian explanations to source files
+        run: node scripts/add-persian-inline-comments.mjs
+
+      - name: Remove temporary npm lock file
+        run: rm -f package-lock.json
+
+      - name: Commit generated documentation
+        shell: bash
+        run: |
+          git config user.name "ai-panel-doc-bot"
+          git config user.email "ai-panel-doc-bot@users.noreply.github.com"
+          git add apps packages prisma supabase .github .env.example .gitignore docker-compose.yml pnpm-workspace.yaml
+          if git diff --cached --quiet; then
+            echo "No documentation changes to commit."
+            exit 0
+          fi
+          git commit -m "docs: add Persian inline code explanations [fa-comments]"
+          git push
