@@ -24,13 +24,20 @@ jobs:
           node-version: '24'
 
       - name: Install TypeScript parser only
-        run: npm install --no-save --ignore-scripts typescript@5.9.2
+        shell: bash
+        run: |
+          mkdir -p scripts/.fa-doc-tool
+          npm install --prefix scripts/.fa-doc-tool --no-package-lock --ignore-scripts typescript@5.9.2
+          ln -s "$GITHUB_WORKSPACE/scripts/.fa-doc-tool/node_modules" "$GITHUB_WORKSPACE/scripts/node_modules"
 
       - name: Add Persian explanations to source files
         run: node scripts/add-persian-inline-comments.mjs
 
-      - name: Remove temporary npm lock file
-        run: rm -f package-lock.json
+      - name: Remove temporary documentation tooling
+        shell: bash
+        run: |
+          rm -rf scripts/.fa-doc-tool scripts/node_modules
+          rm -f package-lock.json
 
       - name: Commit generated documentation
         shell: bash
