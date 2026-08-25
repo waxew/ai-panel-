@@ -1,18 +1,31 @@
 {
+  // Schema رسمی Wrangler را معرفی می‌کند تا VS Code بتواند اعتبارسنجی و Auto-complete بهتری ارائه دهد.
   "$schema": "../../node_modules/wrangler/config-schema.json",
+  // نام Worker در Cloudflare.
   "name": "ai-panel-demo",
+  // فایل ورودی اصلی Worker؛ Wrangler اجرای Cloudflare را از این فایل شروع می‌کند.
   "main": "./src/index.ts",
+  // تاریخ سازگاری Runtime؛ رفتار APIهای Workers را بر اساس نسخه پلتفرم مشخص می‌کند.
   "compatibility_date": "2026-08-23",
+  // تنظیمات Static Assets فرانت‌اند.
   "assets": {
+    // پوشه خروجی Build وب؛ این همان dist است که با Build کردن apps/web ساخته می‌شود.
     "directory": "../web/dist",
+    // نام Binding که Worker برای دسترسی برنامه‌نویسی به فایل‌های Static استفاده می‌کند.
     "binding": "ASSETS",
+    // اگر فایل مستقیمی پیدا نشد، رفتار SPA اعمال می‌شود تا Router فرانت‌اند بتواند مسیر را مدیریت کند.
     "not_found_handling": "single-page-application",
+    // این مسیرها قبل از تحویل Static Asset حتماً ابتدا به Worker داده می‌شوند.
     "run_worker_first": [
+      // تمام Routeهای API توسط Worker پردازش می‌شوند.
       "/api/*",
+      // Route بررسی سلامت سرویس نیز توسط Worker پاسخ داده می‌شود.
       "/health"
     ]
   },
+  // قابلیت مشاهده‌پذیری Cloudflare را برای جمع‌آوری اطلاعات اجرای Worker فعال می‌کند.
   "observability": {
+    // روشن بودن Observability.
     "enabled": true
   }
 }
